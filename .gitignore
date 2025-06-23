@@ -1,0 +1,35 @@
+# Node modules (모든 하위 폴더 포함)
+**/node_modules/
+
+# 빌드 결과물 (React, Hardhat 등)
+**/build/
+**/dist/
+**/artifacts/
+**/cache/
+**/typechain/
+
+# 환경 변수 파일
+.env
+.env.*
+!.env.example  # 샘플은 유지
+
+# 테스트 커버리지
+**/coverage/
+
+# 로그 파일
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 시스템 파일
+.DS_Store
+
+# VSCode 설정 (원할 경우 무시)
+.vscode/
+
+# macOS 디렉토리 메타정보
+*.DS_Store
+
+# Hardhat 네트워크 상태
+hardhat-node-logs.txt
+
