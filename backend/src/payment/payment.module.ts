@@ -11,7 +11,7 @@ import { Payment } from './entities/payment.entity';
 @Module({
   // 외부 모듈을 가져옴 → TypeOrmModule을 사용해 Payment 엔티티를 DB에 연결
   imports: [TypeOrmModule.forFeature([Payment])],
-  // 사용자의 요청을 처리할 컨트롤러 등록 
+  // 사용자의 요청을 처리하는 라우터 클래스 
   controllers: [PaymentController],
   // 비즈니스 로직을 담당하는 서비스 등록 
   providers: [PaymentService],

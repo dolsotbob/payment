@@ -16,6 +16,13 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "lib": [
+      "es2021",
+      "dom"
+    ],
+    "strict": true, // 전체 타입 검사 강화 (추천)
+    "esModuleInterop": true, // commonjs 호환성 향상
+    "moduleResolution": "node" // 모듈 탐색을 node 방식으로
   }
 }
