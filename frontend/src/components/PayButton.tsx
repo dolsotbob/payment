@@ -60,7 +60,7 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount }) => {
 
     return (
         <button onClick={handlePayment}>
-            결제하기
+            기존 유저 - 결제하기
         </button>
     );
 };
