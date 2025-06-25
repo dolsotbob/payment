@@ -71,10 +71,42 @@
           "internalType": "uint256",
           "name": "amount",
           "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "storeWallet",
+          "type": "address"
         }
       ],
       "name": "Paid",
       "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "getStoreWallet",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getTokenAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     },
     {
       "inputs": [],
@@ -162,5 +194,5 @@
       "type": "function"
     }
   ],
-  "address": "0x3C52C559913B39F8b5f6CAEe6cd7C825a9C349e4"
+  "address": "0xA3b5B574D25aA74ba6458dCA9D0cB62F23D14eE7"
 }

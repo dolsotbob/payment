@@ -14,7 +14,7 @@ interface ApproveAndPayProps {
 }
 
 const ApproveAndPay: React.FC<ApproveAndPayProps> = ({ account, amount }) => {
-    const handleApprove = async () => {
+    const handleApproveAndPay = async () => {
         try {
             // 1. 메마 설치 되어 있는지 확인 
             if (!window.ethereum) {
@@ -32,7 +32,7 @@ const ApproveAndPay: React.FC<ApproveAndPayProps> = ({ account, amount }) => {
             const provider = new ethers.BrowserProvider(window.ethereum);
             const signer = await provider.getSigner();
 
-            // 3. TestToken (ERC20) 컨트랙트 인스턴스 생성
+            // 3. TestToken (ERC20), PaymentGateway 컨트랙트 인스턴스 생성
             const tokenContract = new ethers.Contract(
                 TestTokenJson.address,
                 TestTokenJson.abi,
@@ -49,53 +49,27 @@ const ApproveAndPay: React.FC<ApproveAndPayProps> = ({ account, amount }) => {
             const weiAmount = ethers.parseUnits(amount, 18);
 
             // ✅ 5. 먼저 토큰 사용 승인 (approve)
-            const approveTx = await tokenContract.approve(PaymentGatewayJson.address, weiAmount);
+            const approveTx = await tokenContract.approve(paymentContract.target, weiAmount);
             await approveTx.wait();
-            alert('✅ Approve 성공');
 
-            // ✅ 여기서 allowance 확인!
-            const allowance = await tokenContract.allowance(account, paymentContract.target);
-            console.log('✅ 현재 allowance:', ethers.formatUnits(allowance, 18));
-        } catch (e) {
-            console.error('Approve 실패', e);
+            // ✅ 6. 그다음 결제 실행
+            const payTx = await paymentContract.pay(weiAmount);
+            const receipt = await payTx.wait();
+
+            // ✅ 7. 결제 결과 백엔드 전송
+            // ✅ 공통 유틸 함수 사용
+            await sendPaymentToBackend(receipt, amount, 'SUCCESS');
+
+            alert('✅ 결제가 완료되었습니다!');
+        } catch (err) {
+            console.error('❌ 결제 실패:', err);
+            alert('❌ 결제에 실패했습니다.');
+            // 선택: 실패 시에도 전송하려면 아래 사용
+            // await sendPaymentToBackend({ hash: '', from: account, to: '', ... }, amount, 'FAILED');
         }
     };
 
-    const handlePay = async () => {
-        try {
-            const provider = new ethers.BrowserProvider(window.ethereum);
-            const signer = await provider.getSigner();
-
-            const tokenContract = new ethers.Contract(
-                TestTokenJson.address,
-                TestTokenJson.abi,
-                signer
-            );
-            const paymentContract = new ethers.Contract(
-                PaymentGatewayJson.address,
-                PaymentGatewayJson.abi,
-                signer
-            );
-
-            const balance = await tokenContract.balanceOf(account);
-            console.log('📦 TTK 잔액 (사용자):', ethers.formatUnits(balance, 18));
-
-            const weiAmount = ethers.parseUnits(amount, 18);
-            const tx = await paymentContract.pay(weiAmount);
-            await tx.wait();
-            alert('✅ Pay 성공');
-        } catch (e) {
-            console.error('Pay 실패', e);
-        }
-    };
-
-    return (
-        <>
-            <button onClick={handleApprove}>Approve</button>
-            <button onClick={handlePay}>Pay</button>
-        </>
-    );
+    return <button onClick={handleApproveAndPay}>Approve + Pay</button>;
 };
-
 
 export default ApproveAndPay;

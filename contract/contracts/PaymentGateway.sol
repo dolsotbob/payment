@@ -9,7 +9,11 @@ contract PaymentGateway is Ownable {
     address public storeWallet;
 
     // 결제가 성공했을 때 호출되는 이벤트; 누가 얼마나 결제했는지 기록함
-    event Paid(address indexed buyer, uint256 amount);
+    event Paid(
+        address indexed buyer,
+        uint256 amount,
+        address indexed storeWallet
+    );
 
     // 배포 시 토큰 주소와 스토어 지갑 주소를 전달 받고, Ownable의 생성자도 함께 호출
     constructor(address _token, address _storeWallet) Ownable(_msgSender()) {
@@ -23,17 +27,25 @@ contract PaymentGateway is Ownable {
     // 사용자가 토큰 지불하는 함수
     // external: 외부에서 호출 가능
     function pay(uint256 amount) external {
-        require(amount > 0, "Amount must be > 0");
-        require(
-            token.transferFrom(msg.sender, storeWallet, amount),
-            "Payment failed"
-        );
-        emit Paid(msg.sender, amount);
+        require(amount > 0, "Amount must be greater than 0");
+
+        bool success = token.transferFrom(msg.sender, storeWallet, amount);
+        require(success, "Payment failed: transferFrom failed");
+
+        emit Paid(msg.sender, amount, storeWallet);
     }
 
     // 필요 시 스토어 지갑 변경
     function setStoreWallet(address _storeWallet) external onlyOwner {
-        require(_storeWallet != address(0), "Invalid address");
+        require(_storeWallet != address(0), "Invalid store wallet address");
         storeWallet = _storeWallet;
+    }
+
+    function getTokenAddress() external view returns (address) {
+        return address(token);
+    }
+
+    function getStoreWallet() external view returns (address) {
+        return storeWallet;
     }
 }
