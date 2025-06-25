@@ -1,5 +1,5 @@
 // 공동 결제 함수 
-import { TransactionReceipt } from 'ethers';
+import { TransactionReceipt, ethers } from 'ethers';
 
 export const sendPaymentToBackend = async (
     receipt: TransactionReceipt,
@@ -7,6 +7,9 @@ export const sendPaymentToBackend = async (
     status: 'SUCCESS' | 'FAILED' = 'SUCCESS'
 ) => {
     try {
+        // 프론트에선 ether → wei 변환 후 string으로 전송
+        const weiAmount = ethers.parseUnits(amount, 18).toString();
+
         const response = await fetch('http://localhost:3000/api/payment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -14,9 +17,9 @@ export const sendPaymentToBackend = async (
                 txHash: receipt.hash,
                 from: receipt.from,
                 to: receipt.to,
-                amount,
+                amount: weiAmount,
                 status,
-                timestamp: Date.now(),
+                // timestamp: Date.now(),  // 삭제 - timestamp는 서버에서 처리하는게 일반적 
             }),
         });
 

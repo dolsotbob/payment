@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';  // React 라이브러리와 useState 상태 저장 리액트 훅 
+import React, { useState } from 'react';  // React 라이브러리와 useState 상태 저장 리액트 훅 
 import { ethers } from 'ethers';  // 메타마스크와 통신할 수 있는 Ethereum JS 라이브러리
 import ProductList from './components/ProductList';
 import { Product } from './types';
@@ -10,6 +10,7 @@ const App: React.FC = () => {
   // account: 연결된 지갑 주소를 저장할 변수 
   // 처음엔 null이지만, 지갑을 연결하면 주소가 여기 저장됨
   const [account, setAccount] = useState<string | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // 1. 상품 목록 (App이 상태 주도권을 가짐)
   const products: Product[] = [
@@ -44,50 +45,35 @@ const App: React.FC = () => {
   };
 
   // 3. 💸 결제 처리
-  const storeAddress = "0xf4d9250bcca2a0df2089bc1021bcdcc99964c210";
-
-  const handlePurchase = async (product: Product) => {
-    try {
-      if (!window.ethereum || !account) {
-        alert('지갑이 연결되어야 결제가 가능합니다.');
-        return;
-      }
-
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-
-      const tx = await signer.sendTransaction({
-        to: '0x스토어지갑주소', // 👉 TODO: 실제 상점 지갑 주소로 수정
-        value: ethers.parseEther(product.price.replace(" ETH", "")),  // 예: "0.01 ETH" -> "0.01"
-      });
-
-      console.log("결제 트랜잭션:", tx);
-      await tx.wait();
-      alert(`${product.name} 결제 완료!`);
-    } catch (error) {
-      console.error('결제 실패:', error);
-      alert('결제에 실패했습니다.');
-    }
+  // 상품을 클릭(선택) 했을 때 호출되는 함수 
+  // 전달 받은 product 객체를 상태 변수 selectedProduct에 저장 
+  // 저장된 selectedProduct는 아래 컴포넌트들(PayButton, ApproveAndPay)에서 amount={selectedProduct.price} 형태로 전달된다 
+  const handlePurchase = (product: Product) => {
+    setSelectedProduct(product);
   };
+
 
   return (
     <div style={{ padding: '2rem' }}>
-      <h1>🛍️ 코인 쇼핑몰 MVP</h1>
+      <h1>🛍️ 코인로 쇼핑하는 스토어 MVP</h1>
 
+      {/* // 지갑 연결 여부에 따라 조건부 렌더링  */}
       {!account ? (
         <button onClick={connectWallet}>🦊 지갑 연결</button>
       ) : (
         <p>✅ 연결된 지갑: {account}</p>
       )}
 
+      {/* 상품 목록을 보여주는 컴포넌트 
+      onPurchase: 사용자가 "결제하기"를 누르면 호출되는 함수 {handlePurchase}로 전달  */}
       <ProductList products={products} onPurchase={handlePurchase} />
 
-      {account && (
-        <PayButton account={account} amount='0.01' />
+      {account && selectedProduct && (
+        <>
+          <PayButton account={account} amount={selectedProduct.price} />
+          <ApproveAndPay account={account} amount={selectedProduct.price} />
+        </>
       )}
-
-      {/* acount!는 null이 아님을 확신한다는 의미  */}
-      <ApproveAndPay account={account!} amount='0.01' />
     </div>
   );
 };

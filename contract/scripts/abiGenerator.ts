@@ -4,7 +4,7 @@ import type * as ethers from 'ethers';
 
 const basePath = __dirname;
 const base = path.join(basePath, '../');
-const outputBase = path.join(basePath, '../../frontend/payment');
+const outputBase = path.join(basePath, '../../frontend/src');
 
 const makeFile = async (
     location: string,

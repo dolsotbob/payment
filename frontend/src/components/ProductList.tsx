@@ -1,11 +1,11 @@
-// ProductList.tsx
-
+// 사용자가 구매 가능한 상품 목록을 보여주는 UI 컴포넌트 
+// 결제를 직접 실행하지 않고 어떤 상품이 선택됐는지 알려주는 역할 
 import React from 'react';
 import { Product } from '../types';
 
 interface ProductListProps {
-    products: Product[]; // ✅ 상위에서 전달받음
-    onPurchase: (product: Product) => void;
+    products: Product[]; // ✅ 상위에서 상품 목록 (이름, 가격 등 포함) 전달받음
+    onPurchase: (product: Product) => void; // 상위 컴포넌트 구매 요청 콜백 
 }
 
 const ProductList: React.FC<ProductListProps> = ({ products, onPurchase }) => {
