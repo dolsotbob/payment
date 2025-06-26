@@ -3,7 +3,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Payment, PaymentStatus } from './entities/payment.entity';
+import { Payment } from './entities/payment.entity';
+import { PaymentStatus } from 'src/common/enums/payment-status.enum';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 
 @Injectable()  // 이 클래스가 NestJS에서 의존성 주입 가능한 서비스임을 명시

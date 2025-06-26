@@ -4,10 +4,12 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Payment } from '../payment/entities/payment.entity';
 import { CashbackService } from './cashback.service';
+import { CashbackController } from './cashback.controller';
 
 @Module({
     imports: [TypeOrmModule.forFeature([Payment])], // Payment 엔터티의 Repository 주입 
     providers: [CashbackService], // 이 모듈이 관리할 서비스 등록 
+    controllers: [CashbackController],
     exports: [CashbackService], // 외부 모듈에서도 사용할 수 있게 export 
 })
 export class CashbackModule { }

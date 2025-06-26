@@ -201,6 +201,24 @@
     {
       "inputs": [
         {
+          "internalType": "address",
+          "name": "buyer",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "sendCashback",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "uint256",
           "name": "_rate",
           "type": "uint256"
@@ -264,5 +282,5 @@
       "type": "function"
     }
   ],
-  "address": "0xc9E9590aF2c55FA6Eac4B6E6547AE928530160BD"
+  "address": "0x2EEcecb7c0A7e8E395080ED789336A27cf404C81"
 }
