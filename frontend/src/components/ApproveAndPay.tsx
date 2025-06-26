@@ -4,7 +4,8 @@
 // App.tsx에서 이 버튼 먼저 테스트 해보기 
 import React from 'react';
 import { ethers } from 'ethers';
-import PaymentGatewayJson from '../abis/PaymentGateway.json';
+// import PaymentGatewayJson from '../abis/PaymentGateway.json';
+import PaymentWithCashbackJson from '../abis/PaymentWithCashback.json';
 import TestTokenJson from '../abis/TestToken.json';
 import { sendPaymentToBackend } from '../utils/payment';
 
@@ -40,8 +41,8 @@ const ApproveAndPay: React.FC<ApproveAndPayProps> = ({ account, amount }) => {
             );
 
             const paymentContract = new ethers.Contract(
-                PaymentGatewayJson.address,
-                PaymentGatewayJson.abi,
+                PaymentWithCashbackJson.address,
+                PaymentWithCashbackJson.abi,
                 signer
             );
 

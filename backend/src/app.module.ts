@@ -9,6 +9,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { dbConfig } from './common/db/db.config';
 import { PaymentModule } from './payment/payment.module';
 
+import { ScheduleModule } from '@nestjs/schedule';
+
+
 @Module({
   imports: [
     // .env 파일을 불러와서 앱 전체에서 사용할 수 있게 한다 
@@ -27,6 +30,7 @@ import { PaymentModule } from './payment/payment.module';
     // 결제 모듈 - 결제 관련 컨트롤러/서비스/엔터티 포함 
     // payment 폴더에 있는 결제 로직을 담당하는 모듈을 앱 전체에서 사용할 수 있도록 등록한다 
     PaymentModule,
+    ScheduleModule.forRoot(),
   ],
 })
 export class AppModule { }

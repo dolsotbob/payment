@@ -1,7 +1,8 @@
 // 사용자가 이미 approve()를 한 상태라면, 바로 pay()만 실행해서 결제할 수 있게 해주는 간편 결제 버튼
 import React from 'react';
 import { ethers } from 'ethers';
-import PaymentGatewayJson from '../abis/PaymentGateway.json';
+// import PaymentGatewayJson from '../abis/PaymentGateway.json';
+import PaymentWithCashbackJson from '../abis/PaymentWithCashback.json';
 import { sendPaymentToBackend } from '../utils/payment';
 
 interface PayButtonProps {
@@ -34,8 +35,8 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount }) => {
 
             // 3. 결제 컨트랙트 인스턴스 생성 
             const contract = new ethers.Contract(
-                PaymentGatewayJson.address, // abiGenerator.ts로 만든 주소
-                PaymentGatewayJson.abi,
+                PaymentWithCashbackJson.address, // abiGenerator.ts로 만든 주소
+                PaymentWithCashbackJson.abi,
                 signer
             );
 

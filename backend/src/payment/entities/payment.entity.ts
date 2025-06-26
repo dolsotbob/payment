@@ -2,12 +2,8 @@
 // Payment라는 테이블을 DB에 생성하고, 각 결제에 대한 id, 지갑 주소, 결제 금액... 을 지정함 
 // 즉, 스마트 컨트랙트 결제 -> 백앤드 수신 -> DB 저장을 위한 모델 클래스 
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-
-export enum PaymentStatus {
-    PENDING = 'PENDING',
-    SUCCESS = 'SUCCESS',
-    FAILED = 'FAILED',
-}
+import { PaymentStatus } from 'src/common/enums/payment-status.enum';
+import { CashbackStatus } from 'src/common/enums/cashback-status.enum';
 
 @Entity()
 export class Payment {
@@ -30,9 +26,18 @@ export class Payment {
     })
     status: PaymentStatus;
 
+    @Column({
+        type: 'enum',
+        enum: CashbackStatus,
+        default: CashbackStatus.PENDING,
+    })
+    cashbackStatus: CashbackStatus;
 
     @Column({ nullable: true })
-    txHash: string; // 트랜잭션 해시
+    txHash: string; // 결제 트랜잭션 해시
+
+    @Column({ nullable: true })
+    cashbackTxHash: string; // 캐시백 트랜잭션 해시 
 
     @CreateDateColumn()
     createdAt: Date;
