@@ -44,4 +44,7 @@ export class Payment {
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @Column({ default: 0 })
+    retryCount: number;
 }

@@ -13,6 +13,8 @@ import PaymentWithCashbackAbi from '../abis/PaymentWithCashback.json';
 
 dotevn.config();
 
+const MAX_RETRY_COUNT = 3;
+
 // @Injectable()은 이 클래스가 NestJS의 의존성 주입 대상임을 나타내고, 
 // 다른 클래스에서 CashbackService를 주입 받아 사용할 수 있게 해준다 
 @Injectable()
@@ -32,6 +34,7 @@ export class CashbackService {
     ) {
         const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
         const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
+
         this.contract = new ethers.Contract(
             process.env.CONTRACT_ADDRESS!,
             PaymentWithCashbackAbi.abi,
@@ -48,25 +51,41 @@ export class CashbackService {
             },
         });
 
-        // 2. 하나씩 캐시백 처리
+        // 2. 하나씩 캐시백 처리 - 아래 processSingleCashback 함수로 
         for (const payment of payments) {
-            try {
-                // 🪙 캐시백 전송 (buyer 주소와 amount 전달)
-                const tx = await this.contract.sendCashback(payment.from, payment.amount, {
-                    gasLimit: 500_000,
-                });
-                const receipt = await tx.wait();
+            await this.processSingleCashback(payment);
+        }
+    }
 
-                // ✅ 성공 처리 
-                payment.cashbackStatus = CashbackStatus.COMPLETED; // 상태 변경
-                payment.cashbackTxHash = receipt.hash;
-                await this.paymentRepository.save(payment); // DB에 저장
-                this.logger.log(`✅ 캐시백 완료: ${payment.id} | Tx: ${receipt.hash}`);
-            } catch (error) {
-                payment.cashbackStatus = CashbackStatus.FAILED;
-                await this.paymentRepository.save(payment);
-                this.logger.error(`❌ 캐시백 실패: ${payment.id}`, error);
-            }
+    // 단일 결제 건에 대한 캐시백 처리 로직 (재시도에도 사용 가능)
+    async processSingleCashback(payment: Payment): Promise<void> {
+        // 재시도 제한 확인 
+        const retryCount = payment.retryCount ?? 0;
+        if (retryCount >= MAX_RETRY_COUNT) {
+            this.logger.warn(`🚫 재시도 초과: ${payment.id}`);
+            return;
+        }
+
+        try {
+            // 🪙 캐시백 전송 (buyer 주소와 amount 전달)
+            const tx = await this.contract.sendCashback(payment.from, payment.amount, {
+                gasLimit: 500_000,
+            });
+            const receipt = await tx.wait();
+
+            // ✅ 성공 처리 
+            payment.cashbackStatus = CashbackStatus.COMPLETED; // 상태 변경
+            payment.cashbackTxHash = receipt.hash;
+            payment.retryCount = 0;
+            await this.paymentRepository.save(payment); // DB에 저장
+
+            this.logger.log(`✅ 캐시백 완료: ${payment.id} | Tx: ${receipt.hash}`);
+        } catch (error) {
+            payment.cashbackStatus = CashbackStatus.FAILED;
+            payment.retryCount = (payment.retryCount || 0) + 1;
+            await this.paymentRepository.save(payment);
+
+            this.logger.error(`❌ 캐시백 실패: ${payment.id} | 재시도" ${payment.retryCount}`, error);
         }
     }
 }
