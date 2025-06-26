@@ -44,17 +44,23 @@ contract PaymentWithCashback is Ownable {
         require(paymentSuccess, "Payment failed: transferFrom failed");
 
         emit Paid(msg.sender, amount, storeWallet);
+    }
+
+    // 캐시백 함수
+    function sendCashback(address buyer, uint256 amount) external onlyOwner {
+        require(amount > 0, "Amount must be greater than 0");
 
         // 캐시백 계산 및 전송
         uint256 cashbackAmount = (amount * cashbackRate) / 100;
+        require(cashbackAmount > 0, "Cashback too small");
         bool cashbackSuccess = token.transferFrom(
             storeWallet,
-            msg.sender,
+            buyer,
             cashbackAmount
         );
         require(cashbackSuccess, "Cashback failed");
 
-        emit CashbackSent(msg.sender, cashbackAmount, storeWallet);
+        emit CashbackSent(buyer, cashbackAmount, storeWallet);
     }
 
     // 관리자가 캐시백 비율 조정 가능

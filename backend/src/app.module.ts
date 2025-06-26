@@ -5,12 +5,12 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 // ConfigModule은 .env 환경 변수 로드 
 import { ConfigModule, ConfigService } from '@nestjs/config';
-
 import { dbConfig } from './common/db/db.config';
+
 import { PaymentModule } from './payment/payment.module';
-
 import { ScheduleModule } from '@nestjs/schedule';
-
+import { CashbackModule } from './cashback/cashback.module';
+import { ScheduleFeatureModule } from './schedule/schedule_feature.module';
 
 @Module({
   imports: [
@@ -27,10 +27,10 @@ import { ScheduleModule } from '@nestjs/schedule';
       useFactory: dbConfig,
     }),
 
-    // 결제 모듈 - 결제 관련 컨트롤러/서비스/엔터티 포함 
-    // payment 폴더에 있는 결제 로직을 담당하는 모듈을 앱 전체에서 사용할 수 있도록 등록한다 
-    PaymentModule,
-    ScheduleModule.forRoot(),
+    PaymentModule,  // 결제 정보 저장, 상태 업뎃 등 DB 조작 담당 
+    CashbackModule, // DB에서 캐시백 대상 조회 -> 스마트 컨트랙트 호출로 캐시백 처리 
+    ScheduleModule.forRoot(), // @Cron() 기능 실행 위해 넣음 
+    ScheduleFeatureModule,  // @Cron 스케줄러를 통해 주기적으로 CashbackService.processCashbacks() 실행 
   ],
 })
-export class AppModule { }
+export class AppModule { }  // 전체 앱을 조립하고 모듈들을 연결 (최상위 루트)

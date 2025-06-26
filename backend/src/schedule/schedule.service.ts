@@ -1,5 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+// src/schedule/schedule.service.ts
+import { Injectable } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
+import { CashbackService } from 'src/cashback/cashback.service';
 
 @Injectable()
 export class ScheduleService {
@@ -7,8 +9,8 @@ export class ScheduleService {
         private readonly cashbackService: CashbackService,
     ) { }
 
-    @Cron('*/30 * * * * *') // 30c초마다 실행 
+    @Cron('*/30 * * * * *') // 30초마다 실행
     async handleCashbackSchedule() {
         await this.cashbackService.processCashbacks();
     }
-}
+} 

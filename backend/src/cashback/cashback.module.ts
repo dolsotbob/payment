@@ -1,57 +1,13 @@
 // src/cashback/cashback.module.ts
+// NestJS에서 캐시백 관련 기능을 모듈 단위로 구성하고, 서비스를 외부에 공개하거나 내부에서 관리하기 위해 만든 설정 파일
 import { Module } from '@nestjs/common';
-import { CashbackService } from './cashback.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Payment } from '../payment/entities/payment.entity';
-import { PaymentService } from '../payment/payment.service';
+import { CashbackService } from './cashback.service';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Payment])],
-    providers: [CashbackService, PaymentService],
-    exports: [CashbackService],
+    imports: [TypeOrmModule.forFeature([Payment])], // Payment 엔터티의 Repository 주입 
+    providers: [CashbackService], // 이 모듈이 관리할 서비스 등록 
+    exports: [CashbackService], // 외부 모듈에서도 사용할 수 있게 export 
 })
 export class CashbackModule { }
-
-
-// src/cashback/cashback.service.ts
-import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Payment, PaymentStatus } from '../payment/entities/payment.entity';
-
-@Injectable()
-export class CashbackService {
-    private readonly logger = new Logger(CashbackService.name);
-
-    constructor(
-        @InjectRepository(Payment)
-        private readonly paymentRepository: Repository<Payment>
-    ) { }
-
-    async processCashbacks() {
-        const pendingPayments = await this.paymentRepository.find({
-            where: { status: PaymentStatus.SUCCESS, cashbackStatus: 'PENDING' },
-        });
-
-        for (const payment of pendingPayments) {
-            try {
-                // 👉 실제 캐시백 처리 로직 추가 필요 (예: contract 호출)
-
-                // 처리 성공 시 상태 업데이트
-                payment.cashbackStatus = 'SUCCESS';
-                await this.paymentRepository.save(payment);
-
-                this.logger.log(
-                    `✅ 캐시백 완료: payment ID ${payment.id}, 사용자 ${payment.from}`
-                );
-            } catch (error) {
-                payment.cashbackStatus = 'FAILED';
-                await this.paymentRepository.save(payment);
-
-                this.logger.error(
-                    `❌ 캐시백 실패: payment ID ${payment.id}, 에러: ${error.message}`
-                );
-            }
-        }
-    }
-}
