@@ -5,7 +5,7 @@
   "scripts": {
     "compile": "npx hardhat compile",
     "deploy:testToken": "npx hardhat run scripts/deployTestToken.ts --network kairos",
-    "deploy:paymentWithCashback": "npx hardhat run scripts/deployPaymentWithCashback.ts --network kairos",
+    "deploy:payment": "npx hardhat run scripts/deployPayment.ts --network kairos",
     "deploy:transferTEST": "npx hardhat run scripts/transferTEST.ts --network kairos",
     "test": "hardhat test",
     "clean": "npx hardhat clean"
