@@ -2,6 +2,7 @@
 import React from 'react';
 import { ethers } from 'ethers';
 import PaymentJson from '../abis/Payment.json';
+import TestTokenJson from '../abis/TestToken.json'
 import { sendPaymentToBackend } from '../utils/payment';
 
 interface PayButtonProps {
@@ -32,8 +33,14 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount }) => {
             const provider = new ethers.BrowserProvider(window.ethereum);
             const signer = await provider.getSigner();
 
-            // 3. 결제 컨트랙트 인스턴스 생성 
-            const contract = new ethers.Contract(
+            // 3. 컨트랙트 인스턴스 생성 
+            const tokenContract = new ethers.Contract(
+                TestTokenJson.address,
+                TestTokenJson.abi,
+                signer
+            );
+
+            const paymentContract = new ethers.Contract(
                 PaymentJson.address, // abiGenerator.ts로 만든 주소
                 PaymentJson.abi,
                 signer
@@ -41,12 +48,18 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount }) => {
 
             // 4. 결제 실행 
             const weiAmount = ethers.parseUnits(amount, 18);
-            const tx = await contract.pay(weiAmount);
-            const receipt = await tx.wait(); // 블록에 포함될 때까지 대기
+
+            const payTx = await paymentContract.pay(weiAmount);
+            const receipt = await payTx.wait(); // 블록에 포함될 때까지 대기
+
+            // ✅ 캐시백 계산 (프론트에서 contract와 동일한 계산 방식으로)
+            const cashbackRate = 2; // 또는 Payment 컨트랙트에서 가져오거나 상수로 지정
+            const cashbackAmount = ((Number(amount) * cashbackRate) / 100).toFixed(18); // string 타입
 
             // 5. 결과를 백엔드로 전송 
             // ✅ 공통 유틸 함수 사용
             await sendPaymentToBackend(receipt, amount, 'SUCCESS', account, cashbackAmount);
+            console.log('📡 백엔드 전송 완료:', receipt.hash, amount);
 
             alert('✅ 결제가 완료되었습니다!');
         } catch (err) {

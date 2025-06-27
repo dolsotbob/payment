@@ -5,6 +5,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleService } from './schedule.service';
 import { CashbackModule } from 'src/cashback/cashback.module';
 import { ScheduleController } from './schedule.controller';
+import { CashbackController } from 'src/cashback/cashback.controller';
+import { CashbackService } from 'src/cashback/cashback.service';
 
 @Module({
     imports: [
