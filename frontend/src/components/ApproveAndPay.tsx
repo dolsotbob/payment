@@ -41,8 +41,8 @@ const ApproveAndPay: React.FC<ApproveAndPayProps> = ({ account, amount }) => {
             );
 
             const paymentContract = new ethers.Contract(
-                PaymentWithCashbackJson.address,
-                PaymentWithCashbackJson.abi,
+                PaymentJson.address,
+                PaymentJson.abi,
                 signer
             );
 
