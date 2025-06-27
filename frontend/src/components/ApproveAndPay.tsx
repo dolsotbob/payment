@@ -54,7 +54,8 @@ const ApproveAndPay: React.FC<ApproveAndPayProps> = ({ account, amount }) => {
             // 4. 입력된 금액을 wei로 변환
             const weiAmount = ethers.parseUnits(amount, 18);
 
-            // ✅ 현재 allowance 확인 - 유저가 결제 컨트랙트에게 얼마만큼 토큰 사용을 허용했는지 확인하기 
+            // ✅ 5. 승인 
+            // 현재 allowance 확인 - 유저가 결제 컨트랙트에게 얼마만큼 토큰 사용을 허용했는지 확인하기 
             // account - 사용자 지갑 주소(승인자) 
             // paymentContract.target: 승인 받은 지갑/컨트랙트 주소(spender) 
             const currentAllowance = await tokenContract.allowance(account, paymentContract.target);

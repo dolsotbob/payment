@@ -8,7 +8,6 @@ import { ScheduleController } from './schedule.controller';
 
 @Module({
     imports: [
-        ScheduleModule.forRoot(), // Cron을 NestJS에 활성화
         CashbackModule,           // CashbackService 주입 가능하게 함
     ],
     // providers는 서비스를 NestJS의 의존성 주입 시스템에 등록하기 위한 필드 

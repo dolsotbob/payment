@@ -3,7 +3,7 @@
 import { Controller, Post } from '@nestjs/common';
 import { CashbackService } from './cashback.service';
 
-@Controller('schedule')
+@Controller('cashback')
 export class CashbackController {
     constructor(private readonly cashbackService: CashbackService) { }
 
