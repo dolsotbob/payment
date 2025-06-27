@@ -13,11 +13,11 @@ export class Payment {
     @Column()
     from: string; // 결제자 지갑 주소
 
-    @Column()
-    to: string; // 상점 지갑 주소 
-
     @Column('numeric', { precision: 78, scale: 0 }) // wei 단위, 큰 정수 
     amount: string; // 결제 금액 (문자열로 저장)
+
+    @Column('numeric', { precision: 78, scale: 0, default: '0' })
+    cashbackAmount: string; // 캐시백 금액 (wei, 문자열로 저장)
 
     @Column({
         type: 'enum',

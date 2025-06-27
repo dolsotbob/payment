@@ -15,5 +15,7 @@ import { Payment } from './entities/payment.entity';
   controllers: [PaymentController],
   // 비즈니스 로직을 담당하는 서비스 등록 
   providers: [PaymentService],
+  // 다른 모듈에서 사용할 수 있도록 
+  exports: [PaymentService],
 })
 export class PaymentModule { }

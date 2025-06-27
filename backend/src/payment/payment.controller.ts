@@ -1,10 +1,4 @@
-
-// 아래 한 줄은 NestJS의 데코레이터와 요청 해늗ㄹ러 관련 모듈을 가져온다 
-// @Controller: 컨트롤러 정의
-// @Post, @Patch: HTTP 요청 메서드 핸들러
-// @Body, @Param: 요청 데이터 추출
 import { Controller, Post, Body, Patch, Param } from '@nestjs/common';
-// 결제 관련 비즈니스 로직이 담긴 서비스 파일을 가져온다 
 import { PaymentService } from './payment.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentStatusDto } from './dto/update-payment-status.dto';

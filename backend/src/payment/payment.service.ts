@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Payment } from './entities/payment.entity';
 import { PaymentStatus } from 'src/common/enums/payment-status.enum';
+import { CashbackStatus } from 'src/common/enums/cashback-status.enum';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 
 @Injectable()  // 이 클래스가 NestJS에서 의존성 주입 가능한 서비스임을 명시
@@ -27,8 +28,10 @@ export class PaymentService {
     try {
       const payment = this.paymentRepository.create({
         ...createPaymentDto,
-        status: 'PENDING' as PaymentStatus, // 기본 상태
+        status: createPaymentDto.status || PaymentStatus.PENDING,
+        cashbackStatus: CashbackStatus.PENDING, // 아직 지급 안 됐으므로 
       });
+
       // 실제로 DB에 INSERT하고, 저장된 엔터티를 반환 
       return await this.paymentRepository.save(payment);
     } catch (error) {
