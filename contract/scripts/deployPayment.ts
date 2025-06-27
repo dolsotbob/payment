@@ -3,26 +3,30 @@ import { makeAbi } from './abiGenerator';
 
 async function main() {
     const [deployer] = await ethers.getSigners();
+    const deployerAddress = await deployer.getAddress();
 
-    console.log(`Deploying contracts with the account: ${deployer.address}`);
+    console.log(`Deploying Payment with the account: ${deployerAddress}`);
 
-    // 컨트랙트 팩토리 생성
+    // ✅ 환경 변수 가져오기
+    const tokenAddress = process.env.TOKEN_ADDRESS;
+    const vaultAddress = process.env.VAULT_ADDRESS;
+
+    // ✅ 환경 변수 체크
+    if (!tokenAddress || !vaultAddress) {
+        throw new Error("❌ .env에서 TOKEN_ADDRESS 또는 VAULT_ADDRESS가 설정되지 않았습니다.");
+    }
+
+    // ✅ 컨트랙트 팩토리 및 배포
     const PaymentFactory = await ethers.getContractFactory('Payment');
+    const payment = await PaymentFactory.deploy(tokenAddress, vaultAddress);
 
-    // 컨트랙트 배포 (필요한 인자 전달) 
-    const contract = await PaymentFactory.deploy(
-        process.env.TOKEN_ADDRESS!,
-        process.env.STORE_WALLET!
-    );
+    await payment.waitForDeployment();
+    const paymentAddress = await payment.getAddress();
 
-    // 배포 완료 대기 
-    await contract.waitForDeployment();
-    const contractAddress = await contract.getAddress();
+    console.log(`✅ Payment contract deployed at: ${paymentAddress}`);
 
-    console.log(`Payment contract deployed at: ${contractAddress}`);
-
-    // ABI 파일 저장 
-    await makeAbi('Payment', contractAddress);
+    // ✅ ABI 저장
+    await makeAbi('Payment', paymentAddress);
 }
 
 main().catch((error) => {

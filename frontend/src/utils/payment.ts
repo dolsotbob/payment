@@ -9,7 +9,9 @@ interface PaymentResponse {
 export const sendPaymentToBackend = async (
     receipt: TransactionReceipt,
     amount: string,
-    status: 'SUCCESS' | 'FAILED' = 'SUCCESS'
+    status: 'SUCCESS' | 'FAILED' = 'SUCCESS',
+    userAddress: string,
+    cashbackAmount?: string
 ): Promise<PaymentResponse> => {
     try {
         // 프론트에선 ether → wei 변환 후 string으로 전송
@@ -17,9 +19,9 @@ export const sendPaymentToBackend = async (
 
         const payload = {
             txHash: receipt.hash,
-            from: receipt.from ?? '',
-            to: receipt.to ?? '',
+            from: userAddress,
             amount: weiAmount,
+            cashbackAmount: cashbackAmount ?? '0',
             status,
         };
 
@@ -32,7 +34,6 @@ export const sendPaymentToBackend = async (
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         });
-        console.log('✅ API URL:', process.env.NEXT_PUBLIC_API_URL);
 
         if (!response.ok) {
             throw new Error(`서버 응답 오류: ${response.status}`);

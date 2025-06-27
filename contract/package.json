@@ -4,8 +4,9 @@
   "main": "index.js",
   "scripts": {
     "compile": "npx hardhat compile",
-    "deploy:testToken": "npx hardhat run scripts/deployTestToken.ts --network kairos",
+    "deploy:vault": "npx hardhat run scripts/deployVault.ts --network kairos",
     "deploy:payment": "npx hardhat run scripts/deployPayment.ts --network kairos",
+    "deploy:testToken": "npx hardhat run scripts/deployTestToken.ts --network kairos",
     "deploy:transferTEST": "npx hardhat run scripts/transferTEST.ts --network kairos",
     "test": "hardhat test",
     "clean": "npx hardhat clean"
@@ -21,6 +22,7 @@
     "@typechain/ethers-v6": "^0.5.1",
     "@typechain/hardhat": "^9.1.0",
     "chai": "^4.5.0",
+    "chai-as-promised": "^8.0.1",
     "hardhat": "^2.25.0",
     "typechain": "^8.3.2"
   },

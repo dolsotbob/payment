@@ -1,8 +1,7 @@
 // 사용자가 이미 approve()를 한 상태라면, 바로 pay()만 실행해서 결제할 수 있게 해주는 간편 결제 버튼
 import React from 'react';
 import { ethers } from 'ethers';
-// import PaymentGatewayJson from '../abis/PaymentGateway.json';
-import PaymentWithCashbackJson from '../abis/PaymentWithCashback.json';
+import PaymentJson from '../abis/Payment.json';
 import { sendPaymentToBackend } from '../utils/payment';
 
 interface PayButtonProps {
@@ -35,8 +34,8 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount }) => {
 
             // 3. 결제 컨트랙트 인스턴스 생성 
             const contract = new ethers.Contract(
-                PaymentWithCashbackJson.address, // abiGenerator.ts로 만든 주소
-                PaymentWithCashbackJson.abi,
+                PaymentJson.address, // abiGenerator.ts로 만든 주소
+                PaymentJson.abi,
                 signer
             );
 
@@ -47,15 +46,25 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount }) => {
 
             // 5. 결과를 백엔드로 전송 
             // ✅ 공통 유틸 함수 사용
-            await sendPaymentToBackend(receipt, amount, 'SUCCESS');
+            await sendPaymentToBackend(receipt, amount, 'SUCCESS', account, cashbackAmount);
 
             alert('✅ 결제가 완료되었습니다!');
         } catch (err) {
             console.error('❌ 결제 실패:', err);
             alert('❌ 결제에 실패했습니다. 다시 시도해 주세요.');
 
-            // 선택사항: 실패도 기록하고 싶다면 아래 코드도 가능
-            // await sendPaymentToBackend({ hash: '', from: account, to: '', ... }, amount, 'FAILED');
+            // ✅ 실패 기록을 백엔드에 남기기
+            await sendPaymentToBackend(
+                {
+                    hash: '',
+                    from: account,
+                    to: ''
+                } as any, // 최소한의 더미 receipt 
+                amount,
+                'FAILED',
+                account,
+                '0'
+            );
         }
     };
 
