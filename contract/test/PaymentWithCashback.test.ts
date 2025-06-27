@@ -9,7 +9,7 @@ describe("Payment with Cashback", function () {
     let token: any;
     let gateway: any;
 
-    const initialSupply = ethers.parseEther("1000"); // 예: 1000 TTK
+    const initialSupply = ethers.parseEther("1000"); // 예: 1000 TEST
     const paymentAmount = ethers.parseEther("100");
     const cashbackRate = 2; // 2%
 

@@ -56,9 +56,9 @@ const ApproveAndPay: React.FC<ApproveAndPayProps> = ({ account, amount }) => {
             // ✅ 여기서 allowance 확인!
             const allowance = await tokenContract.allowance(account, paymentContract.target);
             console.log('✅ 현재 allowance:', ethers.formatUnits(allowance, 18));
-            // ✅ 여기서 사용자 지갑의 TTK 잔액 확인!
+            // ✅ 여기서 사용자 지갑의 TEST 잔액 확인!
             const balance = await tokenContract.balanceOf(account);
-            console.log('📦 TTK 잔액 (사용자):', ethers.formatUnits(balance, 18));
+            console.log('📦 TEST 잔액 (사용자):', ethers.formatUnits(balance, 18));
 
             // ✅ 6. 그다음 결제 실행
             const payTx = await paymentContract.pay(weiAmount);
