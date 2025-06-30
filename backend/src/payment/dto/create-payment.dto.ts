@@ -16,7 +16,7 @@ export class CreatePaymentDto {
     @IsNotEmpty()
     from: string; // 결제한 사람 주소
 
-    @IsNumber()
+    @IsString()
     @IsNotEmpty()
     @Matches(/^\d+$/, { message: 'amount는 숫자 문자열(정수 wei 단위)이어야 합니다.' })
     amount: string; // decimal은 문자열로 처리; 결제 금액 (wei 단위)

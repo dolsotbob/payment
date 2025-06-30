@@ -12,7 +12,7 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 // NestJS가 의존성 주입을 할 수 있도록 이 클래스를 서비스로 등록 
 export class PaymentService {
   // 생성자: 의존성 주입 
-  // Payment Entity에 대한 레포지토리(=DB 접근 도구)를 주입한다 
+  // Payment Entity에 대한 레포지토리(=DB 접근 도구)를 주입한다
   // 이 레포지토리는 DB에서 데이터를 생성, 읽기, 수정, 삭제 하는 데 사용됨 
   constructor(
     @InjectRepository(Payment)

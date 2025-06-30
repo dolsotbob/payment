@@ -25,6 +25,15 @@ async function main() {
 
     console.log(`✅ Payment contract deployed at: ${paymentAddress}`);
 
+    // ✅ Vault 인스턴스 가져오기
+    const vaultAbi = require('../artifacts/contracts/Vault.sol/Vault.json').abi;
+    const vault = new ethers.Contract(vaultAddress, vaultAbi, deployer);
+
+    // ✅ setPaymentContract 실행
+    const tx = await vault.setPaymentContract(paymentAddress);
+    await tx.wait();
+    console.log(`✅ Vault에 paymentContract 설정 완료`);
+
     // ✅ ABI 저장
     await makeAbi('Payment', paymentAddress);
 }

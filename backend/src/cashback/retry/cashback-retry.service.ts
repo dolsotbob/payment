@@ -2,7 +2,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Payment } from 'src/payment/entities/payment.entity';
-import { Repository } from 'typeorm';
+import { Repository, LessThan } from 'typeorm';
 import { PaymentStatus } from 'src/common/enums/payment-status.enum';
 import { CashbackStatus } from 'src/common/enums/cashback-status.enum';
 import { CashbackService } from '../cashback.service';
@@ -20,6 +20,7 @@ export class CashbackRetryService {
             where: {
                 status: PaymentStatus.SUCCESS,
                 cashbackStatus: CashbackStatus.FAILED,
+                retryCount: LessThan(3), // MAX_RETRY_COUNT 값과 일치하게 조정
             },
         });
 

@@ -3,4 +3,5 @@ export enum CashbackStatus {
     PENDING = 'PENDING',
     COMPLETED = 'COMPLETED',
     FAILED = 'FAILED',
+    FATAL = 'FATAL',
 }
