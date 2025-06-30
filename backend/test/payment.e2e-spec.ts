@@ -55,7 +55,7 @@ describe('Payment Integration E2E', () => {
             .post('/payment')
             .send({
                 txHash: receipt.hash,
-                from: await signer.getAddress(),
+                from: await signer.address,
                 amount: wei.toString(),
                 cashbackAmount: ethers.parseUnits('0.02', 18).toString(),
                 status: 'SUCCESS',

@@ -3,8 +3,8 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./interfaces/IVault.sol";
 
-// 볼트 컨트랙트 따로 두기
 contract Payment is Ownable {
     IERC20 public token; // token은 결제에 사용할 ERC20 토큰; 자동 getter 함수 생성
     address public vaultAddress;
@@ -25,6 +25,7 @@ contract Payment is Ownable {
         uint256 cashbackRate,
         uint256 originalAmount
     );
+
     event CashbackRateUpdated(uint256 oldRate, uint256 newRate);
     event VaultAddressUpdated(address oldVault, address newVault);
 
@@ -49,7 +50,8 @@ contract Payment is Ownable {
         // 2. 캐시백 계산 및 전송
         uint256 cashbackAmount = (amount * cashbackRate) / 100;
         if (cashbackAmount > 0) {
-            token.transfer(msg.sender, cashbackAmount);
+            IVault(vaultAddress).provideCashback(msg.sender, cashbackAmount);
+
             emit CashbackSent(
                 msg.sender,
                 cashbackAmount,
@@ -75,10 +77,8 @@ contract Payment is Ownable {
     // 관리자가 캐시백 비율 조정 가능
     function setCashbackRate(uint256 _rate) external onlyOwner {
         require(_rate <= 100, "Rate must be <= 100");
-
         uint256 oldRate = cashbackRate;
         cashbackRate = _rate;
-
         emit CashbackRateUpdated(oldRate, _rate);
     }
 
