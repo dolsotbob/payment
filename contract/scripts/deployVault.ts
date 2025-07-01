@@ -10,7 +10,7 @@ async function main() {
     const [deployer] = await ethers.getSigners();
     const deployerAddress = await deployer.getAddress();
 
-    console.log(`Deploying Vault with the account: ${deployerAddress}`);
+    console.log(`🚀 Deploying Vault with the account: ${deployerAddress}`);
 
     // 2. 환경 변수 확인 
     const tokenAddress = process.env.TOKEN_ADDRESS!;

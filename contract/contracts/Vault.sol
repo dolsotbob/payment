@@ -5,15 +5,17 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Vault is Ownable {
-    IERC20 public token; // Vault가 보관할 ERC20 토큰
-    address public treasury; // 수익을 인출할 기본 주소
-    address public paymentContract;
+    IERC20 public token; // Vault가 보관할 ERC20 토큰 컨트랙트 주소 저장
+    address public treasury; // Vault의 잔액을 보낼(수익을 인출할) 기본 지갑 주소
+    address public paymentContract; // 캐시백 요청 권한이 있는 컨트랙트 주소 저장
 
     event CashbackCharged(address indexed from, uint256 amount);
     event CashbackProvided(address indexed to, uint256 amount);
     event TreasuryUpdated(address oldTreasury, address newTreasury);
     event PaymentContractSet(address paymentContract);
 
+    // 생성자 정의: token과 treasury 초기화
+    // Ownable(_msgSender()): 배포한 계정을 owner로 설정
     constructor(address _token, address _treasury) Ownable(_msgSender()) {
         require(_token != address(0), "Invalid token");
         require(_treasury != address(0), "Invalid treasury");
@@ -22,18 +24,23 @@ contract Vault is Ownable {
         treasury = _treasury;
     }
 
+    // 커스텀 modifier: provideCashback() 같은 민감한 함수는 paymentContract에서만 호출 가능하도록 제한
     modifier onlyPayment() {
         require(msg.sender == paymentContract, "Not authorized");
         _;
     }
 
+    // Vault 컨트랙트에 Payment 컨트랙트 주소를 등록하여 권한을 설정하는 함수
     function setPaymentContract(address _payment) external onlyOwner {
         require(_payment != address(0), "Invalid payment contract");
+        // 입력된 _payment 주소를 Vault에 저장하고,
+        // 이 저장된 주소만 provideCashback() 같은 주요 함수의 msg.sender로 인정됨
         paymentContract = _payment;
         emit PaymentContractSet(_payment);
     }
 
     // Vault 컨트랙트에 캐시백 자금을 미리 예치함
+    // owner 지갑에서 Vault로 토큰 전송
     function chargeCashback(uint256 amount) external onlyOwner {
         require(amount > 0, "Amount must be > 0");
         bool success = token.transferFrom(msg.sender, address(this), amount);

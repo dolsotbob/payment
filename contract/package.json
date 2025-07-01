@@ -4,11 +4,13 @@
   "main": "index.js",
   "scripts": {
     "compile": "npx hardhat compile",
+    "deploy:vaultAndPayment": "npx hardhat run scripts/deployVaultAndPayment.ts --network kairos",
     "deploy:vault": "npx hardhat run scripts/deployVault.ts --network kairos",
     "deploy:payment": "npx hardhat run scripts/deployPayment.ts --network kairos",
     "deploy:testToken": "npx hardhat run scripts/deployTestToken.ts --network kairos",
     "deploy:transferTEST": "npx hardhat run scripts/transferTEST.ts --network kairos",
     "test": "hardhat test",
+    "test:vault-payment": "npx hardhat test test/vault-payment.test.ts",
     "clean": "npx hardhat clean"
   },
   "keywords": [],

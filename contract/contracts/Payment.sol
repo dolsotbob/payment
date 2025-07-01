@@ -25,6 +25,7 @@ contract Payment is Ownable {
         uint256 cashbackRate,
         uint256 originalAmount
     );
+    event CashbackWrapped(address indexed to, uint256 amount);
 
     event CashbackRateUpdated(uint256 oldRate, uint256 newRate);
     event VaultAddressUpdated(address oldVault, address newVault);
@@ -72,6 +73,16 @@ contract Payment is Ownable {
             cashbackRate,
             cashbackAmount
         );
+    }
+
+    // 추가된 래퍼 함수
+    // Vault에서 권한을 Payment 컨트랙트 주소로 제한(onlyPayment)했기 때문에,
+    // 백엔드가 직접 Vault에 호출하면 msg.sender가 백엔드 지갑 주소가 되어 실패하게 된다ㅏ.
+    // 따라서, backend -> Payment 래퍼 함수 호출 -> 내부에서 Vault 호출 흐름을 만들어야 한다.
+    function provideCashback(address to, uint256 amount) external onlyOwner {
+        require(amount > 0, "Amount must be > 0");
+        IVault(vaultAddress).provideCashback(to, amount);
+        emit CashbackWrapped(to, amount);
     }
 
     // 관리자가 캐시백 비율 조정 가능

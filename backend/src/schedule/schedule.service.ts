@@ -16,7 +16,8 @@ export class ScheduleService {
         console.log('[Schedule] Cashback cron triggered:', new Date().toISOString());
 
         try {
-            await this.cashbackService.processCashbacks();
+            await this.cashbackService.checkAndCharge();   // 충전 먼저 처리 
+            await this.cashbackService.processCashbacks();  // 지급 처리 
             await this.retryService.retryFailedCashbacks();
         } catch (error) {
             console.error('[Schedule] ❌ Error in scheduled cashback task:', error);

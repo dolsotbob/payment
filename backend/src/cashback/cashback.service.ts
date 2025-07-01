@@ -10,6 +10,7 @@ import { CashbackStatus } from 'src/common/enums/cashback-status.enum'; // 캐�
 import { ethers } from 'ethers';
 import * as dotevn from 'dotenv';
 import VaultAbi from '../abis/Vault.json';
+import PaymentAbi from '../abis/Payment.json';
 
 dotevn.config();
 
@@ -24,6 +25,12 @@ export class CashbackService {
     // private contract: ethers.Contract;
     private readonly provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
     private readonly wallet = new ethers.Wallet(process.env.PRIVATE_KEY, this.provider);
+
+    private readonly paymentContract = new ethers.Contract(
+        process.env.CONTRACT_ADDRESS!,
+        PaymentAbi.abi,
+        this.wallet
+    );
 
     private readonly vaultContract = new ethers.Contract(
         process.env.VAULT_ADDRESS!,
@@ -64,6 +71,9 @@ export class CashbackService {
 
     // 🧾 ERC20 토큰에 대한 approve 실행
     private async approveTopup(amount: bigint) {
+        const vaultAddr = process.env.VAULT_ADDRESS;
+        if (!vaultAddr) throw new Error('VAULT_ADDRESS 환경변수 없음');
+
         const token = new ethers.Contract(
             process.env.TOKEN_ADDRESS!,
             [
@@ -72,7 +82,7 @@ export class CashbackService {
             this.wallet
         );
 
-        return await token.approve(process.env.VAULT_CONTRACT, amount);
+        return await token.approve(vaultAddr, amount);
     }
 
     // ✅ DB에 쌓인 결제 건 중 캐시백 미처리된 것들 찾아 실행
@@ -107,7 +117,7 @@ export class CashbackService {
 
         try {
             // 🪙 캐시백 전송 (buyer 주소와 amount 전달)
-            const tx = await this.vaultContract.provideCashback(payment.from, payment.amount, {
+            const tx = await this.paymentContract.provideCashback(payment.from, payment.amount, {
                 gasLimit: 500_000,
             });
             const receipt = await tx.wait();
