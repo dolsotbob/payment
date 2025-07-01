@@ -83,10 +83,6 @@ export class CashbackService {
                 const vaultBalance = await token.balanceOf(process.env.VAULT_ADDRESS!);
                 this.logger.log(`🏦 Vault 실제 토큰 잔고: ${ethers.formatUnits(vaultBalance, 18)} TEST`);
 
-                // 🔐 approve → 충전
-                const approveTx2 = await this.approveTopup(topupAmount);
-                await approveTx2.wait();
-
                 const chargeTx = await this.vaultContract.chargeCashback(topupAmount);
                 await chargeTx.wait();
 

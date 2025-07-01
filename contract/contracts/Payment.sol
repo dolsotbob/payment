@@ -39,6 +39,13 @@ contract Payment is Ownable {
         vaultAddress = _vaultAddress;
     }
 
+    mapping(address => bool) public isBackend;
+
+    modifier onlyBackend() {
+        require(isBackend[msg.sender], "Not authorized");
+        _;
+    }
+
     // 사용자가 토큰 지불하는 함수
     // external: 외부에서 호출 가능
     function pay(uint256 amount) external {
@@ -86,8 +93,15 @@ contract Payment is Ownable {
         emit CashbackWrapped(to, amount);
     }
 
+    function setBackend(address backend, bool status) external onlyOwner {
+        isBackend[backend] = status;
+    }
+
     // 자동으로 호출할 때 사용하는 백앤드용 래퍼 함수 (onlyOwner 없이 호출 가능)
-    function executeProvideCashback(address to, uint256 amount) external {
+    function executeProvideCashback(
+        address to,
+        uint256 amount
+    ) external onlyBackend {
         require(amount > 0, "Amount must be > 0");
         IVault(vaultAddress).provideCashback(to, amount);
         emit CashbackWrapped(to, amount);
