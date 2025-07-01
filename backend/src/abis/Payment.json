@@ -202,6 +202,24 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "executeProvideCashback",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "getTokenAddress",
       "outputs": [
@@ -344,5 +362,5 @@
       "type": "function"
     }
   ],
-  "address": "0xF53F5F25Dd7068ED31fA0F5956B7dee0e12E84ca"
+  "address": "0xe9344b5c88b6DA8Fc9C0A676deef8A1b0259F337"
 }

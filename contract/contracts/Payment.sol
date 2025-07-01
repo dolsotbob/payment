@@ -79,7 +79,15 @@ contract Payment is Ownable {
     // Vault에서 권한을 Payment 컨트랙트 주소로 제한(onlyPayment)했기 때문에,
     // 백엔드가 직접 Vault에 호출하면 msg.sender가 백엔드 지갑 주소가 되어 실패하게 된다ㅏ.
     // 따라서, backend -> Payment 래퍼 함수 호출 -> 내부에서 Vault 호출 흐름을 만들어야 한다.
+    // 수동으로 provideCashback 호출할 때 사용
     function provideCashback(address to, uint256 amount) external onlyOwner {
+        require(amount > 0, "Amount must be > 0");
+        IVault(vaultAddress).provideCashback(to, amount);
+        emit CashbackWrapped(to, amount);
+    }
+
+    // 자동으로 호출할 때 사용하는 백앤드용 래퍼 함수 (onlyOwner 없이 호출 가능)
+    function executeProvideCashback(address to, uint256 amount) external {
         require(amount > 0, "Amount must be > 0");
         IVault(vaultAddress).provideCashback(to, amount);
         emit CashbackWrapped(to, amount);

@@ -38,6 +38,16 @@ export class CashbackService {
         this.wallet
     );
 
+    // constructor 역할:
+    // (1) NestJS의 의존성 주입
+    // (2) ethers.js 기반 스마트 컨트랙트 인스턴스 생성 - 즉, 컨트랙트에 연결해 함수 호출이나 상태 조회 할 수 있는 통로 만들기
+    constructor(
+        // TypeORM의 @InjectRepository 데코레이터로 Payment 엔터티용 Repository 주입
+        @InjectRepository(Payment)
+        // Payment 테이블에 접근하기 위한 DB Repository 주입
+        private readonly paymentRepository: Repository<Payment>,
+    ) { }
+
     // ✅ 캐시백 잔액이 기준 이하이면 자동으로 충전
     async checkAndCharge(): Promise<any> {
         try {
@@ -45,6 +55,7 @@ export class CashbackService {
             const topupAmount = ethers.parseUnits(process.env.CASHBACK_TOPUP_AMOUNT || '2000', 18);
 
             const currentReserve: bigint = await this.vaultContract.getCashbackReserve();
+            console.log(currentReserve);
 
             this.logger.log(`💰 현재 캐시백 잔액: ${ethers.formatUnits(currentReserve, 18)} TEST`);
 
@@ -53,6 +64,28 @@ export class CashbackService {
 
                 const approveTx = await this.approveTopup(topupAmount);
                 await approveTx.wait();
+
+                // 서버 지갑의 allowance, balance 조회 
+                const token = new ethers.Contract(
+                    process.env.TOKEN_ADDRESS!,
+                    [
+                        'function allowance(address owner, address spender) view returns (uint256)',
+                        'function balanceOf(address owner) view returns (uint256)',
+                    ],
+                    this.wallet,
+                );
+                const allowance = await token.allowance(this.wallet.address, process.env.VAULT_ADDRESS!);
+                const balance = await token.balanceOf(this.wallet.address);
+                this.logger.log(`🧾 승인된 잔액: ${ethers.formatUnits(allowance, 18)} TEST`);
+                this.logger.log(`💰 서버 지갑 잔액: ${ethers.formatUnits(balance, 18)} TEST`);
+
+                // Vault의 실제 토큰 보유량 확인 
+                const vaultBalance = await token.balanceOf(process.env.VAULT_ADDRESS!);
+                this.logger.log(`🏦 Vault 실제 토큰 잔고: ${ethers.formatUnits(vaultBalance, 18)} TEST`);
+
+                // 🔐 approve → 충전
+                const approveTx2 = await this.approveTopup(topupAmount);
+                await approveTx2.wait();
 
                 const chargeTx = await this.vaultContract.chargeCashback(topupAmount);
                 await chargeTx.wait();
@@ -116,8 +149,8 @@ export class CashbackService {
         }
 
         try {
-            // 🪙 캐시백 전송 (buyer 주소와 amount 전달)
-            const tx = await this.paymentContract.provideCashback(payment.from, payment.amount, {
+            // Payment 컨트랙트에 캐시백 위임 
+            const tx = await this.paymentContract.executeProvideCashback(payment.from, payment.amount, {
                 gasLimit: 500_000,
             });
             const receipt = await tx.wait();
@@ -130,37 +163,20 @@ export class CashbackService {
 
             this.logger.log(`✅ 캐시백 완료: ${payment.id} | Tx: ${receipt.hash}`);
         } catch (error) {
-            payment.cashbackStatus = CashbackStatus.FAILED;
-            payment.retryCount = (payment.retryCount || 0) + 1;
+            payment.retryCount = retryCount + 1;
+            payment.cashbackStatus =
+                payment.retryCount >= MAX_RETRY_COUNT ? CashbackStatus.FATAL : CashbackStatus.FAILED;
             await this.paymentRepository.save(payment);
 
             this.logger.error(`❌ 캐시백 실패: ${payment.id} | 재시도" ${payment.retryCount}`, error);
-        }
 
-        if (retryCount + 1 >= MAX_RETRY_COUNT) {
-            payment.cashbackStatus = CashbackStatus.FATAL;
-            await this.paymentRepository.save(payment);
-            this.logger.warn(`🚫 캐시백 영구 실패 처리됨: ${payment.id}`);
-
-            // (추후 추가) 운영자/고객 알림 함수 호출 
-            // await this.handleFatalCashback(payment);
-
-            return;
-        } else {
-            payment.cashbackStatus = CashbackStatus.FAILED;
-            payment.retryCount = retryCount + 1;
+            if (payment.cashbackStatus === CashbackStatus.FATAL) {
+                this.logger.warn(`🚫 캐시백 영구 실패 처리됨: ${payment.id}`);
+            }
         }
     }
 
-    // constructor 역할:
-    // (1) NestJS의 의존성 주입
-    // (2) ethers.js 기반 스마트 컨트랙트 인스턴스 생성 - 즉, 컨트랙트에 연결해 함수 호출이나 상태 조회 할 수 있는 통로 만들기
-    constructor(
-        // TypeORM의 @InjectRepository 데코레이터로 Payment 엔터티용 Repository 주입
-        @InjectRepository(Payment)
-        // Payment 테이블에 접근하기 위한 DB Repository 주입
-        private readonly paymentRepository: Repository<Payment>,
-    ) { }
+
 
     // Vault의 현재 캐시백 잔액을 조회하는 메서드 
     async getReserve(): Promise<string> {
