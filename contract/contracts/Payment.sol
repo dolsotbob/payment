@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/IVault.sol";
 
-contract Payment is Ownable {
+contract Payment is ERC2771Context, Ownable {
     IERC20 public token; // token은 결제에 사용할 ERC20 토큰; 자동 getter 함수 생성
     address public vaultAddress;
     uint256 public cashbackRate = 2; // 캐시백 비율 (예: 2%)
@@ -32,7 +32,11 @@ contract Payment is Ownable {
     event VaultAddressUpdated(address oldVault, address newVault);
 
     // 배포 시 토큰 주소와 스토어 지갑 주소를 전달 받고, Ownable의 생성자도 함께 호출
-    constructor(address _token, address _vaultAddress) Ownable(_msgSender()) {
+    constructor(
+        address _token,
+        address _vaultAddress,
+        address _trustedForwarder
+    ) Ownable(_msgSender()) ERC2771Context(_trustedForwarder) {
         require(_token != address(0), "Invalid token address");
         require(_vaultAddress != address(0), "Invalid vault address");
 
@@ -40,31 +44,21 @@ contract Payment is Ownable {
         vaultAddress = _vaultAddress;
     }
 
-    // ** 이 부분 빼기 **
-    mapping(address => bool) public isBackend;
-
-    modifier onlyBackend() {
-        require(isBackend[msg.sender], "Not authorized");
-        _;
-    }
-    // ** 여기까지 **
-
-    // 사용자가 토큰 지불하는 함수
-    // external: 외부에서 호출 가능
     function pay(uint256 amount) external {
         require(amount > 0, "Amount must be greater than 0");
 
         // 1. 사용자에게서 토큰 받기
-        bool success = token.transferFrom(msg.sender, address(this), amount);
+        address sender = _msgSender(); // ✅ 메타트랜잭션에 대비; 여기서 msgSender는 진짜 사용자(relayer말고)
+        bool success = token.transferFrom(sender, address(this), amount);
         require(success, "Payment failed");
 
         // 2. 캐시백 계산 및 전송
         uint256 cashbackAmount = (amount * cashbackRate) / 100;
         if (cashbackAmount > 0) {
-            IVault(vaultAddress).provideCashback(msg.sender, cashbackAmount);
+            IVault(vaultAddress).provideCashback(sender, cashbackAmount);
 
             emit CashbackSent(
-                msg.sender,
+                sender,
                 cashbackAmount,
                 vaultAddress,
                 cashbackRate,
@@ -76,35 +70,55 @@ contract Payment is Ownable {
         uint256 vaultAmount = amount - cashbackAmount;
         token.transfer(vaultAddress, vaultAmount);
 
-        emit Paid(
-            msg.sender,
-            amount,
-            vaultAddress,
-            cashbackRate,
-            cashbackAmount
-        );
+        emit Paid(sender, amount, vaultAddress, cashbackRate, cashbackAmount);
     }
 
-    // 추가된 래퍼 함수
-    // Vault에서 권한을 Payment 컨트랙트 주소로 제한(onlyPayment)했기 때문에,
-    // 백엔드가 직접 Vault에 호출하면 msg.sender가 백엔드 지갑 주소가 되어 실패하게 된다ㅏ.
-    // 따라서, backend -> Payment 래퍼 함수 호출 -> 내부에서 Vault 호출 흐름을 만들어야 한다.
-    // 수동으로 provideCashback 호출할 때 사용
+    // Forwarder를 통해 전달된 원래 호출자 주소를 반환한다
+    function _msgSender()
+        internal
+        view
+        override(Context, ERC2771Context)
+        returns (address)
+    {
+        return ERC2771Context._msgSender();
+    }
+
+    // 원래 유저가 의도한 호출 데이터만 추출해준다
+    function _msgData()
+        internal
+        view
+        override(Context, ERC2771Context)
+        returns (bytes calldata)
+    {
+        return ERC2771Context._msgData();
+    }
+
+    // 이 함수는 **메타트랜잭션(Meta Transaction)**을 처리할 때 필요한 컨텍스트 정보(_msgSender, _msgData)의 길이를 계산하기 위한 내부 함수
+    // override 필요한 이유: Context와 ERC2771Context 두 부모 컨트랙트 모두 _contextSuffixLength()를 정의하고 있으므로, 충돌을 방지하기 위해 어떤 부모의 버전을 쓸지 명시해야 한다.
+    // 여기서는 ERC2771Context의 것을 사용한다.
+    function _contextSuffixLength()
+        internal
+        view
+        override(Context, ERC2771Context)
+        returns (uint256)
+    {
+        return ERC2771Context._contextSuffixLength(); // _contextStuffixLength()는 사용자 주소와 기타 부가 정보 길이 알려줌
+    }
+
+    // 래퍼 함수 - 수동으로 provideCashback 호출할 때 사용
     function provideCashback(address to, uint256 amount) external onlyOwner {
         require(amount > 0, "Amount must be > 0");
         IVault(vaultAddress).provideCashback(to, amount);
         emit CashbackWrapped(to, amount);
     }
 
-    function setBackend(address backend, bool status) external onlyOwner {
-        isBackend[backend] = status;
-    }
-
-    // 자동으로 호출할 때 사용하는 백앤드용 래퍼 함수 (onlyOwner 없이 호출 가능)
+    // (수정 전) 자동으로 호출할 때 사용하는 백앤드용 래퍼 함수 (onlyOwner 없이 호출 가능)
+    // onlyBackend를 onlyOwner로 바꿈
+    // ???
     function executeProvideCashback(
         address to,
         uint256 amount
-    ) external onlyBackend {
+    ) external onlyOwner {
         require(amount > 0, "Amount must be > 0");
         IVault(vaultAddress).provideCashback(to, amount);
         emit CashbackWrapped(to, amount);

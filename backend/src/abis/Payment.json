@@ -11,6 +11,11 @@
           "internalType": "address",
           "name": "_vaultAddress",
           "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_trustedForwarder",
+          "type": "address"
         }
       ],
       "stateMutability": "nonpayable",
@@ -246,6 +251,25 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "forwarder",
+          "type": "address"
+        }
+      ],
+      "name": "isTrustedForwarder",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "owner",
       "outputs": [
@@ -350,6 +374,19 @@
     },
     {
       "inputs": [],
+      "name": "trustedForwarder",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "vaultAddress",
       "outputs": [
         {
@@ -362,5 +399,5 @@
       "type": "function"
     }
   ],
-  "address": "0xe9344b5c88b6DA8Fc9C0A676deef8A1b0259F337"
+  "address": "0x2c8E2ee2e3F5CD95f22bC269022DBfd234198880"
 }

@@ -7,7 +7,9 @@ interface PaymentResponse {
 }
 
 export const sendPaymentToBackend = async (
-    receipt: TransactionReceipt,
+    // receipt: TransactionReceipt,
+    // 프론트에서 executeMetaTransaction을 통해 pay()를 실행한 후, tx.hash만 추출해서 이 함수에 넘겨주면 됨 
+    txHash: string,  // ✅ Gasless 트랜잭션이므로 TransactionReceipt 대신 hash만 받음
     amount: string,
     status: 'SUCCESS' | 'FAILED' = 'SUCCESS',
     userAddress: string,
@@ -18,7 +20,7 @@ export const sendPaymentToBackend = async (
         const weiAmount = ethers.parseUnits(amount, 18).toString();
 
         const payload = {
-            txHash: receipt.hash,
+            txHash: txHash,
             from: userAddress,
             amount: weiAmount,
             cashbackAmount: cashbackAmount ?? '0',

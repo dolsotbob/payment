@@ -2,8 +2,7 @@ import React, { useState } from 'react';  // React 라이브러리와 useState �
 import { ethers } from 'ethers';  // 메타마스크와 통신할 수 있는 Ethereum JS 라이브러리
 import ProductList from './components/ProductList';
 import { Product } from './types';
-import PayButton from './components/PayButton';
-import ApproveAndPay from './components/ApproveAndPay';
+import PayGaslessButton from './components/PayGaslessButton';
 
 const App: React.FC = () => {
   // 상태 변수 선언 
@@ -69,10 +68,7 @@ const App: React.FC = () => {
       <ProductList products={products} onPurchase={handlePurchase} />
 
       {account && selectedProduct && (
-        <>
-          <PayButton account={account} amount={selectedProduct.price} />
-          <ApproveAndPay account={account} amount={selectedProduct.price} />
-        </>
+        <PayGaslessButton account={account} amount={selectedProduct.price} />
       )}
     </div>
   );

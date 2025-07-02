@@ -4,12 +4,15 @@
   "main": "index.js",
   "scripts": {
     "compile": "npx hardhat compile",
+    "deploy:allContracts": "npx hardhat run scripts/deployAllContracts.ts --network kairos",
     "deploy:vaultAndPayment": "npx hardhat run scripts/deployVaultAndPayment.ts --network kairos",
+    "deploy:myForwarder": "npx hardhat run scripts/deployMyForwarder.ts --network kairos",
     "deploy:vault": "npx hardhat run scripts/deployVault.ts --network kairos",
     "deploy:payment": "npx hardhat run scripts/deployPayment.ts --network kairos",
     "deploy:testToken": "npx hardhat run scripts/deployTestToken.ts --network kairos",
     "deploy:transferTEST": "npx hardhat run scripts/transferTEST.ts --network kairos",
     "test": "hardhat test",
+    "test:gasless_vault_payment": "npx hardhat test test/gasless_vault_payment.test.ts",
     "test:vault-payment": "npx hardhat test test/vault-payment.test.ts",
     "clean": "npx hardhat clean"
   },
