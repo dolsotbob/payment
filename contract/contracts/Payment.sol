@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/IVault.sol";
@@ -39,12 +40,14 @@ contract Payment is Ownable {
         vaultAddress = _vaultAddress;
     }
 
+    // ** 이 부분 빼기 **
     mapping(address => bool) public isBackend;
 
     modifier onlyBackend() {
         require(isBackend[msg.sender], "Not authorized");
         _;
     }
+    // ** 여기까지 **
 
     // 사용자가 토큰 지불하는 함수
     // external: 외부에서 호출 가능
