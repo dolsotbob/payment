@@ -13,6 +13,8 @@ interface PayGaslessButtonProps {
 const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount }) => {
     const handleGaslessPay = async () => {
         try {
+            console.log('Gasless 결제 시작');
+
             // 1. 메마 설치 되어 있는지 확인 
             if (!window.ethereum) {
                 alert('🦊 MetaMask가 필요합니다.');
@@ -43,6 +45,7 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount }) 
             const forwarderAddress = process.env.REACT_APP_FORWARDER_ADDRESS!;
             const paymentAddress = process.env.REACT_APP_CONTRACT_ADDRESS!;
             const relayerUrl = process.env.REACT_APP_RELAYER_URL!;
+            console.log('🔍 relayerUrl (from .env):', relayerUrl);
 
             // 4. relayer 서버로 전송
             const result = await sendMetaTx(
