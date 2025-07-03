@@ -29,7 +29,7 @@ contract TestToken is ERC20, Ownable, EIP712 {
         address spender,
         uint256 value,
         uint256 deadline,
-        bytes calldata signature
+        bytes calldata signature // signature는 사실상 v, r, s 로 구성되어 있다
     ) external {
         require(block.timestamp <= deadline, "MetaApprove: expired");
 
