@@ -8,14 +8,14 @@ dotenv.config();
 
 async function main() {
     const [deployer] = await ethers.getSigners();
-    const recipient = process.env.RECIPIENT!;
+    const recipient = process.env.STORE_WALLET!;
     const amount = ethers.parseUnits('100', 18); // 100 TEST
 
     const token = await ethers.getContractAt('TestToken', process.env.TOKEN_ADDRESS!);
     const tx = await token.transfer(recipient, amount);
     await tx.wait();
 
-    console.log(`✅ Sent 100 TEST to ${recipient}`);
+    console.log(`✅ Sent 100 TTKN to ${recipient}`);
 }
 
 main().catch((error) => {

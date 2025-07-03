@@ -13,6 +13,7 @@ async function main() {
     await token.waitForDeployment();
 
     console.log("✅ TestToken deployed at:", token.target);
+    console.log(`👉 .env 파일에 추가: REACT_APP_TOKEN_ADDRESS=${token.target}`);
 
     await makeAbi("TestToken", token.target);
 }
