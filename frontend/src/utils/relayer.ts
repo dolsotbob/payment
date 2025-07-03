@@ -28,16 +28,25 @@ export const sendMetaApproveTx = async (
         } else {
             console.error('❌ 일반 에러:', error.message);
         }
+
+        // 실패 시 명확히 반환 (빈 객체라도)
+        return {};
     }
 };
 
 // ✅ 메타 PAY 실행 (signature는 따로 전달)
+// 반환 타입 명시 
+interface RelayResponse {
+    txHash?: string;
+    transactionHash?: string;
+}
+
 export const sendMetaPayTx = async (
     request: ForwardRequestData,
     relayerUrl: string
-) => {
+): Promise<RelayResponse> => {
     try {
-        const res = await axios.post(`${relayerUrl}/relay`, {
+        const res = await axios.post<RelayResponse>(`${relayerUrl}/relay`, {
             request,
             signature: request.signature,
         });
@@ -48,6 +57,9 @@ export const sendMetaPayTx = async (
         } else {
             console.error('❌ 일반 에러:', error.message);
         }
+
+        // 실패 시 명확히 반환 (빈 객체라도)
+        return { txHash: undefined, transactionHash: undefined }; // ✅ 명시적으로 RelayResponse 반환
     }
 };
 
@@ -60,7 +72,7 @@ export const sendMetaTx = async (
     forwarderAddress: string,
     relayerUrl: string,
     provider: ethers.Provider
-) => {
+): Promise<RelayResponse> => {
     const forwarder = new ethers.Contract(forwarderAddress, MyForwarderAbi.abi, provider);
     const payment = new ethers.Contract(to, PaymentAbi.abi, provider);
     const chainId = (await provider.getNetwork()).chainId;
@@ -83,7 +95,7 @@ export const sendMetaTx = async (
     );
 
     try {
-        const res = await axios.post(`${relayerUrl}/relay`, {
+        const res = await axios.post<RelayResponse>(`${relayerUrl}/relay`, {
             request,
             signature: request.signature,
         });
@@ -91,7 +103,13 @@ export const sendMetaTx = async (
         console.log('✅ Relayer 응답:', res.data);
         return res.data;
     } catch (error: any) {
-        console.error('❌ Axios 요청 실패:', error.message, error.response?.data);
-        throw error;
+        if (isAxiosError(error)) {
+            console.error('❌ Axios 에러:', error.response?.data || error.message);
+        } else {
+            console.error('❌ 일반 에러:', error.message);
+        }
+
+        // 실패 시 명확히 반환 (빈 객체라도)
+        return { txHash: undefined, transactionHash: undefined }; // ✅ 명시적으로 RelayResponse 반환
     }
 };
