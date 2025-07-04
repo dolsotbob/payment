@@ -47,22 +47,26 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount }) 
             // 4. 아래 컨트랙트 인스턴스 확보 
             const forwarder = new ethers.Contract(forwarderAddress, [], provider);
             const token = new ethers.Contract(tokenAddress, TestTokenJson.abi, provider);
+            const payment = new ethers.Contract(paymentAddress, PaymentJson.abi, provider);
             const chainId = (await provider.getNetwork()).chainId;
 
-            // 6. metaApprove 요청 생성 및 Relayer 서버로 전송 
+            // 6. metaApprove 요청 생성
             const approveRequest = await buildMetaApproveRequest(
                 signer,
-                token,
-                account,
-                paymentAddress,
+                token,   // 토큰 컨트랙트 인스턴스 
+                account,  // 유저 지갑 
+                paymentAddress,  // spender: Payment 컨트랙트 주소 
                 ethers.parseUnits(amount, 18).toString(),
                 Number(chainId)
             )
 
-            await sendMetaApproveTx(approveRequest, relayerUrl);
-            console.log('✅ MetaApprove 트랜잭션 전송 완료');
+            console.log("🧾 metaApprove Request:", approveRequest);
 
-            const payment = new ethers.Contract(paymentAddress, PaymentJson.abi, provider);
+            // metaApprove 실행 (Relayer에 전송)
+            const approveTx = await sendMetaApproveTx(approveRequest, relayerUrl);
+            console.log('✅ MetaApprove relayed txHash:', approveTx.txHash);
+
+            // 7. 결제용 데이터 준비 
             const calldata = payment.interface.encodeFunctionData('pay', [
                 ethers.parseUnits(amount, 18),
             ]);
@@ -77,10 +81,14 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount }) 
                 Number(chainId)
             );
 
-            const result = await sendMetaPayTx(payRequest, relayerUrl);
-            const txHash = result.txHash || result.transactionHash || '';
+            console.log("🧾 pay Request:", payRequest);
 
-            // 7. 캐시백 계산
+            // 8. 결제 메타 트랜잭션 전송 
+            const payTx = await sendMetaPayTx(payRequest, relayerUrl);
+            const txHash = payTx.txHash || payTx.transactionHash || '';
+            console.log("✅ Payment relayed txHash", txHash);
+
+            // 9. 캐시백 계산
             let cashbackAmount = '0';
             try {
                 const cashbackRate = await payment.cashbackRate();
@@ -89,7 +97,7 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount }) 
                 console.warn('⚠️ 캐시백 비율 조회 실패:', err);
             }
 
-            // 8. 백엔드로 결제 정보 전송
+            // 10. 백엔드로 결제 정보 전송
             await sendPaymentToBackend(
                 txHash,
                 amount,
@@ -97,12 +105,10 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount }) 
                 account,
                 cashbackAmount
             );
-            alert('✅ 결제가 완료되었습니다!');
+            alert('🎉 결제가 완료되었습니다!');
         } catch (error) {
-            console.error('❌ 결제 실패:', error);
-            await sendPaymentToBackend(
-                '', amount, 'FAILED', account, '0'
-            );
+            console.error("❌ 결제 실패:", error);
+            await sendPaymentToBackend('', amount, 'FAILED', account, '0');
             alert('❌ 결제에 실패했습니다.');
         }
     };
