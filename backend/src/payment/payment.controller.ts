@@ -10,13 +10,12 @@ export class PaymentController {
   // PaymentService를 의존성 주입(DI)하여 이 컨트롤러에서 사용할 수 있게 한다 
   constructor(private readonly paymentService: PaymentService) { }
 
-  // 결제 생성 
-  // HTTP POST 요청이 /payment로 들어올 때 실행될 메서드임을 나타낸다 
+  // 결제 정보를 새로 생성
+  // POST /payment
+  // Relayer 서버에서 결제 정보 전송 시 사용
   @Post()
-  // 요청 본문(body)에 담긴 데이터를 createPaymentDto 객체로 받는다 
-  async create(@Body() createPaymentDto: CreatePaymentDto) {
-    // 받은 데이터를 paymentService.create()에 전달하여 결제를 생성한다 
-    return await this.paymentService.create(createPaymentDto);
+  create(@Body() createPaymentDto: CreatePaymentDto) {
+    return this.paymentService.create(createPaymentDto);
   }
 
   // 결제 상태 업데이트 
@@ -32,3 +31,4 @@ export class PaymentController {
     return this.paymentService.updateStatus(+id, updateStatusDto.status);
   }
 }
+

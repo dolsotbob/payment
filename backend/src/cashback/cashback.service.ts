@@ -55,7 +55,7 @@ export class CashbackService {
             const topupAmount = ethers.parseUnits(process.env.CASHBACK_TOPUP_AMOUNT || '2000', 18);
 
             const currentReserve: bigint = await this.vaultContract.getCashbackReserve();
-            console.log(currentReserve);
+            console.log(`💰 현재 캐시백 잔액: ${ethers.formatUnits(currentReserve, 18)} TEST`);
 
             this.logger.log(`💰 현재 캐시백 잔액: ${ethers.formatUnits(currentReserve, 18)} TEST`);
 
@@ -76,17 +76,20 @@ export class CashbackService {
                 );
                 const allowance = await token.allowance(this.wallet.address, process.env.VAULT_ADDRESS!);
                 const balance = await token.balanceOf(this.wallet.address);
+                const vaultBalance = await token.balanceOf(process.env.VAULT_ADDRESS!);
+
                 this.logger.log(`🧾 승인된 잔액: ${ethers.formatUnits(allowance, 18)} TEST`);
                 this.logger.log(`💰 서버 지갑 잔액: ${ethers.formatUnits(balance, 18)} TEST`);
-
-                // Vault의 실제 토큰 보유량 확인 
-                const vaultBalance = await token.balanceOf(process.env.VAULT_ADDRESS!);
                 this.logger.log(`🏦 Vault 실제 토큰 잔고: ${ethers.formatUnits(vaultBalance, 18)} TEST`);
 
                 const chargeTx = await this.vaultContract.chargeCashback(topupAmount);
                 await chargeTx.wait();
 
                 this.logger.log(`✅ 캐시백 충전 완료: ${ethers.formatUnits(topupAmount, 18)} TEST`);
+
+                const updatedVaultBalance = await token.balanceOf(process.env.VAULT_ADDRESS!);
+                this.logger.log(`📦 충전 후 Vault 잔액: ${ethers.formatUnits(updatedVaultBalance, 18)} TEST`);
+
                 return { success: true, charged: true };
             } else {
                 this.logger.log('✅ 잔액 충분, 충전 생략');
@@ -105,9 +108,7 @@ export class CashbackService {
 
         const token = new ethers.Contract(
             process.env.TOKEN_ADDRESS!,
-            [
-                'function approve(address spender, uint256 amount) public returns (bool)'
-            ],
+            ['function approve(address spender, uint256 amount) public returns (bool)'],
             this.wallet
         );
 
@@ -137,10 +138,8 @@ export class CashbackService {
         const retryCount = payment.retryCount ?? 0;
         if (retryCount >= MAX_RETRY_COUNT) {
             this.logger.warn(`🚫 재시도 초과: ${payment.id}`);
-
             payment.cashbackStatus = CashbackStatus.FAILED;  // 상태를 바꿔줘야 크론에 제외되고 서버 재시작할 때 다시 재시도 하는거 안 함 
             await this.paymentRepository.save(payment);
-
             return;
         }
 
@@ -171,8 +170,6 @@ export class CashbackService {
             }
         }
     }
-
-
 
     // Vault의 현재 캐시백 잔액을 조회하는 메서드 
     async getReserve(): Promise<string> {

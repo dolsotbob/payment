@@ -22,7 +22,6 @@ export class Payment {
     @Column({
         type: 'enum',
         enum: PaymentStatus,
-        default: PaymentStatus.PENDING,
     })
     status: PaymentStatus;
 
@@ -33,7 +32,7 @@ export class Payment {
     })
     cashbackStatus: CashbackStatus;
 
-    @Column({ nullable: true })
+    @Column()
     txHash: string; // 결제 트랜잭션 해시
 
     @Column({ nullable: true })

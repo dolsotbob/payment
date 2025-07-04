@@ -5,6 +5,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import MyForwarderAbi from '../src/abis/MyForwarder.json';
 import TestTokenAbi from '../src/abis/TestToken.json';  // metaApprove 지원하는 토큰 ABI 추가
+import PaymentAbi from '../src/abis/Payment.json';
+import { sendPaymentToBackend } from './utils/sendPaymentToBackend';
 
 dotenv.config();
 
@@ -26,6 +28,17 @@ const provider = new ethers.JsonRpcProvider(RPC_URL);
 const wallet = new ethers.Wallet(RELAYER_PRIVATE_KEY, provider);
 const forwarder = new ethers.Contract(FORWARDER_ADDRESS, MyForwarderAbi.abi, wallet);
 
+const decodeAmount = (data: string): string => {
+    try {
+        const iface = new ethers.Interface(PaymentAbi.abi);
+        const [amount] = iface.decodeFunctionData('pay', data);
+        return amount.toString();
+    } catch (e) {
+        console.warn('❗ 결제 금액 디코딩 실패:', e);
+        return '0';
+    }
+};
+
 app.post('/relay', async (req, res) => {
     try {
         // 프론트앤드에서 전송한 ForwardRequest 객체와 서명을 추출한다 
@@ -42,6 +55,19 @@ app.post('/relay', async (req, res) => {
             const [owner, spender, value, deadline, sig] = decoded;
 
             tx = await tokenContract.metaApprove(owner, spender, value, deadline, sig);
+            const receipt = await tx.wait();
+
+            await sendPaymentToBackend({
+                txHash: receipt.hash,
+                from: owner,
+                amount: value.toString(),
+                cashbackAmount: '0',
+                status: 'SUCCESS',
+                gasUsed: receipt.gasUsed.toString(),
+                gasCost: tx.gasPrice ? (receipt.gasUsed * tx.gasPrice).toString() : '0',
+            });
+
+            return res.json({ success: true, txHash: receipt.hash });
         } else {
             // ✅ Forwarder를 통해 일반 메타 트랜잭션 실행 
 
@@ -63,6 +89,17 @@ app.post('/relay', async (req, res) => {
 
         const receipt = await tx.wait();
         console.log(`✅ MetaTx executed: ${receipt.transactionHash}`);
+
+        await sendPaymentToBackend({
+            txHash: receipt.hash,
+            from: request.from,
+            amount: decodeAmount(request.data),
+            cashbackAmount: '0',
+            status: 'SUCCESS',
+            gasUsed: receipt.gasUsed.toString(),
+            gasCost: tx.gasPrice ? (receipt.gasUsed * tx.gasPrice).toString() : '0',
+        });
+
         res.json({ success: true, txHash: receipt.transactionHash });
     } catch (err) {
         console.error('❌ Relay error:', err);
@@ -74,3 +111,4 @@ app.post('/relay', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`🚀 Relayer listening on port ${PORT}`);
 });
+

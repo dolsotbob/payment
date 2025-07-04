@@ -6,7 +6,6 @@ import { Repository } from 'typeorm';
 import { Payment } from './entities/payment.entity';
 import { PaymentStatus } from 'src/common/enums/payment-status.enum';
 import { CashbackStatus } from 'src/common/enums/cashback-status.enum';
-import { CreatePaymentDto } from './dto/create-payment.dto';
 
 @Injectable()  // 이 클래스가 NestJS에서 의존성 주입 가능한 서비스임을 명시
 // NestJS가 의존성 주입을 할 수 있도록 이 클래스를 서비스로 등록 
@@ -22,7 +21,14 @@ export class PaymentService {
   // 결제 기록 생성 
   // POST /payment 요청 시 호출되는 함수 
   // 프론트앤드에서 받은 dto를 기반으로 결제 정보 저장 
-  async create(createPaymentDto: CreatePaymentDto): Promise<Payment> {
+  async create(createPaymentDto: {
+    txHash: string;
+    from: string;
+    amount: string;
+    cashbackAmount?: string;
+    status: PaymentStatus;
+    timestamp?: string;
+  }): Promise<Payment> {
     // DTO를 복사한 후 status: 'PENDING'을 추가해 DB에 저장할 객체를 만든다 
     // 아직 .save()는 하지 않는다 
     try {

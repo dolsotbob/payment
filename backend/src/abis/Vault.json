@@ -52,6 +52,12 @@
           "internalType": "uint256",
           "name": "amount",
           "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newBalance",
+          "type": "uint256"
         }
       ],
       "name": "CashbackCharged",
@@ -334,5 +340,5 @@
       "type": "function"
     }
   ],
-  "address": "0xa5ADe20d033238ce143930d1672D86F7420998cE"
+  "address": "0x54c171596B1986B4fAcd4Fc5c62Aa1D157Db9A13"
 }

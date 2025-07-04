@@ -9,7 +9,11 @@ contract Vault is Ownable {
     address public treasury; // Vault의 잔액을 보낼(수익을 인출할) 기본 지갑 주소
     address public paymentContract; // 캐시백 요청 권한이 있는 컨트랙트 주소 저장
 
-    event CashbackCharged(address indexed from, uint256 amount);
+    event CashbackCharged(
+        address indexed from,
+        uint256 amount,
+        uint256 newBalance
+    );
     event CashbackProvided(address indexed to, uint256 amount);
     event TreasuryUpdated(address oldTreasury, address newTreasury);
     event PaymentContractSet(address paymentContract);
@@ -43,9 +47,17 @@ contract Vault is Ownable {
     // owner 지갑에서 Vault로 토큰 전송
     function chargeCashback(uint256 amount) external onlyOwner {
         require(amount > 0, "Amount must be > 0");
+        require(token.balanceOf(msg.sender) >= amount, "Insufficient balance");
+        require(
+            token.allowance(msg.sender, address(this)) >= amount,
+            "Insufficient allowance"
+        );
+
         bool success = token.transferFrom(msg.sender, address(this), amount);
         require(success, "Transfer failed");
-        emit CashbackCharged(msg.sender, amount);
+
+        uint256 newBalance = token.balanceOf(address(this));
+        emit CashbackCharged(msg.sender, amount, newBalance);
     }
 
     // onlyPayment: msg.sender가 등록된 paymentContract일 때만 실행됨
@@ -72,7 +84,8 @@ contract Vault is Ownable {
             "Insufficient balance"
         );
 
-        token.transfer(to, amount);
+        bool success = token.transfer(to, amount);
+        require(success, "Withdraw failed");
     }
 
     // 전체 잔액을 treasury로 일괄 송금
@@ -80,7 +93,8 @@ contract Vault is Ownable {
         uint256 balance = token.balanceOf(address(this));
         require(balance > 0, "No balance");
 
-        token.transfer(treasury, balance);
+        bool success = token.transfer(treasury, balance);
+        require(success, "sweepToTreasury failed");
     }
 
     // treasury 주소 변경
