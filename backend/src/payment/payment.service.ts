@@ -52,4 +52,12 @@ export class PaymentService {
     await this.paymentRepository.update(id, { status: status as PaymentStatus });
     return this.paymentRepository.findOneBy({ id });  // 변경된 레코드 반환 
   }
+
+  // 결제 내역 조회
+  async findByUser(user: string): Promise<Payment[]> {
+    return this.paymentRepository.find({
+      where: { from: user.toLowerCase() },
+      order: { createdAt: 'DESC' },
+    });
+  }
 }

@@ -3,6 +3,7 @@ import { ethers } from 'ethers';  // 메타마스크와 통신할 수 있는 Eth
 import ProductList from './components/ProductList';
 import { Product } from './types';
 import PayGaslessButton from './components/PayGaslessButton';
+import PaymentHistory from './pages/PaymentHistory';
 
 const App: React.FC = () => {
   // 상태 변수 선언 
@@ -70,6 +71,8 @@ const App: React.FC = () => {
       {account && selectedProduct && (
         <PayGaslessButton account={account} amount={selectedProduct.price} />
       )}
+
+      <PaymentHistory account={account!} />
     </div>
   );
 };

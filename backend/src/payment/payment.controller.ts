@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Patch, Param } from '@nestjs/common';
+import { Controller, Post, Body, Patch, Param, Get, Query } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentStatusDto } from './dto/update-payment-status.dto';
@@ -29,6 +29,12 @@ export class PaymentController {
   ) {
     // 해당 결제의 상태를 업데이트한다 
     return this.paymentService.updateStatus(+id, updateStatusDto.status);
+  }
+
+  // 결제 내역 조회 (지갑 주소 기준)
+  @Get()
+  async findByUser(@Query('user') user: string) {
+    return this.paymentService.findByUser(user.toLowerCase());
   }
 }
 
