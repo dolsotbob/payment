@@ -1,9 +1,11 @@
 import React, { useState } from 'react';  // React 라이브러리와 useState 상태 저장 리액트 훅 
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { ethers } from 'ethers';  // 메타마스크와 통신할 수 있는 Ethereum JS 라이브러리
 import ProductList from './components/ProductList';
 import { Product } from './types';
 import PayGaslessButton from './components/PayGaslessButton';
 import PaymentHistory from './pages/PaymentHistory';
+import Navbar from './components/Navbar';
 
 const App: React.FC = () => {
   // 상태 변수 선언 
@@ -54,26 +56,33 @@ const App: React.FC = () => {
 
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h1>🛍️ 코인로 쇼핑하는 스토어 MVP</h1>
+    <Router>
+      <Navbar />
+      <div style={{ padding: '2rem' }}>
+        <h1>🛍️ 코인로 쇼핑하는 스토어 MVP</h1>
 
-      {/* // 지갑 연결 여부에 따라 조건부 렌더링  */}
-      {!account ? (
-        <button onClick={connectWallet}>🦊 지갑 연결</button>
-      ) : (
-        <p>✅ 연결된 지갑: {account}</p>
-      )}
+        {/* // 지갑 연결 여부에 따라 조건부 렌더링  */}
+        {!account ? (
+          <button onClick={connectWallet}>🦊 지갑 연결</button>
+        ) : (
+          <p>✅ 연결된 지갑: {account}</p>
+        )}
 
-      {/* 상품 목록을 보여주는 컴포넌트 
-      onPurchase: 사용자가 "결제하기"를 누르면 호출되는 함수 {handlePurchase}로 전달  */}
-      <ProductList products={products} onPurchase={handlePurchase} />
-
-      {account && selectedProduct && (
-        <PayGaslessButton account={account} amount={selectedProduct.price} />
-      )}
-
-      <PaymentHistory account={account!} />
-    </div>
+        <Routes>
+          <Route path="/" element={
+            <>
+              <ProductList products={products} onPurchase={handlePurchase} />
+              {account && selectedProduct && (
+                <PayGaslessButton account={account} amount={selectedProduct.price} />
+              )}
+            </>
+          } />
+          <Route path="/payment-history" element={
+            account ? <PaymentHistory account={account} /> : <p>지갑을 먼저 연결해주세요</p>
+          } />
+        </Routes>
+      </div>
+    </Router >
   );
 };
 
