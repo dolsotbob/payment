@@ -88,7 +88,7 @@ app.post('/relay', async (req, res) => {
         }
 
         const receipt = await tx.wait();
-        console.log(`✅ MetaTx executed: ${receipt.transactionHash}`);
+        console.log(`✅ MetaTx executed: ${receipt.hash}`);
 
         await sendPaymentToBackend({
             txHash: receipt.hash,
@@ -100,7 +100,8 @@ app.post('/relay', async (req, res) => {
             gasCost: tx.gasPrice ? (receipt.gasUsed * tx.gasPrice).toString() : '0',
         });
 
-        res.json({ success: true, txHash: receipt.transactionHash });
+        console.log('✅ 메타 트랜잭션 응답 발송:', receipt.hash);
+        res.json({ success: true, txHash: receipt.hash });
     } catch (err) {
         console.error('❌ Relay error:', err);
         res.status(500).json({ success: false, error: (err as Error).message });

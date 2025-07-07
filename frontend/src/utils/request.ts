@@ -98,7 +98,7 @@ export const buildPayRequest = async (
         name: 'MyForwarder',
         version: '1',
         chainId,
-        verifyingContract: forwarder.target,
+        verifyingContract: forwarder.address,
     };
 
     const types = {

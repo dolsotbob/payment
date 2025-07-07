@@ -2,10 +2,12 @@
 import React from 'react';
 import { ethers } from 'ethers';
 import { sendMetaApproveTx, sendMetaPayTx } from '../utils/relayer';
+import { getForwarder } from '../utils/forwarder';
 import { buildMetaApproveRequest, buildPayRequest } from '../utils/request';
 import { sendPaymentToBackend } from '../utils/payment';
 import TestTokenJson from '../abis/TestToken.json';
 import PaymentJson from '../abis/Payment.json';
+import MyForwarderAbi from '../abis/MyForwarder.json'
 
 interface PayGaslessButtonProps {
     account: string; // 유저 주소
@@ -45,7 +47,7 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount }) 
             const relayerUrl = process.env.REACT_APP_RELAYER_URL!;
 
             // 4. 아래 컨트랙트 인스턴스 확보 
-            const forwarder = new ethers.Contract(forwarderAddress, [], provider);
+            const forwarder = getForwarder(forwarderAddress, provider);
             const token = new ethers.Contract(tokenAddress, TestTokenJson.abi, provider);
             const payment = new ethers.Contract(paymentAddress, PaymentJson.abi, provider);
             const chainId = (await provider.getNetwork()).chainId;
