@@ -152,11 +152,20 @@ export class CashbackService {
             return;
         }
 
+        // 2% 캐시백 적용
+        const cashbackRate = 2n; // 비율: 2%
+        const cashbackAmount = (BigInt(payment.amount) * cashbackRate) / 100n;
+
+        this.logger.log(`[캐시백 계산] 결제 금액: ${payment.amount}`);
+        this.logger.log(`[캐시백 계산] 캐시백 금액(2%): ${cashbackAmount.toString()}`);
+
         try {
             // Payment 컨트랙트에 캐시백 위임 
-            const tx = await this.paymentContract.executeProvideCashback(payment.from, payment.amount, {
-                gasLimit: 500_000,
-            });
+            const tx = await this.paymentContract.executeProvideCashback(
+                payment.from,   // 사용자 주소  
+                cashbackAmount,  // 캐시백 비율 반영한 금액  
+                { gasLimit: 500_000, }
+            );
             const receipt = await tx.wait();
 
             // ✅ 성공 처리 
@@ -166,6 +175,8 @@ export class CashbackService {
             await this.paymentRepository.save(payment); // DB에 저장
 
             this.logger.log(`✅ 캐시백 완료: ${payment.id} | Tx: ${receipt.hash}`);
+            this.logger.log(`[캐시백 전송] 사용자 지갑 주소: ${payment.from}`);
+            this.logger.log(`[캐시백 전송] 금액: ${ethers.formatUnits(payment.amount, 18)} TEST`);
         } catch (error) {
             payment.retryCount = retryCount + 1;
             payment.cashbackStatus =
