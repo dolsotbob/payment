@@ -1,0 +1,98 @@
+/* 전반적인 폰트와 여백 설정 */
+body {
+    font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+    background-color: #fdfdfd;
+    color: #333;
+}
+
+/* 상품 목록 타이틀 */
+.product-list h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    color: #222;
+}
+
+.product-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* ⬅️ 제목과 ul 모두 가운데 정렬 */
+    margin-bottom: 2rem;
+}
+
+
+/* 상품 목록 */
+.product-list ul {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 900px;
+    /* 카드 최대 너비 제한 */
+}
+
+/* 개별 상품 카드 */
+.product-item {
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 1rem;
+    background-color: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.product-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+}
+
+/* 상품명 */
+.product-item h3 {
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+}
+
+/* 가격 */
+.product-item p {
+    margin-bottom: 1rem;
+    font-weight: bold;
+    color: #444;
+}
+
+/* 결제 버튼 */
+.product-item button {
+    padding: 0.6rem 1.2rem;
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.product-item button:hover {
+    background-color: #357bd8;
+}
+
+.product-image {
+    width: 100%;
+    /* // 고정된 높이  */
+    height: 180px;
+    /* // 이미지를 잘라서 빈틈 없이 채움 */
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+h2.product-list-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: rgb(6, 3, 49);
+    margin-bottom: 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
