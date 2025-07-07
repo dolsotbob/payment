@@ -14,6 +14,13 @@ contract Vault is Ownable {
         uint256 amount,
         uint256 newBalance
     );
+    event DebugChargeCashback(
+        address indexed sender,
+        uint256 balance,
+        uint256 allowance,
+        uint256 requested
+    );
+
     event CashbackProvided(address indexed to, uint256 amount);
     event TreasuryUpdated(address oldTreasury, address newTreasury);
     event PaymentContractSet(address paymentContract);
@@ -47,12 +54,19 @@ contract Vault is Ownable {
     // owner 지갑에서 Vault로 토큰 전송
     function chargeCashback(uint256 amount) external onlyOwner {
         require(amount > 0, "Amount must be > 0");
-        require(token.balanceOf(msg.sender) >= amount, "Insufficient balance");
-        require(
-            token.allowance(msg.sender, address(this)) >= amount,
-            "Insufficient allowance"
-        );
 
+        uint256 balance = token.balanceOf(msg.sender);
+        uint256 allowance = token.allowance(msg.sender, address(this));
+
+        emit DebugChargeCashback(msg.sender, balance, allowance, amount);
+
+        require(balance >= amount, "Insufficient balance");
+        require(allowance >= amount, "Insufficient allowance");
+
+        // 여기서 msg.sender는 Vault.chargeCashback()을 호출한 지갑주소인 Store Wallet 주소임
+        // 즉, cashback.service.ts의 checkAndCharge 함수에서 chargeTx 코드로 Vault컨트랙트의 chargeCashback 함수가 호출되는데,
+        // 이 chargeTx 코드는 아래 지갑으로 실행된다
+        // private readonly wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
         bool success = token.transferFrom(msg.sender, address(this), amount);
         require(success, "Transfer failed");
 

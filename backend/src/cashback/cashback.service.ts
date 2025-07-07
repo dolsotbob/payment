@@ -23,7 +23,9 @@ export class CashbackService {
     // NestJS 로거 사용 (출력 시 "CashbackService" 태그로 표시됨)
     private readonly logger = new Logger(CashbackService.name);
     // private contract: ethers.Contract;
+    // 블록체인 네트워크에 연결하기 위한 provider(Kaia 테스트넷)
     private readonly provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
+    // 서버 지갑 (StoreWallet)의 private key를 이용해 signer 생성 
     private readonly wallet = new ethers.Wallet(process.env.PRIVATE_KEY, this.provider);
 
     private readonly paymentContract = new ethers.Contract(
@@ -74,14 +76,19 @@ export class CashbackService {
                     ],
                     this.wallet,
                 );
-                const allowance = await token.allowance(this.wallet.address, process.env.VAULT_ADDRESS!);
-                const balance = await token.balanceOf(this.wallet.address);
-                const vaultBalance = await token.balanceOf(process.env.VAULT_ADDRESS!);
+
+                const owner = this.wallet.address;
+                const spender = process.env.VAULT_ADDRESS!;
+
+                const allowance = await token.allowance(owner, spender);
+                const balance = await token.balanceOf(owner);
+                const vaultBalance = await token.balanceOf(spender);
 
                 this.logger.log(`🧾 승인된 잔액: ${ethers.formatUnits(allowance, 18)} TEST`);
                 this.logger.log(`💰 서버 지갑 잔액: ${ethers.formatUnits(balance, 18)} TEST`);
                 this.logger.log(`🏦 Vault 실제 토큰 잔고: ${ethers.formatUnits(vaultBalance, 18)} TEST`);
 
+                // vault 컨트랙트의 chargeCashback()을 호출한다 
                 const chargeTx = await this.vaultContract.chargeCashback(topupAmount);
                 await chargeTx.wait();
 
@@ -112,7 +119,9 @@ export class CashbackService {
             this.wallet
         );
 
-        return await token.approve(vaultAddr, amount);
+        const tx = await token.approve(vaultAddr, amount);
+        this.logger.log(`✅ approve 트랜잭션 전송 완료 | TxHash: ${tx.hash}`);
+        return tx;
     }
 
     // ✅ DB에 쌓인 결제 건 중 캐시백 미처리된 것들 찾아 실행
