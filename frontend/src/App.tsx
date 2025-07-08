@@ -8,10 +8,6 @@ import PaymentHistory from './pages/PaymentHistory';
 import Navbar from './components/Navbar';
 import './components/css/ConnectWalletButton.css';
 import './App.css';
-import dotenv from 'dotenv'
-
-dotenv.config();
-
 
 const App: React.FC = () => {
   // 상태 변수 선언 
@@ -27,10 +23,19 @@ const App: React.FC = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch(`{process.env.REACT_APP_API_URL}/product`);
+        // const res = await fetch(`${process.env.REACT_APP_API_URL}/product`);
+        const res = await fetch('http://localhost:4000/product');
         if (!res.ok) throw new Error('서버 응답 오류');
         const data = await res.json();
-        setProducts(data);
+        console.log('서버 응답 데이터:', data);
+
+        // 변환: price를 string → number
+        const parsedData = data.map((p: any) => ({
+          ...p,
+          price: Number(p.price),
+        }));
+
+        setProducts(parsedData);
       } catch (err) {
         console.error('❌ 상품 목록 로드 실패:', err);
       }
@@ -38,6 +43,10 @@ const App: React.FC = () => {
 
     fetchProducts();
   }, []);
+
+  useEffect(() => {
+    console.log('📦 변경된 상품 목록:', products);
+  }, [products]);
 
   // 2. 🦊 지갑 연결
   const connectWallet = async () => {  // 지갑 연결 요청을 실행하는 버튼 이벤트 핸들러 함수 
