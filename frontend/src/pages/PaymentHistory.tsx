@@ -1,12 +1,14 @@
 // src/pages/PaymentHistory.tsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { formatEther } from 'ethers';
 
 interface PaymentRecord {
     id: number;
     from: string;
-    amount: string;
-    cashbackAmount: string;
+    amount: string;  // in wei
+    cashbackAmount: string;  // in wei
+    productName: string
     status: 'SUCCESS' | 'FAILED';
     txHash: string;
     createdAt: string;
@@ -52,8 +54,9 @@ const PaymentHistory: React.FC<Props> = ({ account }) => {
                             boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)'
                         }}>
                             <p><strong>📅 날짜:</strong> {new Date(r.createdAt).toLocaleString()}</p>
-                            <p><strong>💸 결제:</strong> {r.amount} KAIA</p>
-                            <p><strong>🎁 캐시백:</strong> {r.cashbackAmount} KAIA</p>
+                            <p><strong>📦 상품: </strong> {r.productName || '이름 없음'}</p>
+                            <p><strong>💸 결제:</strong> {Number(formatEther(r.amount)).toFixed(6)} KAIA</p>
+                            <p><strong>🎁 캐시백:</strong> {Number(formatEther(r.cashbackAmount)).toFixed(6)} KAIA</p>
                             <p>
                                 <strong>🔗 Tx:</strong>{' '}
                                 <a

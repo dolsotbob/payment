@@ -24,12 +24,14 @@ function isAxiosError(error: any): error is AxiosError {
 // ✅ 메타 APPROVE 실행 (signature는 data에 포함되어 있기 때문에 별도 전달 X)
 export const sendMetaApproveTx = async (
     request: ForwardRequestData,
-    relayerUrl: string
+    relayerUrl: string,
+    productId: number
 ) => {
     try {
         const res = await axios.post<RelayResponse>(`${relayerUrl}/relay`, {
             request,
             signature: null,   // metaApprove는 calldata에 signature 포함 
+            productId,
         });
         console.log('✅ metaApprove Relayer 응답:', res.data);
         return res.data;
@@ -47,12 +49,14 @@ export const sendMetaApproveTx = async (
 // 반환 타입 명시 
 export const sendMetaPayTx = async (
     request: ForwardRequestData,
-    relayerUrl: string
+    relayerUrl: string,
+    productId: number
 ): Promise<RelayResponse> => {
     try {
         const res = await axios.post<RelayResponse>(`${relayerUrl}/relay`, {
             request,
             signature: request.signature,  // Forwarder.execute(req, signature, nonce)는 signature를 별도로 받아야 함 
+            productId,
         });
         console.log('✅ metaPay Relayer 응답:', res.data);
         return res.data;
@@ -76,7 +80,8 @@ export const sendMetaTx = async (
     amount: string,
     forwarderAddress: string,
     relayerUrl: string,
-    provider: ethers.Provider
+    provider: ethers.Provider,
+    productId: number
 ): Promise<RelayResponse> => {
     const forwarder = new ethers.Contract(forwarderAddress, MyForwarderAbi.abi, provider);
     const payment = new ethers.Contract(paymentAddress, PaymentAbi.abi, provider);
@@ -95,7 +100,7 @@ export const sendMetaTx = async (
         Number(chainId)
     );
 
-    const approveResult = await sendMetaApproveTx(approveRequest, relayerUrl);
+    const approveResult = await sendMetaApproveTx(approveRequest, relayerUrl, productId);
     console.log('✅ metaApprove 결과:', approveResult);
 
     // Step 2. metaPay 
@@ -117,7 +122,7 @@ export const sendMetaTx = async (
         Number(chainId)
     );
 
-    const payResult = await sendMetaPayTx(payRequest, relayerUrl);
+    const payResult = await sendMetaPayTx(payRequest, relayerUrl, productId);
     console.log('✅ metaPay 결과:', payResult);
 
     return payResult;

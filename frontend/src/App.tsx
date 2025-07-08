@@ -1,4 +1,4 @@
-import React, { Component, useState } from 'react';  // React 라이브러리와 useState 상태 저장 리액트 훅 
+import React, { Component, useState, useEffect } from 'react';  // React 라이브러리와 useState 상태 저장 리액트 훅 
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { ethers } from 'ethers';  // 메타마스크와 통신할 수 있는 Ethereum JS 라이브러리
 import ProductList from './components/ProductList';
@@ -8,6 +8,9 @@ import PaymentHistory from './pages/PaymentHistory';
 import Navbar from './components/Navbar';
 import './components/css/ConnectWalletButton.css';
 import './App.css';
+import dotenv from 'dotenv'
+
+dotenv.config();
 
 
 const App: React.FC = () => {
@@ -19,11 +22,22 @@ const App: React.FC = () => {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   // 1. 상품 목록 (App이 상태 주도권을 가짐)
-  const products: Product[] = [
-    { id: 1, name: 'Web3 티셔츠', price: '0.01', imageUrl: 'https://cdn.pixabay.com/photo/2024/04/29/04/21/tshirt-8726716_1280.jpg' },
-    { id: 2, name: 'NFT 머그컵', price: '0.02', imageUrl: 'https://cdn.pixabay.com/photo/2023/06/07/10/44/mug-8046835_1280.jpg' },
-    { id: 3, name: '블록체인 책', price: '0.05', imageUrl: 'https://cdn.pixabay.com/photo/2024/06/16/16/16/book-8833740_1280.jpg' },
-  ];
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch(`{process.env.REACT_APP_API_URL}/product`);
+        if (!res.ok) throw new Error('서버 응답 오류');
+        const data = await res.json();
+        setProducts(data);
+      } catch (err) {
+        console.error('❌ 상품 목록 로드 실패:', err);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   // 2. 🦊 지갑 연결
   const connectWallet = async () => {  // 지갑 연결 요청을 실행하는 버튼 이벤트 핸들러 함수 
@@ -89,6 +103,7 @@ const App: React.FC = () => {
                     <PayGaslessButton
                       account={account}
                       amount={selectedProduct.price}
+                      productId={selectedProduct.id}
                       onSuccess={() => {
                         setPaymentSuccess(true);
                         setTimeout(() => {

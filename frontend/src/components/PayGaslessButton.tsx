@@ -12,10 +12,11 @@ import './css/ConnectWalletButton.css';
 interface PayGaslessButtonProps {
     account: string; // 유저 주소
     amount: string;  // 예: '0.01'
+    productId: number;
     onSuccess: () => void;
 }
 
-const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount, onSuccess }) => {
+const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount, productId, onSuccess }) => {
     const handleGaslessPay = async () => {
         try {
             console.log('Gasless 결제 시작');
@@ -66,7 +67,7 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount, on
             console.log("🧾 metaApprove Request:", approveRequest);
 
             // metaApprove 실행 (Relayer에 전송)
-            const approveTx = await sendMetaApproveTx(approveRequest, relayerUrl);
+            const approveTx = await sendMetaApproveTx(approveRequest, relayerUrl, productId);
             console.log('✅ MetaApprove relayed txHash:', approveTx.txHash);
 
             // 7. 결제용 데이터 준비 
@@ -81,14 +82,14 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount, on
                 forwarder,
                 provider,
                 signer,
-                Number(chainId)
+                Number(chainId),
             );
 
             console.log("🧾 pay Request:", payRequest);
 
             // 8. 결제 메타 트랜잭션 전송 
-            const payTx = await sendMetaPayTx(payRequest, relayerUrl);
-            const txHash = payTx.txHash || payTx.transactionHash || '';
+            const payTx = await sendMetaPayTx(payRequest, relayerUrl, productId);
+            const txHash = payTx.txHash || payTx.transactionHash || 'FAILED_TX';
             console.log("✅ Payment relayed txHash", txHash);
 
             // 9. 캐시백 계산
@@ -106,13 +107,14 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount, on
                 amount,
                 'SUCCESS',
                 account,
-                cashbackAmount
+                cashbackAmount,
+                productId
             );
             // alert('🎉 결제가 완료되었습니다!');
             onSuccess();
         } catch (error) {
             console.error("❌ 결제 실패:", error);
-            await sendPaymentToBackend('', amount, 'FAILED', account, '0');
+            await sendPaymentToBackend('', amount, 'FAILED', account, '0', productId);
             alert('❌ 결제에 실패했습니다.');
         }
     };

@@ -34,7 +34,19 @@ export class PaymentController {
   // 결제 내역 조회 (지갑 주소 기준)
   @Get()
   async findByUser(@Query('user') user: string) {
-    return this.paymentService.findByUser(user.toLowerCase());
+    const payments = this.paymentService.findByUser(user.toLowerCase());
+
+    return (await payments).map((p) => ({
+      id: p.id,
+      from: p.from,
+      amount: p.amount?.toString() ?? '0',
+      cashbackAmount: p.cashbackAmount?.toString() ?? '0',
+      productName: p.product?.name ?? '이름 없음', // 프론트용 이름 포함
+      productImage: p.product?.imageUrl ?? '',
+      status: p.status,
+      txHash: p.txHash,
+      createdAt: p.createdAt,
+    }));
   }
 }
 

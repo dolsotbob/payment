@@ -42,7 +42,8 @@ const decodeAmount = (data: string): string => {
 app.post('/relay', async (req, res) => {
     try {
         // 프론트앤드에서 전송한 ForwardRequest 객체와 서명을 추출한다 
-        const { request, signature } = req.body;
+        const { request, signature, productId } = req.body;
+        console.log('📦 받은 productId 타입:', typeof productId, productId);
         let tx;
 
         if (signature === null) {
@@ -65,6 +66,7 @@ app.post('/relay', async (req, res) => {
                 status: 'SUCCESS',
                 gasUsed: receipt.gasUsed.toString(),
                 gasCost: tx.gasPrice ? (receipt.gasUsed * tx.gasPrice).toString() : '0',
+                productId, // relayer -> backend 
             });
 
             return res.json({ success: true, txHash: receipt.hash });
@@ -98,6 +100,7 @@ app.post('/relay', async (req, res) => {
             status: 'SUCCESS',
             gasUsed: receipt.gasUsed.toString(),
             gasCost: tx.gasPrice ? (receipt.gasUsed * tx.gasPrice).toString() : '0',
+            productId,
         });
 
         console.log('✅ 메타 트랜잭션 응답 발송:', receipt.hash);

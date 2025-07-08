@@ -6,6 +6,10 @@ export class CreatePaymentDto {
     @IsNotEmpty()
     txHash: string;  // 트랜잭션 해시 (블록체인에 결제한 기록)
 
+    @IsNotEmpty()
+    @IsNumber()
+    productId: number;
+
     @IsString()
     @IsNotEmpty()
     from: string;

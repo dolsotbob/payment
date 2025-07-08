@@ -40,6 +40,7 @@
     "start:relayer": "cd relayer-server && npm run start:relayer",
     "start:both": "concurrently \"npm run start:nest\" \"npm run start:relayer\"",
     "start:dev": "nest start --watch",
+    "save:seed": "npx ts-node src/scripts/seed.ts",
     "test:e2e": "cross-env TS_NODE_PROJECT=tsconfig.e2e.json NODE_OPTIONS=--loader ts-node/esm mocha test/**/*.e2e-spec.ts --timeout 10000"
   }
 }

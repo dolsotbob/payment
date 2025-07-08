@@ -1,9 +1,10 @@
 // NestJS + TypeORM 환경에서 결제 정보를 어떻게 데이터베이스에 저장할지 정의한 Entity 설계도
 // Payment라는 테이블을 DB에 생성하고, 각 결제에 대한 id, 지갑 주소, 결제 금액... 을 지정함 
 // 즉, 스마트 컨트랙트 결제 -> 백앤드 수신 -> DB 저장을 위한 모델 클래스 
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { PaymentStatus } from 'src/common/enums/payment-status.enum';
-import { CashbackStatus } from 'src/common/enums/cashback-status.enum';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
+import { PaymentStatus } from '../../common/enums/payment-status.enum';
+import { CashbackStatus } from '../../common/enums/cashback-status.enum';
+import { Product } from '../../product/entities/product.entity';
 
 @Entity()
 export class Payment {
@@ -46,4 +47,13 @@ export class Payment {
 
     @Column({ default: 0 })
     retryCount: number;
+
+    @Column({ nullable: true })
+    productId: number;
+
+    @ManyToOne(() => Product, (product) => product.payments, {
+        eager: false, // 필요시 true로 설정 
+        nullable: true, // 결제 시 상품이 없는 경우를 대비 (선택)
+    })
+    product: Product;
 }

@@ -10,6 +10,7 @@ interface PaymentPayload {
     status: 'SUCCESS' | 'FAILED';  // tx 결과 상태 
     gasUsed?: string;      // relayer가 사용한 가스 (uint): tx 수행에 실제로 사용된 가스 양
     gasCost?: string;      // relayer가 지불한 가스비 (wei): Relatyer가 실제로 낸 수수료 계산식: gasUsed * gasPrice 
+    productId?: number;
 }
 
 function isAxiosError(error: any): error is AxiosError {

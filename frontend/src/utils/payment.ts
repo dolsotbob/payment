@@ -13,7 +13,8 @@ export const sendPaymentToBackend = async (
     amount: string,
     status: 'SUCCESS' | 'FAILED' = 'SUCCESS',
     userAddress: string,
-    cashbackAmount?: string
+    cashbackAmount?: string,
+    productId?: number
 ): Promise<PaymentResponse> => {
     try {
         // 프론트에선 ether → wei 변환 후 string으로 전송
@@ -25,6 +26,7 @@ export const sendPaymentToBackend = async (
             amount: weiAmount,
             cashbackAmount: cashbackAmount ?? '0',
             status,
+            productId,
         };
 
         console.log('📤 결제 정보 전송 중:', payload);
