@@ -60,7 +60,7 @@ body {
 .product-item p {
     margin-bottom: 1rem;
     font-weight: bold;
-    color: #444;
+    color: #222;
 }
 
 /* 결제 버튼 */
@@ -89,10 +89,12 @@ body {
     margin-bottom: 1rem;
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Alumni+Sans+Pinstripe:ital@0;1&family=Single+Day&display=swap');
+
 h2.product-list-title {
     font-size: 1.8rem;
     font-weight: 600;
-    color: rgb(6, 3, 49);
+    color: rgb(43, 107, 226);
     margin-bottom: 1rem;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Single Day', cursive;
 }

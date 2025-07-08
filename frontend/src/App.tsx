@@ -6,7 +6,8 @@ import { Product } from './types';
 import PayGaslessButton from './components/PayGaslessButton';
 import PaymentHistory from './pages/PaymentHistory';
 import Navbar from './components/Navbar';
-import './components/css/ConnectWalletButton.css'
+import './components/css/ConnectWalletButton.css';
+import './App.css';
 
 
 const App: React.FC = () => {
@@ -15,6 +16,7 @@ const App: React.FC = () => {
   // 처음엔 null이지만, 지갑을 연결하면 주소가 여기 저장됨
   const [account, setAccount] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   // 1. 상품 목록 (App이 상태 주도권을 가짐)
   const products: Product[] = [
@@ -56,12 +58,13 @@ const App: React.FC = () => {
     setSelectedProduct(product);
   };
 
+  const [selectedAmount, setSelectedAmount] = useState<string | null>(null);
 
   return (
     <Router>
       <Navbar />
       <div style={{ padding: '2rem' }}>
-        <h1>🛍️ 코인로 쇼핑하는 스토어 MVP</h1>
+        <h1 className='store-name'>🛍️ <span style={{ color: 'darkblue' }}>코</span>인로 <span style={{ color: 'darkblue' }}>쇼</span>핑하는 <span style={{ color: 'darkblue' }}>스</span>토어</h1>
 
         {/* // 지갑 연결 여부에 따라 조건부 렌더링  */}
         {!account ? (
@@ -73,12 +76,37 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={
             <>
-              <ProductList products={products} onPurchase={handlePurchase} />
+              <ProductList
+                products={products}
+                onPurchase={(product) => setSelectedProduct(product)}
+              />
+              {/* <ProductList products={products} onPurchase={handlePurchase} /> */}
               {account && selectedProduct && (
-                <PayGaslessButton account={account} amount={selectedProduct.price} />
+                <>
+                  <div className='overlay' onClick={() => setSelectedProduct(null)} />
+                  <div className="popup-wrapper">
+                    <button className="close-button" onClick={() => setSelectedProduct(null)}>✖</button>
+                    <PayGaslessButton
+                      account={account}
+                      amount={selectedProduct.price}
+                      onSuccess={() => {
+                        setPaymentSuccess(true);
+                        setTimeout(() => {
+                          setPaymentSuccess(false);
+                          setSelectedProduct(null);
+                        }, 2500);  // 2.5초 후에 자동 닫기 
+                      }}
+                    />
+                  </div>
+                </>
               )}
+
+              {paymentSuccess &&
+                <div className="success-popup">🎉 결제가 완료되었습니다</div>
+              }
             </>
           } />
+
           <Route path="/payment-history" element={
             account ? <PaymentHistory account={account} /> : <p>지갑을 먼저 연결해주세요</p>
           } />

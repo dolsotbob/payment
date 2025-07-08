@@ -12,15 +12,14 @@ interface ProductListProps {
 const ProductList: React.FC<ProductListProps> = ({ products, onPurchase }) => {
     return (
         <div className="product-list">
-            <h2 className="product-list-title">⭐️ 상품 목록 ⭐️</h2>
+            <h2 className="product-list-title">⭐️ 판매 중 ⭐️</h2>
             <ul>
                 {products.map((product) => (
                     <li key={product.id} className="product-item">
-                        {/* 👉 상품 이미지 추가를 원하면 여기에 넣으면 돼요 */}
                         <img src={product.imageUrl} alt={product.name} className="product-image" />
                         <h3>{product.name}</h3>
                         <p>가격: {product.price} TTKN</p>
-                        <button onClick={() => onPurchase(product)}>결제하기</button>
+                        <button onClick={() => onPurchase(product)}>선택하기</button>
                     </li>
                 ))}
             </ul>

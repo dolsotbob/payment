@@ -7,14 +7,15 @@ import { buildMetaApproveRequest, buildPayRequest } from '../utils/request';
 import { sendPaymentToBackend } from '../utils/payment';
 import TestTokenJson from '../abis/TestToken.json';
 import PaymentJson from '../abis/Payment.json';
-import MyForwarderAbi from '../abis/MyForwarder.json'
+import './css/ConnectWalletButton.css';
 
 interface PayGaslessButtonProps {
     account: string; // 유저 주소
     amount: string;  // 예: '0.01'
+    onSuccess: () => void;
 }
 
-const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount }) => {
+const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount, onSuccess }) => {
     const handleGaslessPay = async () => {
         try {
             console.log('Gasless 결제 시작');
@@ -107,7 +108,8 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount }) 
                 account,
                 cashbackAmount
             );
-            alert('🎉 결제가 완료되었습니다!');
+            // alert('🎉 결제가 완료되었습니다!');
+            onSuccess();
         } catch (error) {
             console.error("❌ 결제 실패:", error);
             await sendPaymentToBackend('', amount, 'FAILED', account, '0');
@@ -115,7 +117,7 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount }) 
         }
     };
 
-    return <button onClick={handleGaslessPay}>결제하기</button>;
+    return <button onClick={handleGaslessPay} className='pay-button'>결제하기</button>;
 };
 
 export default PayGaslessButton;

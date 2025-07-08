@@ -13,9 +13,25 @@
 }
 
 .connect-wallet-button:hover {
-    background-color: blue;
+    background-color: #357bd8;
 }
 
 .connect-wallet-button:active {
     transform: scale(0.98);
+}
+
+.pay-button {
+    padding: 0.6rem 1.2rem;
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 20px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.pay-button:hover {
+    background-color: #357bd8;
 }
