@@ -7,15 +7,18 @@
     "@nestjs/platform-express": "^10.4.19",
     "@nestjs/schedule": "^6.0.0",
     "@nestjs/typeorm": "^11.0.0",
+    "axios": "^1.10.0",
     "cors": "^2.8.5",
     "dotenv": "^17.1.0",
     "ethers": "^6.15.0",
     "express": "^5.1.0",
+    "nvmrc": "^1.1.0",
     "pg": "^8.16.3",
     "typeorm": "^0.3.25"
   },
   "devDependencies": {
     "@nestjs/testing": "^10.4.19",
+    "@types/axios": "^0.9.36",
     "@types/chai": "^5.2.2",
     "@types/express": "^5.0.3",
     "@types/mocha": "^10.0.10",
