@@ -48,7 +48,7 @@
     "start:both": "concurrently \"npm run start:dev\" \"npm run start:relayer\"",
     "start:dev": "nest start --watch",
     "build": "npx @nestjs/cli build",
-    "start:prod": "node dist/src/main.js",
+    "start:prod": "node dist/main.js",
     "save:seed": "npx ts-node src/scripts/seed.ts",
     "test:e2e": "cross-env TS_NODE_PROJECT=tsconfig.e2e.json NODE_OPTIONS=--loader ts-node/esm mocha test/**/*.e2e-spec.ts --timeout 10000"
   }
