@@ -21,7 +21,15 @@ export async function sendPaymentToBackend(payload: PaymentPayload) {
     try {
         const backendUrl = process.env.BACKEND_API_URL; // NestJS 서버 주소(Render에 배포)
         // const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:3000'; // NestJS 서버 주소(로컬)
-        const res = await axios.post(`${backendUrl}/payment`, payload);
+
+        if (!backendUrl) {
+            console.error('❌ BACKEND_API_URL이 정의되지 않았습니다. .env를 확인하세요.');
+            return;
+        }
+
+        const url = `${backendUrl.replace(/\/+$/, '')}/payment`;
+
+        const res = await axios.post(url, payload);
         console.log('✅ 결제 기록 전송 완료:', res.data);
     } catch (error: any) {
         if (isAxiosError(error)) {

@@ -55,7 +55,7 @@ export const sendMetaPayTx = async (
     try {
         const res = await axios.post<RelayResponse>(`${relayerUrl}/relay`, {
             request,
-            signature: request.signature,  // Forwarder.execute(req, signature, nonce)는 signature를 별도로 받아야 함 
+            // signature: request.signature,  // MyForwarder.json에서 보면 execute 함수가 단일 인자 request만 받고 그 안에 signature도 포함 되어 있음 
             productId,
         });
         console.log('✅ metaPay Relayer 응답:', res.data);

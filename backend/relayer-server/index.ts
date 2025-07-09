@@ -84,7 +84,7 @@ app.post('/relay', async (req, res) => {
 
             // 3. 트랜잭션 실행 (Relayer가 가스 지불)
             // forwarder.execute() 호출을 Relayer가 signer로 실행했기 때문에 Relayer가 가스비를 냄 
-            tx = await forwarder.execute(request, signature, nonce, {
+            tx = await forwarder.execute(request, {
                 gasLimit: request.gas || 500000,
             });
         }
