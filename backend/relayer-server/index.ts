@@ -42,7 +42,8 @@ const decodeAmount = (data: string): string => {
 app.post('/relay', async (req, res) => {
     try {
         // 프론트앤드에서 전송한 ForwardRequest 객체와 서명을 추출한다 
-        const { request, signature, productId } = req.body;
+        const { request, productId } = req.body;
+        const signature = request.signature;
         console.log('📦 받은 productId 타입:', typeof productId, productId);
         let tx;
 
