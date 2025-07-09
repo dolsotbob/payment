@@ -32,7 +32,7 @@ const App: React.FC = () => {
         // 변환: price를 string → number
         const parsedData = data.map((p: any) => ({
           ...p,
-          price: Number(p.price),
+          price: p.price,
         }));
 
         setProducts(parsedData);

@@ -21,7 +21,7 @@ const ProductList: React.FC<ProductListProps> = ({ products, onPurchase }) => {
                     <li key={product.id} className="product-item">
                         <img src={product.imageUrl} alt={product.name} className="product-image" />
                         <h3>{product.name}</h3>
-                        <p>가격: {ethers.formatUnits(product.price.toString(), 18)} TTKN</p>
+                        <p>가격: {product.price} TTKN</p>
                         <button onClick={() => onPurchase(product)}>선택하기</button>
                     </li>
                 ))}

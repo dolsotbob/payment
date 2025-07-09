@@ -18,7 +18,7 @@ export const sendPaymentToBackend = async (
 ): Promise<PaymentResponse> => {
     try {
         // 프론트에선 ether → wei 변환 후 string으로 전송
-        const weiAmount = ethers.parseUnits(amount, 18).toString();
+        const weiAmount = ethers.parseUnits(amount).toString();
 
         const payload = {
             txHash: txHash,
