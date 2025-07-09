@@ -23,8 +23,8 @@ const App: React.FC = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // const res = await fetch(`${process.env.REACT_APP_API_URL}/product`);
-        const res = await fetch('http://localhost:4000/product');
+        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/product`);
+        // const res = await fetch('http://localhost:4000/product');
         if (!res.ok) throw new Error('서버 응답 오류');
         const data = await res.json();
         console.log('서버 응답 데이터:', data);

@@ -25,7 +25,7 @@ const PaymentHistory: React.FC<Props> = ({ account }) => {
         const fetchHistory = async () => {
             try {
                 const res = await axios.get<PaymentRecord[]>(
-                    `${process.env.REACT_APP_API_URL}/payment?user=${account.toLowerCase()}`
+                    `${process.env.REACT_APP_BACKEND_URL}/payment?user=${account.toLowerCase()}`
                 );
                 setRecords(res.data);
             } catch (error) {

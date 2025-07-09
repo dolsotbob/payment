@@ -31,7 +31,7 @@ export const sendPaymentToBackend = async (
 
         console.log('📤 결제 정보 전송 중:', payload);
 
-        const BASE_URL = process.env.REACT_APP_API_URL ?? 'http://localhost:3000';
+        const BASE_URL = process.env.REACT_APP_BACKEND_URL;
 
         const response = await fetch(`${BASE_URL}/payment`, {
             method: 'POST',
