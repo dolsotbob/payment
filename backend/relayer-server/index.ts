@@ -77,7 +77,7 @@ app.post('/relay', async (req, res) => {
             const nonce = await forwarder.nonces(request.from);
 
             // 2. request 검증 (EIP712 검증 포함)
-            const isValid = await forwarder.verify(request, signature, nonce);
+            const isValid = await forwarder.verify(request);  // 인자 signature, nonce는 제거
             if (!isValid) {
                 return res.status(400).json({ error: 'Invalid signature or nonce' });
             }
