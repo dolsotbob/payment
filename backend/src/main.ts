@@ -1,9 +1,6 @@
+import './polyfills';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-
-import * as crypto from 'crypto';
-(global as any).crypto = crypto;
-
 import dotenv from 'dotenv'
 
 dotenv.config();
