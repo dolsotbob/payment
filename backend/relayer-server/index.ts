@@ -1,6 +1,6 @@
 // 이 서버 역할: 사용자가 서명만 하면, 이 서버가 대신 블록체인에 트랜잭션을 실행(→ 가스 지불)해주는 Proxy입니다.
-import express, { Request, Response } from 'express';
-import { ethers } from 'ethers';
+import express from 'express';
+import { ethers, TypedDataEncoder } from 'ethers';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import MyForwarderAbi from '../src/abis/MyForwarder.json';
@@ -76,11 +76,45 @@ app.post('/relay', async (req, res) => {
             // 1. nonce를 Forwarder에서 가져오기
             const nonce = await forwarder.nonces(request.from);
 
-            // 2. request 검증 (EIP712 검증 포함)
-            const isValid = await forwarder.verify(request);  // 인자 signature, nonce는 제거
-            if (!isValid) {
+            // 2. EIP-712 서명 검증 (verifyTypedData)
+            if (!wallet.provider) {
+                throw new Error("❌ Wallet에 provider가 연결되어 있지 않습니다.");
+            }
+            const network = await wallet.provider.getNetwork();
+
+            const domain = {
+                name: 'MyForwarder',
+                version: '1',
+                chainId: Number(network.chainId),
+                verifyingContract: FORWARDER_ADDRESS,
+            }
+
+            const types = {
+                ForwardRequestData: [
+                    { name: 'from', type: 'address' },
+                    { name: 'to', type: 'address' },
+                    { name: 'value', type: 'uint256' },
+                    { name: 'gas', type: 'uint256' },
+                    { name: 'deadline', type: 'uint48' },
+                    { name: 'data', type: 'bytes' },
+                ],
+            };
+
+            const toSign = {
+                ...request,
+                nonce: nonce.toString(), // nonce는 request에는 없지만 서명에는 포함됨
+            };
+
+            const recovered = ethers.verifyTypedData(domain, types, toSign, signature);
+            if (recovered.toLowerCase() !== request.from.toLowerCase()) {
                 return res.status(400).json({ error: 'Invalid signature or nonce' });
             }
+
+            ////
+            // const isValid = await forwarder.verify(request);  // 인자 signature, nonce는 제거
+            // if (!isValid) {
+            //     return res.status(400).json({ error: 'Invalid signature or nonce' });
+            // }
 
             // 3. 트랜잭션 실행 (Relayer가 가스 지불)
             // forwarder.execute() 호출을 Relayer가 signer로 실행했기 때문에 Relayer가 가스비를 냄 
