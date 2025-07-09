@@ -8,15 +8,16 @@ dotenv.config();
 
 export const dataSourceOptions: DataSourceOptions = {
     type: 'postgres',
-    host: process.env.DATABASE_HOST,
-    port: Number(process.env.DATABASE_PORT),
-    username: process.env.DATABASE_USER,
-    password: process.env.DATABASE_PASSWORD,
-    database: process.env.DATABASE_NAME,
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    username: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
     entities: [Product, Payment],        // 등록할 엔티티 클래스 목록
     synchronize: false,         // 운영에서는 false 권장 (개발 중엔 true로 스키마 동기화 가능)
     logging: true,              // SQL 로그 출력 여부 (선택)
     migrations: ["dist/migrations/*.js"],  // (필요 시) 마이그레이션 파일 경로
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
 };
 
 const dataSource = new DataSource(dataSourceOptions);

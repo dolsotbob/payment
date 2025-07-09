@@ -12,11 +12,14 @@ export const dbConfig = async (
     configService: ConfigService,
 ): Promise<TypeOrmModuleOptions> => ({
     type: 'postgres',
-    host: configService.get<string>('DATABASE_HOST'),
-    port: parseInt(configService.get('DATABASE_PORT', '5432')),
-    username: configService.get<string>('DATABASE_USERNAME'),
-    password: configService.get<string>('DATABASE_PASSWORD'),
-    database: configService.get<string>('DATABASE_NAME'),
+    host: configService.get<string>('DB_HOST'),
+    port: parseInt(configService.get('DB_PORT', '5432')),
+    username: configService.get<string>('DB_USERNAME'),
+    password: configService.get<string>('DB_PASSWORD'),
+    database: configService.get<string>('DB_DATABASE'),
     entities: [__dirname + '/../../**/*.entity.{ts,js}'],
     synchronize: true, // 개발 환경에서만 true, 운영에서는 false로 설정 
+    ssl: configService.get('DB_SSL') === 'true'
+        ? { rejectUnauthorized: false }
+        : undefined,
 });
