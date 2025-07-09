@@ -1,5 +1,9 @@
 
-// ‼️ 배포 후 token address를 .env에 등록 
+// ‼️ 배포 후 token address를 아래 폴더의 .env에 등록 
+// (1) contract, 
+// (2) backend, 
+// (3) backend/relayer-server, 
+// (4) frontend의 
 
 import { ethers } from "hardhat";
 import { makeAbi } from "./abiGenerator";
