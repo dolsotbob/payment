@@ -19,7 +19,8 @@ function isAxiosError(error: any): error is AxiosError {
 
 export async function sendPaymentToBackend(payload: PaymentPayload) {
     try {
-        const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:3000'; // NestJS 서버 주소
+        const backendUrl = process.env.BACKEND_API_URL; // NestJS 서버 주소(Render에 배포)
+        // const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:3000'; // NestJS 서버 주소(로컬)
         const res = await axios.post(`${backendUrl}/payment`, payload);
         console.log('✅ 결제 기록 전송 완료:', res.data);
     } catch (error: any) {
