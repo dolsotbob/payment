@@ -35,13 +35,13 @@ $ npm install
 ## Compile and run the project
 
 ```bash
-# development
+# development (NestJS 개발용 서버 실행)
 $ npm run start
 
 # watch mode
 $ npm run start:dev
 
-# production mode
+# production mode (render에서 NestJS 프로덕션 서버 실행)
 $ npm run start:prod
 ```
 
