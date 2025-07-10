@@ -2,11 +2,11 @@
 import React from 'react';
 import { ethers } from 'ethers';
 import { sendMetaApproveTx, sendMetaPayTx } from '../utils/relayer';
-import { getForwarder } from '../utils/forwarder';
-import { buildMetaApproveRequest, buildPayRequest } from '../utils/request';
+import { buildMetaApproveRequest, buildPayRequest, SignedForwardRequest } from '../utils/request';
 import { sendPaymentToBackend } from '../utils/payment';
 import TestTokenJson from '../abis/TestToken.json';
 import PaymentJson from '../abis/Payment.json';
+import MyForwarderJson from '../abis/MyForwarder.json';
 import './css/ConnectWalletButton.css';
 
 interface PayGaslessButtonProps {
@@ -19,7 +19,7 @@ interface PayGaslessButtonProps {
 const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount, productId, onSuccess }) => {
     const handleGaslessPay = async () => {
         try {
-            console.log('Gasless 결제 시작');
+            console.log('🚀 Gasless 결제 시작');
 
             // 1. 메마 설치 되어 있는지 확인 
             if (!window.ethereum) {
@@ -49,7 +49,7 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount, pr
             const relayerUrl = process.env.REACT_APP_RELAYER_URL!;
 
             // 4. 아래 컨트랙트 인스턴스 확보 
-            const forwarder = getForwarder(forwarderAddress, provider);
+            const forwarder = new ethers.Contract(forwarderAddress, MyForwarderJson.abi, provider);
             const token = new ethers.Contract(tokenAddress, TestTokenJson.abi, provider);
             const payment = new ethers.Contract(paymentAddress, PaymentJson.abi, provider);
             const chainId = (await provider.getNetwork()).chainId;
@@ -63,7 +63,6 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount, pr
                 ethers.parseUnits(amount, 18).toString(),
                 Number(chainId)
             )
-
             console.log("🧾 metaApprove Request:", approveRequest);
 
             // metaApprove 실행 (Relayer에 전송)
@@ -75,7 +74,7 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount, pr
                 ethers.parseUnits(amount, 18),
             ]);
 
-            const payRequest = await buildPayRequest(
+            const payRequest: SignedForwardRequest = await buildPayRequest(
                 account,
                 paymentAddress,
                 calldata,
@@ -84,7 +83,6 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount, pr
                 signer,
                 Number(chainId),
             );
-
             console.log("🧾 pay Request:", payRequest);
 
             // 8. 결제 메타 트랜잭션 전송 

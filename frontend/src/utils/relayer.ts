@@ -4,10 +4,10 @@
 
 // (나중에 할 것) blockchain.ts 가져와 활용 
 
-import { ethers, Transaction } from 'ethers';
+import { ethers } from 'ethers';
 import axios from 'axios';
 import type { AxiosError } from 'axios/index';
-import { buildMetaApproveRequest, buildPayRequest, ForwardRequestData } from './request';
+import { buildMetaApproveRequest, buildPayRequest, SignedForwardRequest } from './request';
 import MyForwarderAbi from '../abis/MyForwarder.json';
 import PaymentAbi from '../abis/Payment.json';
 import TokenAbi from '../abis/TestToken.json';
@@ -21,16 +21,15 @@ function isAxiosError(error: any): error is AxiosError {
     return !!(error && error.isAxiosError);
 }
 
-// ✅ 메타 APPROVE 실행 (signature는 data에 포함되어 있기 때문에 별도 전달 X)
+// ✅ 메타 APPROVE 실행 
 export const sendMetaApproveTx = async (
-    request: ForwardRequestData,
+    request: SignedForwardRequest,
     relayerUrl: string,
     productId: number
-) => {
+): Promise<RelayResponse> => {
     try {
         const res = await axios.post<RelayResponse>(`${relayerUrl}/relay`, {
             request,
-            signature: null,   // metaApprove는 calldata에 signature 포함 
             productId,
         });
         console.log('✅ metaApprove Relayer 응답:', res.data);
@@ -41,21 +40,20 @@ export const sendMetaApproveTx = async (
         } else {
             console.error('❌ metaApprove 일반 에러:', error.message);
         }
-        return { txHash: undefined, TransactionHash: undefined };
+        return { txHash: undefined };
     }
 };
 
 // ✅ 메타 PAY 실행 (signature는 따로 전달)
 // 반환 타입 명시 
 export const sendMetaPayTx = async (
-    request: ForwardRequestData,
+    request: SignedForwardRequest,
     relayerUrl: string,
     productId: number
 ): Promise<RelayResponse> => {
     try {
         const res = await axios.post<RelayResponse>(`${relayerUrl}/relay`, {
             request,
-            // signature: request.signature,  // MyForwarder.json에서 보면 execute 함수가 단일 인자 request만 받고 그 안에 signature도 포함 되어 있음 
             productId,
         });
         console.log('✅ metaPay Relayer 응답:', res.data);

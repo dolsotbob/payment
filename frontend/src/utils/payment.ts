@@ -1,5 +1,5 @@
 // 공동 결제 함수 
-import { TransactionReceipt, ethers } from 'ethers';
+import { ethers } from 'ethers';
 
 interface PaymentResponse {
     message: string;

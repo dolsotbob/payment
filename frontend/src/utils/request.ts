@@ -2,7 +2,7 @@
 
 import { ethers } from 'ethers';
 
-// ForwardRequestData 타입 정의
+// 실제 Solidity 구조체에 해당 (MyForwarder.sol의 request와 동일)
 export interface ForwardRequestData {
     from: string;
     to: string;
@@ -10,19 +10,24 @@ export interface ForwardRequestData {
     gas: string;
     deadline: string;
     data: string;
+    nonce: string;
+}
+
+// 프론트에서 relayer로 보내기 위한 전체 요청
+export interface SignedForwardRequest extends ForwardRequestData {
     signature: string;
 }
 
-// 메타 APPROVE용 요청 생성
+// 메타 APPROVE용 요청 생성 - token.metaApprove
 export const buildMetaApproveRequest = async (
     signer: ethers.Signer,
     token: ethers.Contract,  // TestToken.sol 인스턴스 
-    owner: string,
-    spender: string,  // Payment.sol 주소 (토큰을 사용할 컨트랙트)
-    value: string,
+    owner: string,     // signer.address
+    spender: string,   // Payment.sol 주소 (토큰을 사용할 컨트랙트)
+    value: string,     // 허용할 토큰 양 
     chainId: number
-): Promise<ForwardRequestData> => {
-    const nonce = await token.nonces(owner);
+): Promise<SignedForwardRequest> => {
+    const nonce = await token.nonces(owner); // Forwarder를 거치지 않기때문에 nonce도 token.nonces(owner)에서 가져옴 
     const deadline = Math.floor(Date.now() / 1000) + 300;
 
     const domain = {
@@ -69,7 +74,8 @@ export const buildMetaApproveRequest = async (
         gas: '500000',
         deadline: deadline.toString(),
         data,
-        signature,
+        nonce: nonce.toString(),
+        signature
     };
 };
 
@@ -79,7 +85,7 @@ export const buildMetaApproveRequest = async (
 // 	3.	Relayer는 token.target에 대해 metaApprove(...) 호출하게 됨
 
 
-// 메타 PAY용 요청 생성 
+// 메타 PAY용 요청 생성 (Forwarder.execute -> Payment.sol)
 export const buildPayRequest = async (
     from: string,  // 사용자 주소 (signer.address)
     to: string,  // Payment.sol 주소 – 즉, 실제로 실행될 스마트 컨트랙트
@@ -88,7 +94,7 @@ export const buildPayRequest = async (
     provider: ethers.Provider,
     signer: ethers.Signer,
     chainId: number
-): Promise<ForwardRequestData> => {
+): Promise<SignedForwardRequest> => {
     const nonce = await forwarder.nonces(from); // Forwarder에서 현재 사용자 nonce 조회
     const gasLimit = await provider.estimateGas({ from, to, data }); // 대략적인 가스 비용 추정
     const deadline = Math.floor(Date.now() / 1000) + 300; // 5분 유효
@@ -109,6 +115,7 @@ export const buildPayRequest = async (
             { name: 'gas', type: 'uint256' },
             { name: 'deadline', type: 'uint48' },
             { name: 'data', type: 'bytes' },
+            { name: 'nonce', type: 'uint256' },
         ],
     };
 
@@ -119,7 +126,7 @@ export const buildPayRequest = async (
         gas: gasLimit.toString(),
         deadline: deadline.toString(),
         data,
-        nonce: nonce.toString(),  // 서명에만 포함 
+        nonce: nonce.toString(),
     }
 
     // signature는 단지 서명 값임. 
@@ -133,13 +140,8 @@ export const buildPayRequest = async (
         gas: gasLimit.toString(),
         deadline: deadline.toString(),
         data,
+        nonce: nonce.toString(),
         signature,
-        // ❌ nonce는 포함 안 함 (Forwarder가 자체 관리)
     };
 };
 
-// 🧠 위 메타 Pay 핵심 개념 다시 정리
-// 	•	이 요청은 **Forwarder.execute(request, signature)**로 실행됩니다.
-// 	•	request.to = Payment.sol, request.data = pay(...)
-// 	•	Forwarder는 from의 서명을 검증한 뒤 Payment.sol.call(data)를 수행합니다.
-// 	•	그 안에서 msg.sender는 Forwarder지만, _msgSender()는 실제 사용자를 복원합니다.
