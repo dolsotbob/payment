@@ -47,15 +47,50 @@ app.post('/relay', async (req, res) => {
         console.log('📦 받은 productId 타입:', typeof productId, productId);
         let tx;
 
-        if (signature === null) {
+        if (!signature) {
             // ✅ 메타 Approve 직접 실행 (Forwarder 아님)
             const tokenContract = new ethers.Contract(request.to, TestTokenAbi.abi, wallet);
 
             // ABI 디코딩으로 metaApprove 파라미터 추출 
             const decoded = tokenContract.interface.decodeFunctionData('metaApprove', request.data);
-
             const [owner, spender, value, deadline, sig] = decoded;
 
+            // ✅ EIP-712 도메인 정의 (토큰 기준)
+            const tokenName = await tokenContract.name();
+            const network = await wallet.provider!.getNetwork();
+            const nonce = await tokenContract.nonces(owner);
+
+            const domain = {
+                name: tokenName,
+                version: '1',
+                chainId: Number(network.chainId),
+                verifyingContract: await tokenContract.getAddress(),
+            };
+
+            const types = {
+                MetaApprove: [
+                    { name: 'owner', type: 'address' },
+                    { name: 'spender', type: 'address' },
+                    { name: 'value', type: 'uint256' },
+                    { name: 'nonce', type: 'uint256' },
+                    { name: 'deadline', type: 'uint256' },
+                ],
+            };
+
+            const toSign = {
+                owner,
+                spender,
+                value,
+                nonce,
+                deadline,
+            };
+
+            const recovered = ethers.verifyTypedData(domain, types, toSign, sig);
+            if (recovered.toLowerCase() !== owner.toLowerCase()) {
+                return res.status(400).json({ error: 'Invalid signature or nonce' });
+            }
+
+            // 실제 metaApprove 실행 
             tx = await tokenContract.metaApprove(owner, spender, value, deadline, sig);
             const receipt = await tx.wait();
 
@@ -153,5 +188,7 @@ app.post('/relay', async (req, res) => {
 // 서버를 PORT 에서 실행 
 app.listen(PORT, () => {
     console.log(`🚀 Relayer listening on port ${PORT}`);
+    console.log(`🛠️ Forwarder address: ${FORWARDER_ADDRESS}`);
+    console.log(`🔗 Provider: ${RPC_URL}`);
 });
 
