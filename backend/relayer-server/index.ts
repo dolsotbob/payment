@@ -1,6 +1,6 @@
 // 이 서버 역할: 사용자가 서명만 하면, 이 서버가 대신 블록체인에 트랜잭션을 실행(→ 가스 지불)해주는 Proxy입니다.
 import express from 'express';
-import { ethers, TypedDataEncoder } from 'ethers';
+import { ethers } from 'ethers';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import MyForwarderAbi from '../src/abis/MyForwarder.json';
@@ -74,13 +74,11 @@ app.post('/relay', async (req, res) => {
         } else {
             // ✅ Forwarder를 통해 일반 메타 트랜잭션 실행 
 
-            // 1. nonce를 Forwarder에서 가져오기
-            const nonce = await forwarder.nonces(request.from);
-
-            // 2. EIP-712 서명 검증 (verifyTypedData)
+            // EIP-712 서명 검증 (verifyTypedData)
             if (!wallet.provider) {
                 throw new Error("❌ Wallet에 provider가 연결되어 있지 않습니다.");
             }
+
             const network = await wallet.provider.getNetwork();
 
             const domain = {
@@ -98,12 +96,18 @@ app.post('/relay', async (req, res) => {
                     { name: 'gas', type: 'uint256' },
                     { name: 'deadline', type: 'uint48' },
                     { name: 'data', type: 'bytes' },
+                    { name: 'nonce', type: 'uint256' },
                 ],
             };
 
             const toSign = {
-                ...request,
-                nonce: nonce.toString(), // nonce는 request에는 없지만 서명에는 포함됨
+                from: request.from,
+                to: request.to,
+                value: request.value,
+                gas: request.gas,
+                deadline: request.deadline,
+                data: request.data,
+                nonce: request.nonce,
             };
 
             const recovered = ethers.verifyTypedData(domain, types, toSign, signature);
@@ -117,7 +121,7 @@ app.post('/relay', async (req, res) => {
             //     return res.status(400).json({ error: 'Invalid signature or nonce' });
             // }
 
-            // 3. 트랜잭션 실행 (Relayer가 가스 지불)
+            // 메타 트랜잭션 실행 (Relayer가 가스 지불)
             // forwarder.execute() 호출을 Relayer가 signer로 실행했기 때문에 Relayer가 가스비를 냄 
             tx = await forwarder.execute(request, {
                 gasLimit: request.gas || 500000,

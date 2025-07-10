@@ -4,7 +4,7 @@ import type { AxiosError } from 'axios/index';
 // 서버에 전송할 결제 정보 구조 
 interface PaymentPayload {
     txHash: string;
-    from: string;       // 유저 지갑 주쇼
+    from: string;       // 유저 지갑 주소 
     amount: string;     // 결제 금액 (wei 단위)
     cashbackAmount?: string;  // 캐시백 금액(wei 단위)
     status: 'SUCCESS' | 'FAILED';  // tx 결과 상태 
