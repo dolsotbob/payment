@@ -66,6 +66,7 @@ app.post('/relay', async (req, res) => {
                 chainId: Number(network.chainId),
                 verifyingContract: await tokenContract.getAddress(),
             };
+            console.log('🔎 domain:', domain);
 
             const types = {
                 MetaApprove: [
@@ -84,8 +85,12 @@ app.post('/relay', async (req, res) => {
                 nonce,
                 deadline,
             };
+            console.log('🧾 [metaApprove] toSign:', toSign);
+            console.log('✍️ [metaApprove] sig:', sig);
 
             const recovered = ethers.verifyTypedData(domain, types, toSign, sig);
+            console.log('👤 [metaApprove] recovered:', recovered);
+
             if (recovered.toLowerCase() !== owner.toLowerCase()) {
                 return res.status(400).json({ error: 'Invalid signature or nonce' });
             }
@@ -122,6 +127,7 @@ app.post('/relay', async (req, res) => {
                 chainId: Number(network.chainId),
                 verifyingContract: FORWARDER_ADDRESS,
             }
+            console.log('🔎 domain:', domain);
 
             const types = {
                 ForwardRequestData: [
@@ -144,17 +150,15 @@ app.post('/relay', async (req, res) => {
                 data: request.data,
                 nonce: request.nonce,
             };
+            console.log('🧾 [metaPay] toSign:', toSign);
+            console.log('✍️ [metaPay] signature:', signature);
 
             const recovered = ethers.verifyTypedData(domain, types, toSign, signature);
+            console.log('👤 [metaPay] recovered:', recovered);
+
             if (recovered.toLowerCase() !== request.from.toLowerCase()) {
                 return res.status(400).json({ error: 'Invalid signature or nonce' });
             }
-
-            ////
-            // const isValid = await forwarder.verify(request);  // 인자 signature, nonce는 제거
-            // if (!isValid) {
-            //     return res.status(400).json({ error: 'Invalid signature or nonce' });
-            // }
 
             // 메타 트랜잭션 실행 (Relayer가 가스 지불)
             // forwarder.execute() 호출을 Relayer가 signer로 실행했기 때문에 Relayer가 가스비를 냄 
