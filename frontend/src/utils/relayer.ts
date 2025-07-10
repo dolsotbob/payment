@@ -28,6 +28,7 @@ export const sendMetaApproveTx = async (
     productId: number
 ): Promise<RelayResponse> => {
     try {
+        console.log('📤 metaApprove 요청 발송:', { request, productId });
         const res = await axios.post<RelayResponse>(`${relayerUrl}/relay`, {
             request,
             productId,
@@ -52,6 +53,7 @@ export const sendMetaPayTx = async (
     productId: number
 ): Promise<RelayResponse> => {
     try {
+        console.log('📤 metaPay 요청 발송:', { request, productId });
         const res = await axios.post<RelayResponse>(`${relayerUrl}/relay`, {
             request,
             productId,
@@ -86,6 +88,12 @@ export const sendMetaTx = async (
     const token = new ethers.Contract(tokenAddress, TokenAbi.abi, provider);
     const chainId = (await provider.getNetwork()).chainId;
 
+    console.log('🔗 chainId:', chainId);
+    console.log('🪙 tokenAddress:', tokenAddress);
+    console.log('💰 paymentAddress:', paymentAddress);
+    console.log('🔁 forwarderAddress:', forwarderAddress);
+    console.log('📍 relayerUrl:', relayerUrl);
+
     // Step 1. metaApprove 
     const approveRequest = await buildMetaApproveRequest(
         signer,
@@ -98,6 +106,7 @@ export const sendMetaTx = async (
         Number(chainId)
     );
 
+    console.log('🧾 metaApprove 요청 데이터:', approveRequest);
     const approveResult = await sendMetaApproveTx(approveRequest, relayerUrl, productId);
     console.log('✅ metaApprove 결과:', approveResult);
 
@@ -120,6 +129,7 @@ export const sendMetaTx = async (
         Number(chainId)
     );
 
+    console.log('🧾 metaPay 요청 데이터:', payRequest);
     const payResult = await sendMetaPayTx(payRequest, relayerUrl, productId);
     console.log('✅ metaPay 결과:', payResult);
 
