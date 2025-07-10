@@ -1,4 +1,8 @@
 // Forwarder, Vault, Payment를 한 번에 배포하고, 필요한 주소 연동까지 자동으로 처리 
+// 🧩 배포 스크립트 구성은 이렇게 하면 좋아요:
+// 1.	Vault.sol → 가장 먼저 배포
+// 2.	Payment.sol → Vault 주소를 생성자에 넣어야 할 수도 있음
+// 3.	MyForwarder.sol → 단독 배포
 
 import { ethers } from 'hardhat';
 import { makeAbi } from './abiGenerator';
@@ -24,7 +28,7 @@ async function main() {
     // ✅ 1. Forwarder 배포
     console.log('🔹 Deploying MyForwarder...');
     const ForwarderFactory = await ethers.getContractFactory('MyForwarder');
-    const forwarder = await ForwarderFactory.deploy("MyForwarder");
+    const forwarder = await ForwarderFactory.deploy();
     await forwarder.waitForDeployment();
     const forwarderAddress = await forwarder.getAddress();
     console.log(`✅ Forwarder deployed: ${forwarderAddress}`);

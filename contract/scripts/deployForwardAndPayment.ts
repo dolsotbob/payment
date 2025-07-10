@@ -24,7 +24,7 @@ async function main() {
 
     // ✅ 1. MyForwarder 배포
     const ForwarderFactory = await ethers.getContractFactory('MyForwarder');
-    const forwarder = await ForwarderFactory.deploy('MyForwarder');
+    const forwarder = await ForwarderFactory.deploy();
     await forwarder.waitForDeployment();
     const forwarderAddress = await forwarder.getAddress();
     console.log(`✅ MyForwarder deployed at: ${forwarderAddress}`);
