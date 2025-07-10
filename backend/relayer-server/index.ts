@@ -40,6 +40,8 @@ const decodeAmount = (data: string): string => {
 };
 
 app.post('/relay', async (req, res) => {
+    console.log('📥 POST /relay 요청 수신');  // ✅ 요청 도착 로그 추가
+
     try {
         // 프론트앤드에서 전송한 ForwardRequest 객체와 서명을 추출한다 
         const { request, productId } = req.body;
@@ -64,7 +66,7 @@ app.post('/relay', async (req, res) => {
                 name: tokenName,
                 version: '1',
                 chainId: Number(network.chainId),
-                verifyingContract: await tokenContract.getAddress(),
+                verifyingContract: tokenContract.target.toString(),
             };
             console.log('🔎 domain:', domain);
 
