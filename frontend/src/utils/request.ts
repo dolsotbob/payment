@@ -37,6 +37,7 @@ export const buildMetaApproveRequest = async (
         verifyingContract: token.target,  // TestToken.sol의 주소 
     };
 
+    // EIP-712 타입 정의
     const types = {
         MetaApprove: [
             { name: 'owner', type: 'address' },
@@ -107,6 +108,7 @@ export const buildPayRequest = async (
         verifyingContract: forwarder.address,
     };
 
+    // EIP-712 타입 정의
     const types = {
         ForwardRequestData: [
             { name: 'from', type: 'address' },
@@ -124,7 +126,7 @@ export const buildPayRequest = async (
         to,
         value: '0',
         gas: gasLimit.toString(),
-        deadline: deadline.toString(),
+        deadline: Number(deadline.toString()),
         data,
         nonce: nonce.toString(),
     }

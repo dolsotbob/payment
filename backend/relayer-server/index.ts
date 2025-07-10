@@ -105,7 +105,7 @@ app.post('/relay', async (req, res) => {
                 to: request.to,
                 value: request.value,
                 gas: request.gas,
-                deadline: request.deadline,
+                deadline: Number(request.deadline),
                 data: request.data,
                 nonce: request.nonce,
             };
