@@ -112,12 +112,13 @@ export const buildPayRequest = async (
 
     // EIP-712 타입 정의
     const types = {
-        ForwardRequestData: [
+        // 이름은 Solidity struct 와 통일해서 ForwardRequest로 
+        ForwardRequest: [
             { name: 'from', type: 'address' },
             { name: 'to', type: 'address' },
             { name: 'value', type: 'uint256' },
             { name: 'gas', type: 'uint256' },
-            { name: 'deadline', type: 'uint48' },
+            { name: 'deadline', type: 'uint256' },  // EIP-712에서는 uint48이 지원되지 않음 
             { name: 'data', type: 'bytes' },
             { name: 'nonce', type: 'uint256' },
         ],
