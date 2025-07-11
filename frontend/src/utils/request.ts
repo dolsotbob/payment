@@ -21,7 +21,7 @@ export interface SignedForwardRequest extends ForwardRequestData {
 // 메타 APPROVE용 요청 생성 - token.metaApprove
 export const buildMetaApproveRequest = async (
     signer: ethers.Signer,
-    token: ethers.Contract,  // TestToken.sol 인스턴스 
+    token: ethers.Contract,  // token이란 이름의 TestToken.sol 인스턴스를 PayGaslessButton.tsx에서 전달받음  
     owner: string,     // signer.address
     spender: string,   // Payment.sol 주소 (토큰을 사용할 컨트랙트)
     value: string,     // 허용할 토큰 양 
@@ -34,8 +34,9 @@ export const buildMetaApproveRequest = async (
         name: await token.name(),
         version: "1",
         chainId,
-        verifyingContract: token.target,  // TestToken.sol의 주소 
+        verifyingContract: await token.getAddress(),  // TestToken.sol의 주소 
     };
+    console.log('🔎 Frontend domain:', domain);
 
     // EIP-712 타입 정의
     const types = {
@@ -52,7 +53,7 @@ export const buildMetaApproveRequest = async (
         owner,
         spender,
         value,
-        nonce: nonce.toString(),
+        nonce,
         deadline,
     };
 
@@ -107,6 +108,7 @@ export const buildPayRequest = async (
         chainId,
         verifyingContract: forwarder.address,
     };
+    console.log('🔎 Frontend domain:', domain);
 
     // EIP-712 타입 정의
     const types = {
@@ -124,11 +126,11 @@ export const buildPayRequest = async (
     const toSign = {
         from,
         to,
-        value: '0',
-        gas: gasLimit.toString(),
-        deadline: Number(deadline.toString()),
+        value: BigInt(0),
+        gas: gasLimit,
+        deadline,
         data,
-        nonce: nonce.toString(),
+        nonce,
     }
 
     // signature는 단지 서명 값임. 

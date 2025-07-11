@@ -68,7 +68,7 @@ app.post('/relay', async (req, res) => {
                 chainId: Number(network.chainId),
                 verifyingContract: tokenContract.target.toString(),
             };
-            console.log('🔎 domain:', domain);
+            console.log('🔎 Relayer domain:', domain);
 
             const types = {
                 MetaApprove: [
@@ -129,7 +129,7 @@ app.post('/relay', async (req, res) => {
                 chainId: Number(network.chainId),
                 verifyingContract: FORWARDER_ADDRESS,
             }
-            console.log('🔎 domain:', domain);
+            console.log('🔎 Relayer domain:', domain);
 
             const types = {
                 ForwardRequestData: [
