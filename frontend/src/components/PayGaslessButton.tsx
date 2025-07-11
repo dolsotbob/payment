@@ -52,7 +52,14 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount, pr
 
             // 4. 아래 컨트랙트 인스턴스 확보 
             const forwarder = new ethers.Contract(forwarderAddress, MyForwarderJson.abi, provider);
-            const token = new ethers.Contract(tokenAddress, TestTokenJson.abi, provider);
+
+            // const token = new ethers.Contract(tokenAddress, TestTokenJson.abi, provider);
+            const token = new ethers.Contract(tokenAddress, [
+                'function name() view returns (string)',
+                'function nonces(address) view returns (uint256)',
+                'function metaApprove(address,address,uint256,uint256,bytes) external'
+            ], provider);
+
             const payment = new ethers.Contract(paymentAddress, PaymentJson.abi, provider);
             const chainId = (await provider.getNetwork()).chainId;
 
@@ -69,17 +76,24 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount, pr
 
             // metaApprove 실행 (Relayer에 전송)
             const approveTx = await sendMetaApproveTx(approveRequest, relayerUrl, productId);
+
+            if (!approveTx.txHash) {
+                alert('❌ metaApprove 실패');
+                return;
+            }
+
             console.log('✅ MetaApprove relayed txHash:', approveTx.txHash);
 
             // 7. 결제용 데이터 준비 
-            const calldata = payment.interface.encodeFunctionData('pay', [
+            const data = payment.interface.encodeFunctionData('pay', [
                 ethers.parseUnits(amount, 18),
             ]);
+            console.log('📦 pay calldata:', data);
 
             const payRequest: SignedForwardRequest = await buildPayRequest(
                 account,
                 paymentAddress,
-                calldata,
+                data,
                 forwarder,
                 provider,
                 signer,
@@ -89,7 +103,7 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount, pr
 
             // 8. 결제 메타 트랜잭션 전송 
             const payTx = await sendMetaPayTx(payRequest, relayerUrl, productId);
-            const txHash = payTx.txHash || payTx.transactionHash || 'FAILED_TX';
+            const txHash = payTx.txHash || 'FAILED_TX';
             console.log("✅ Payment relayed txHash", txHash);
 
             // 9. 캐시백 계산

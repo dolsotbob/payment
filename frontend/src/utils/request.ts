@@ -55,9 +55,9 @@ export const buildMetaApproveRequest = async (
     const toSign = {
         owner,
         spender,
-        value,
-        nonce,
-        deadline,
+        value: BigInt(value),
+        nonce: BigInt(nonce),
+        deadline: BigInt(deadline),
     };
 
     // signature: 사용자가 metaApprove에 대해 서명한 EIP-712 서명 

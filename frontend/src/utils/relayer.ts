@@ -14,7 +14,6 @@ import TokenAbi from '../abis/TestToken.json';
 
 interface RelayResponse {
     txHash?: string;
-    transactionHash?: string;
 }
 
 function isAxiosError(error: any): error is AxiosError {
@@ -67,7 +66,7 @@ export const sendMetaPayTx = async (
             console.error('❌ metaPay 일반 에러:', error.message);
         }
         // 실패 시 명확히 반환 
-        return { txHash: undefined, transactionHash: undefined }; // ✅ 명시적으로 RelayResponse 반환
+        return { txHash: undefined }; // ✅ 명시적으로 RelayResponse 반환
     }
 };
 
@@ -107,8 +106,16 @@ export const sendMetaTx = async (
     );
 
     console.log('🧾 metaApprove 요청 데이터:', approveRequest);
-    const approveResult = await sendMetaApproveTx(approveRequest, relayerUrl, productId);
-    console.log('✅ metaApprove 결과:', approveResult);
+    const approveTx = await sendMetaApproveTx(approveRequest, relayerUrl, productId);
+    console.log('✅ metaApprove 결과:', approveTx);
+
+    if (!approveTx.txHash) {
+        console.error('❌ metaApprove 실패: 결제 중단');
+        return { txHash: undefined };
+    }
+
+    // ⏳ 블록 확정 대기
+    await new Promise((resolve) => setTimeout(resolve, 4000));
 
     // Step 2. metaPay 
 

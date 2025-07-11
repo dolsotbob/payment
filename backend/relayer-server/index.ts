@@ -42,6 +42,15 @@ const decodeAmount = (data: string): string => {
 app.post('/relay', async (req, res) => {
     console.log('📥 POST /relay 요청 수신');  // ✅ 요청 도착 로그 추가
 
+    // ✅ [여기!] request 객체 유효성 검사
+    const { request, productId } = req.body;
+    if (!request || typeof request !== 'object') {
+        return res.status(400).json({ error: 'Invalid request format' });
+    }
+
+    console.log('📥 받은 request.data:', request.data);
+    console.log('📥 받은 request 전체:', request);
+
     try {
         // 프론트앤드에서 전송한 ForwardRequest 객체와 서명을 추출한다 
         const { request, productId } = req.body;
@@ -67,7 +76,7 @@ app.post('/relay', async (req, res) => {
                 name: tokenName,
                 version: '1',
                 chainId: Number(network.chainId),
-                verifyingContract: tokenContract.target.toString(),
+                verifyingContract: await tokenContract.getAddress(),
             };
             console.log('🔎 Relayer domain:', domain);
 
@@ -147,11 +156,11 @@ app.post('/relay', async (req, res) => {
             const toSign = {
                 from: request.from,
                 to: request.to,
-                value: request.value,
-                gas: request.gas,
+                value: BigInt(request.value || '0'),
+                gas: BigInt(request.gas || '500000'),
                 deadline: Number(request.deadline),
                 data: request.data,
-                nonce: request.nonce,
+                nonce: BigInt(request.nonce || '0'),
             };
             console.log('🧾 [metaPay] toSign:', toSign);
             console.log('✍️ [metaPay] signature:', signature);
