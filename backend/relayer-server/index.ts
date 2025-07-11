@@ -44,8 +44,8 @@ app.post('/relay', async (req, res) => {
 
     // ✅ [여기!] request 객체 유효성 검사
     const { request, productId } = req.body;
-    if (!request || typeof request !== 'object') {
-        return res.status(400).json({ error: 'Invalid request format' });
+    if (!request.to || !request.data) {
+        return res.status(400).json({ error: 'Missing "to" or "data" field in request' });
     }
 
     console.log('📥 받은 request.data:', request.data);
@@ -98,7 +98,7 @@ app.post('/relay', async (req, res) => {
                 deadline,
             };
             console.log('🧾 [metaApprove] toSign:', toSign);
-            console.log('✍️ [metaApprove] sig:', sig);
+            console.log('✍️ [metaApprove] sig:', signature);
 
             const recovered = ethers.verifyTypedData(domain, types, toSign, sig);
             console.log('👤 [metaApprove] recovered:', recovered);
