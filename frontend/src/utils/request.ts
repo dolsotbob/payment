@@ -106,7 +106,7 @@ export const buildPayRequest = async (
         name: 'MyForwarder',
         version: '1',
         chainId,
-        verifyingContract: forwarder.address,
+        verifyingContract: await forwarder.getAddress(),
     };
     console.log('🔎 Frontend domain:', domain);
 
