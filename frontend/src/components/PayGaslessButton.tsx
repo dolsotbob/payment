@@ -44,6 +44,8 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount, pr
 
             // 3. 환경 변수에서 주소 확보
             const forwarderAddress = process.env.REACT_APP_FORWARDER_ADDRESS!;
+            console.log('📌 forwarderAddress env:', forwarderAddress);
+
             const tokenAddress = process.env.REACT_APP_TOKEN_ADDRESS!;
             const paymentAddress = process.env.REACT_APP_CONTRACT_ADDRESS!;
             const relayerUrl = process.env.REACT_APP_RELAYER_URL!;
