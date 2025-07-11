@@ -132,12 +132,12 @@ app.post('/relay', async (req, res) => {
             console.log('🔎 Relayer domain:', domain);
 
             const types = {
-                ForwardRequestData: [
+                ForwardRequest: [
                     { name: 'from', type: 'address' },
                     { name: 'to', type: 'address' },
                     { name: 'value', type: 'uint256' },
                     { name: 'gas', type: 'uint256' },
-                    { name: 'deadline', type: 'uint48' },
+                    { name: 'deadline', type: 'uint256' },
                     { name: 'data', type: 'bytes' },
                     { name: 'nonce', type: 'uint256' },
                 ],
@@ -164,8 +164,8 @@ app.post('/relay', async (req, res) => {
 
             // 메타 트랜잭션 실행 (Relayer가 가스 지불)
             // forwarder.execute() 호출을 Relayer가 signer로 실행했기 때문에 Relayer가 가스비를 냄 
-            tx = await forwarder.execute(request, {
-                gasLimit: request.gas || 500000,
+            tx = await forwarder.execute(toSign, signature, {
+                gasLimit: BigInt(request.gas || 500000),
             });
         }
 
