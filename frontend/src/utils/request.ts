@@ -30,6 +30,9 @@ export const buildMetaApproveRequest = async (
     const nonce = await token.nonces(owner); // Forwarder를 거치지 않기때문에 nonce도 token.nonces(owner)에서 가져옴 
     const deadline = Math.floor(Date.now() / 1000) + 300;
 
+    console.log('🔎 Frontend nonce:', nonce);
+    console.log('🔎 Frontend deadline:', deadline);
+
     const domain = {
         name: await token.name(),
         version: "1",
@@ -100,6 +103,9 @@ export const buildPayRequest = async (
     const nonce = await forwarder.nonces(from); // Forwarder에서 현재 사용자 nonce 조회
     const gasLimit = await provider.estimateGas({ from, to, data }); // 대략적인 가스 비용 추정
     const deadline = Math.floor(Date.now() / 1000) + 300; // 5분 유효
+
+    console.log('🔎 Frontend nonce:', nonce);
+    console.log('🔎 Frontend deadline:', deadline);
 
     // domain.verifyingContract: MyForwarder의 주소 (Forwarder에서 검증)
     const domain = {
