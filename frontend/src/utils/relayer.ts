@@ -21,13 +21,16 @@ function isAxiosError(error: any): error is AxiosError {
 }
 
 // ✅ 메타 APPROVE 실행 
+// 목적: 사용자가 서명한 metaApprove 요청(request)을 Relayer 서버에 POST로 전송하여, Relayer가 대신 트랜잭션을 실행하게 함
 export const sendMetaApproveTx = async (
-    request: SignedForwardRequest,
+    request: SignedForwardRequest,  // EIP-712 방식으로 서명된 SignedForwardRequest
     relayerUrl: string,
     productId: number
 ): Promise<RelayResponse> => {
     try {
         console.log('📤 metaApprove 요청 발송:', { request, productId });
+        // axios.post()를 사용해 POST /relay 앤드포인트로 요청 전송 
+        // relayer 서버는 signature가 없으면 metaApprove로 판단함 
         const res = await axios.post<RelayResponse>(`${relayerUrl}/relay`, {
             request,
             productId,

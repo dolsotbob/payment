@@ -15,7 +15,7 @@ export interface ForwardRequestData {
 
 // 프론트에서 relayer로 보내기 위한 전체 요청
 export interface SignedForwardRequest extends ForwardRequestData {
-    signature: string;
+    signature?: string;
 }
 
 // 메타 APPROVE용 요청 생성 - token.metaApprove
@@ -60,7 +60,7 @@ export const buildMetaApproveRequest = async (
         deadline: BigInt(deadline),
     };
 
-    // signature: 사용자가 metaApprove에 대해 서명한 EIP-712 서명 
+    // 서명은 calldata에만 포함되도록 하고, 별도로 반환하지 않음
     const signature = await (signer as any).signTypedData(domain, types, toSign);
 
     // ABI 인코딩된 metaApprove(...) 호출 정보 
@@ -80,9 +80,11 @@ export const buildMetaApproveRequest = async (
         deadline: deadline.toString(),
         data,
         nonce: nonce.toString(),
-        signature
+        // signature
     };
 };
+
+// signature 필드를 제거함: 이유는 relayer 서버는 signature가 없으면 metaApprove로 판단하기 때문 
 
 // 📌 위 메타 Approve의 핵심 포인트 3가지
 // 	1.	spender는 Payment.sol 주소 → transferFrom할 권한을 부여할 컨트랙트
