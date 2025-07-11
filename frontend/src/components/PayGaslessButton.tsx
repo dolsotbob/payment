@@ -85,8 +85,11 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount, pr
             console.log('✅ MetaApprove relayed txHash:', approveTx.txHash);
 
             // 7. 결제용 데이터 준비 
+            const parsedAmount = ethers.parseUnits(amount, 18);
+            console.log('📦 pay parsedAmount:', parsedAmount.toString());
+
             const data = payment.interface.encodeFunctionData('pay', [
-                ethers.parseUnits(amount, 18),
+                parsedAmount,   // BigInt 타입 그대로 전달 
             ]);
             console.log('📦 pay calldata:', data);
 

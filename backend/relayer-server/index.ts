@@ -49,6 +49,7 @@ app.post('/relay', async (req, res) => {
     }
 
     console.log('📥 받은 request.data:', request.data);
+    console.log('📥 받은 request.data 길이:', request.data.length);
     console.log('📥 받은 request 전체:', request);
 
     try {
