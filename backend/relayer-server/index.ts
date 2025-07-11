@@ -45,11 +45,12 @@ app.post('/relay', async (req, res) => {
     try {
         // 프론트앤드에서 전송한 ForwardRequest 객체와 서명을 추출한다 
         const { request, productId } = req.body;
+        console.log("🔍 [relay] 전체 request.body:", JSON.stringify(req.body, null, 2));
         const signature = request.signature;
         console.log('📦 받은 productId 타입:', typeof productId, productId);
         let tx;
 
-        if (!signature) {
+        if (signature === undefined || signature === null || signature === '') {
             // ✅ 메타 Approve 직접 실행 (Forwarder 아님)
             const tokenContract = new ethers.Contract(request.to, TestTokenAbi.abi, wallet);
 
@@ -154,6 +155,7 @@ app.post('/relay', async (req, res) => {
             };
             console.log('🧾 [metaPay] toSign:', toSign);
             console.log('✍️ [metaPay] signature:', signature);
+            console.log('👤 expected from:', request.from);
 
             const recovered = ethers.verifyTypedData(domain, types, toSign, signature);
             console.log('👤 [metaPay] recovered:', recovered);
