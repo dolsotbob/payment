@@ -86,12 +86,12 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount, pr
 
             // 7. 결제용 데이터 준비 
             const parsedAmount = ethers.parseUnits(amount, 18);
-            console.log('📦 pay parsedAmount:', parsedAmount.toString());
+            console.log('📦 [DEBUG] pay parsedAmount:', parsedAmount.toString());
 
             const data = payment.interface.encodeFunctionData('pay', [
                 parsedAmount,   // BigInt 타입 그대로 전달 
             ]);
-            console.log('📦 pay calldata:', data);
+            console.log('📦 [DEBUG] encoded pay calldata:', data);
 
             const payRequest: SignedForwardRequest = await buildPayRequest(
                 account,
@@ -102,7 +102,7 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount, pr
                 signer,
                 Number(chainId),
             );
-            console.log("🧾 pay Request:", payRequest);
+            console.log("🧾 [DEBUG] payRequest (with data):", payRequest);
 
             // 8. 결제 메타 트랜잭션 전송 
             const payTx = await sendMetaPayTx(payRequest, relayerUrl, productId);

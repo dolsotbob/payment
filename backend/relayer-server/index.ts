@@ -162,12 +162,14 @@ app.post('/relay', async (req, res) => {
                 value: BigInt(request.value || '0'),
                 gas: BigInt(request.gas || '500000'),
                 deadline: Number(request.deadline),
-                data: getBytes(request.data),
+                data: getBytes(request.data || '0x'),
                 nonce: BigInt(request.nonce || '0'),
             };
             console.log('🧾 [metaPay] toSign:', toSign);
+            console.log('🧾 [Relayer] toSign.data (bytes):', toSign.data);
             console.log('✍️ [metaPay] signature:', signature);
             console.log('👤 expected from:', request.from);
+            console.log('➡️ expected to:', request.to);
 
             const recovered = ethers.verifyTypedData(domain, types, toSign, signature);
             console.log('👤 [metaPay] recovered:', recovered);

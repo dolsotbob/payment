@@ -141,6 +141,8 @@ export const buildPayRequest = async (
         data: getBytes(data),
         nonce,
     }
+    console.log('🧾 [DEBUG] toSign.data (bytes):', getBytes(data));
+    console.log('🧾 [DEBUG] EIP-712 domain:', domain);
 
     // signature는 단지 서명 값임. 
     // // 이 서명은 ForwardRequestData 구조체 전체(from, to, value, gas, deadline, data, nonce)를 해시해서, 그 위에 서명한 결과물임 

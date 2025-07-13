@@ -55,6 +55,7 @@ export const sendMetaPayTx = async (
     productId: number
 ): Promise<RelayResponse> => {
     try {
+        console.log('📤 [DEBUG] sendMetaPayTx 요청 직전 - request.data:', request.data);
         console.log('📤 metaPay 요청 발송:', { request, productId });
         const res = await axios.post<RelayResponse>(`${relayerUrl}/relay`, {
             request,
