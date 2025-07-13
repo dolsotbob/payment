@@ -1,6 +1,6 @@
 // ForwardRequestData 생성 
 
-import { ethers } from 'ethers';
+import { ethers, getBytes } from 'ethers';
 
 // 실제 Solidity 구조체에 해당 (MyForwarder.sol의 request와 동일)
 export interface ForwardRequestData {
@@ -138,7 +138,7 @@ export const buildPayRequest = async (
         value: BigInt(0),
         gas: gasLimit,
         deadline,
-        data,
+        data: getBytes(data),
         nonce,
     }
 
