@@ -127,7 +127,7 @@ app.post('/relay', async (req, res) => {
 
             return res.json({ success: true, txHash: receipt.hash });
         } else {
-            // ✅ Forwarder를 통해 일반 메타 트랜잭션 실행 
+            // ✅ Forwarder를 통해 일반 메타 PAY 트랜잭션 실행 
 
             // EIP-712 서명 검증 (verifyTypedData)
             if (!wallet.provider) {
@@ -162,7 +162,7 @@ app.post('/relay', async (req, res) => {
                 value: BigInt(request.value || '0'),
                 gas: BigInt(request.gas || '500000'),
                 deadline: Number(request.deadline),
-                data: getBytes(request.data || '0x'),
+                data: request.data,
                 nonce: BigInt(request.nonce || '0'),
             };
             console.log('🧾 [metaPay] toSign:', toSign);
