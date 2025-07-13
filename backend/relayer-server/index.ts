@@ -167,6 +167,8 @@ app.post('/relay', async (req, res) => {
             };
             console.log('🧾 [metaPay] toSign:', toSign);
             console.log('🧾 [Relayer] toSign.data (bytes):', toSign.data);
+            console.log('typeof toSign.data:', typeof toSign.data);
+            console.log('ethers.isHexString(toSign.data):', ethers.isHexString(toSign.data));
             console.log('✍️ [metaPay] signature:', signature);
             console.log('👤 expected from:', request.from);
             console.log('➡️ expected to:', request.to);
@@ -177,6 +179,11 @@ app.post('/relay', async (req, res) => {
             if (recovered.toLowerCase() !== request.from.toLowerCase()) {
                 return res.status(400).json({ error: 'Invalid signature or nonce' });
             }
+
+            // ethers.js가 내부적으로 생성할 트랜잭션 데이터가 올바른지 사전 점검 
+            const txRequest = await (forwarder.populateTransaction as any).execute(toSign, signature);
+            console.log('📦 예상 트랜잭션 데이터:', txRequest);
+            console.log('📦 예상 txRequest.data:', txRequest.data);
 
             // 메타 트랜잭션 실행 (Relayer가 가스 지불)
             // forwarder.execute() 호출을 Relayer가 signer로 실행했기 때문에 Relayer가 가스비를 냄 
