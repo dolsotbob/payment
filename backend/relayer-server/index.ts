@@ -1,6 +1,7 @@
 // 이 서버 역할: 사용자가 서명만 하면, 이 서버가 대신 블록체인에 트랜잭션을 실행(→ 가스 지불)해주는 Proxy입니다.
 import express from 'express';
 import { ethers } from 'ethers';
+import { arrayify } from '@ethersproject/bytes';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import MyForwarderAbi from '../src/abis/MyForwarder.json';
@@ -48,6 +49,7 @@ app.post('/relay', async (req, res) => {
         return res.status(400).json({ error: 'Missing "to" or "data" field in request' });
     }
 
+    console.log("📥 Received metaPay request:", req.body.request);
     console.log('📥 받은 request.data:', request.data);
     console.log('📥 받은 request.data 길이:', request.data.length);
     console.log('📥 받은 request 전체:', request);
@@ -160,7 +162,7 @@ app.post('/relay', async (req, res) => {
                 value: BigInt(request.value || '0'),
                 gas: BigInt(request.gas || '500000'),
                 deadline: Number(request.deadline),
-                data: request.data,
+                data: arrayify(request.data),
                 nonce: BigInt(request.nonce || '0'),
             };
             console.log('🧾 [metaPay] toSign:', toSign);

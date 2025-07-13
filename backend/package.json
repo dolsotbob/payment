@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@ethersproject/bytes": "^5.8.0",
     "@nestjs/cli": "^10.4.9",
     "@nestjs/common": "^10.4.19",
     "@nestjs/config": "^4.0.2",
