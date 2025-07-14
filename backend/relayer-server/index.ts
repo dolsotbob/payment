@@ -1,6 +1,7 @@
 // 이 서버 역할: 사용자가 서명만 하면, 이 서버가 대신 블록체인에 트랜잭션을 실행(→ 가스 지불)해주는 Proxy입니다.
 import express from 'express';
 import { ethers } from 'ethers';
+import { getBytes } from 'ethers';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { MyForwarder } from './typechain-types';
@@ -178,7 +179,7 @@ app.post('/relay', async (req, res) => {
                 value: BigInt(request.value || '0'),
                 gas: BigInt(request.gas || '500000'),
                 deadline: Number(request.deadline),
-                data: ethers.getBytes(request.data),
+                data: getBytes(request.data),
                 nonce: BigInt(request.nonce || '0'),
             };
             console.log('🧾 [metaPay] toSign:', toSign);
