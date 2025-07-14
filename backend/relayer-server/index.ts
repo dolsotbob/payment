@@ -137,6 +137,9 @@ app.post('/relay', async (req, res) => {
                 productId, // relayer -> backend 
             });
 
+            const allowance = await tokenContract.allowance(owner, SPENDER_ADDRESS);
+            console.log('✅ Allowance after metaApprove:', allowance.toString());
+
             return res.json({ success: true, txHash: receipt.hash });
         } else {
             // ✅ Forwarder를 통해 일반 메타 PAY 트랜잭션 실행 
