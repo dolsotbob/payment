@@ -16,7 +16,7 @@ contract MyForwarder {
     }
 
     // 2. 상태 변수들
-    // 사용자 주소별로 nonce 값을 관리. 재사용 방지용
+    // 사용자 주소별로 nonce 값을 관리. 재사용 방지용.
     mapping(address => uint256) public nonces;
 
     // EIP-712에서 사용될 구조체 타입의 해시를 고정시켜 둔다
