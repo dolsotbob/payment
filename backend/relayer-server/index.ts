@@ -51,6 +51,8 @@ app.post('/relay', async (req, res) => {
 
     console.log("📥 Received metaPay request:", req.body.request);
     console.log('📥 받은 request.data:', request.data);
+    console.log("typeof:", typeof request.data);
+    console.log("isHexString:", ethers.isHexString(request.data));
     console.log('📥 받은 request.data 길이:', request.data.length);
     console.log('📥 받은 request 전체:', request);
 
@@ -187,6 +189,7 @@ app.post('/relay', async (req, res) => {
 
             // 메타 트랜잭션 실행 (Relayer가 가스 지불)
             // forwarder.execute() 호출을 Relayer가 signer로 실행했기 때문에 Relayer가 가스비를 냄 
+            console.log("🚀 실행 전 전달 data:", toSign.data);
             tx = await forwarder.execute(toSign, signature, {
                 gasLimit: BigInt(request.gas || 500000),
             });

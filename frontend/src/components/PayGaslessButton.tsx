@@ -105,6 +105,10 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount, pr
             console.log("🧾 [DEBUG] payRequest (with data):", payRequest);
 
             // 8. 결제 메타 트랜잭션 전송 
+            console.log("📦 보내는 payRequest.data:", payRequest.data);
+            console.log("typeof:", typeof payRequest.data);
+            console.log("isHexString:", ethers.isHexString(payRequest.data));
+
             const payTx = await sendMetaPayTx(payRequest, relayerUrl, productId);
             const txHash = payTx.txHash || 'FAILED_TX';
             console.log("✅ Payment relayed txHash", txHash);
