@@ -1,7 +1,6 @@
 // 이 서버 역할: 사용자가 서명만 하면, 이 서버가 대신 블록체인에 트랜잭션을 실행(→ 가스 지불)해주는 Proxy입니다.
 import express from 'express';
 import { ethers } from 'ethers';
-import { getBytes } from 'ethers';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import MyForwarderAbi from '../src/abis/MyForwarder.json';
@@ -27,7 +26,18 @@ if (!RPC_URL || !RELAYER_PRIVATE_KEY || !FORWARDER_ADDRESS || !SPENDER_ADDRESS) 
 
 const provider = new ethers.JsonRpcProvider(RPC_URL);
 const wallet = new ethers.Wallet(RELAYER_PRIVATE_KEY, provider);
-const forwarder = new ethers.Contract(FORWARDER_ADDRESS, MyForwarderAbi.abi, wallet);
+
+console.log('📦 ABI length:', MyForwarderAbi.abi?.length);
+console.log('🔍 ABI contains execute?:', MyForwarderAbi.abi?.some((item: any) => item.name === 'execute'));
+if (!MyForwarderAbi.abi) {
+    throw new Error('❌ MyForwarder ABI is missing. Check your ABI JSON file.');
+}
+
+const forwarder = new ethers.Contract(
+    FORWARDER_ADDRESS,
+    MyForwarderAbi.abi,
+    wallet
+) as ethers.Contract & { execute: Function };
 
 const decodeAmount = (data: string): string => {
     try {
