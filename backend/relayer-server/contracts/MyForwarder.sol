@@ -1,9 +1,9 @@
-// !!! backend/relayer-server/contarcts에 쌍둥이 파일 있음
+// !!! contract//contarcts에 쌍둥이 파일 있음
 
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./ECDSA.sol";
+import './ECDSA.sol';
 
 contract MyForwarder {
     // 1. ForwardRequest 구조체 정의
@@ -25,7 +25,7 @@ contract MyForwarder {
     bytes32 private constant TYPE_HASH =
         // 위 구조체 정의를 그대로 문자열로 넣고 keccak256 해시를 계산한다
         keccak256(
-            "ForwardRequest(address from,address to,uint256 value,uint256 gas,uint48 deadline,bytes data,uint256 nonce)"
+            'ForwardRequest(address from,address to,uint256 value,uint256 gas,uint48 deadline,bytes data,uint256 nonce)'
         );
 
     // 도메인 구분자. EIP-712 서명 범위를 구분해 replay attack을 방지하는 중요한 값
@@ -37,10 +37,10 @@ contract MyForwarder {
         DOMAIN_SEPARATOR = keccak256(
             abi.encode(
                 keccak256(
-                    "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+                    'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
                 ), // EIP-712에서 요구하는 Domain 구조의 타입 해시
-                keccak256(bytes("MyForwarder")), // 도메인 이름: 이 컨트랙트의 이름
-                keccak256(bytes("1")), // 도메인 버전: 추후 업그레이드 시 구분할 수 있도록 설정
+                keccak256(bytes('MyForwarder')), // 도메인 이름: 이 컨트랙트의 이름
+                keccak256(bytes('1')), // 도메인 버전: 추후 업그레이드 시 구분할 수 있도록 설정
                 block.chainid, // 현재 체인 ID (KAIA Testnet에서는 1001)
                 address(this) // 서명을 검증할 컨트랙트 주소
             )
@@ -69,7 +69,7 @@ contract MyForwarder {
 
         // ForwardRequest 구조체를 EIP-712 형식에 맞춰 해시한다
         bytes32 digest = keccak256(
-            abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, hashStruct)
+            abi.encodePacked('\x19\x01', DOMAIN_SEPARATOR, hashStruct)
         );
         // 최종적으로 서명된 해시(digest) 계산 (EIP-712 표준)
         address signer = recoverSigner(digest, signature);
@@ -86,7 +86,7 @@ contract MyForwarder {
         bytes calldata signature
     ) external payable returns (bytes memory) {
         // 먼저 요청이 유효한지 검증
-        require(verify(req, signature), "Invalid signature or nonce");
+        require(verify(req, signature), 'Invalid signature or nonce');
 
         // 요청 처리 후 nonce 증가 (재사용 방지)
         nonces[req.from] += 1;
@@ -100,7 +100,7 @@ contract MyForwarder {
             abi.encodePacked(req.data, req.from) // 👈 _msgSender 추적을 위한 from을 함께 전달
         );
 
-        require(success, "Target call failed");
+        require(success, 'Target call failed');
         return returndata;
     }
 

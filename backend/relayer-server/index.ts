@@ -3,6 +3,7 @@ import express from 'express';
 import { ethers } from 'ethers';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { MyForwarder } from './typechain-types';
 import MyForwarderAbi from '../src/abis/MyForwarder.json';
 import TestTokenAbi from '../src/abis/TestToken.json';  // metaApprove 지원하는 토큰 ABI 추가
 import PaymentAbi from '../src/abis/Payment.json';
@@ -37,7 +38,7 @@ const forwarder = new ethers.Contract(
     FORWARDER_ADDRESS,
     MyForwarderAbi.abi,
     wallet
-) as ethers.Contract & { execute: Function };
+) as unknown as MyForwarder;
 
 const decodeAmount = (data: string): string => {
     try {
@@ -196,9 +197,10 @@ app.post('/relay', async (req, res) => {
             }
 
             // ethers.js가 내부적으로 생성할 트랜잭션 데이터가 올바른지 사전 점검 
-            const txRequest = await (forwarder.populateTransaction as any).execute(toSign, signature);
-            console.log('📦 예상 트랜잭션 데이터:', txRequest);
-            console.log('📦 예상 txRequest.data:', txRequest.data);
+            // const txRequest = await (forwarder.populateTransaction as any).execute(toSign, signature);
+            // console.log('📦 예상 트랜잭션 데이터:', txRequest);
+            // console.log('📦 예상 txRequest.data:', txRequest.data);
+            // console.log('🔍 forwarder.populateTransaction keys:', Object.keys(forwarder.populateTransaction));
 
             // 메타 트랜잭션 실행 (Relayer가 가스 지불)
             // forwarder.execute() 호출을 Relayer가 signer로 실행했기 때문에 Relayer가 가스비를 냄 
@@ -209,6 +211,9 @@ app.post('/relay', async (req, res) => {
         }
 
         const receipt = await tx.wait();
+        if (!receipt) {
+            throw new Error("❌ Transaction receipt is null");
+        }
         console.log(`✅ MetaTx executed: ${receipt.hash}`);
 
         await sendPaymentToBackend({

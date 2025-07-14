@@ -13,7 +13,7 @@ library ECDSA {
         bytes memory signature
     ) internal pure returns (address) {
         // 서명은 65바이트 (r, s, v 조합)여야 함
-        require(signature.length == 65, "ECDSA: invalid signature length");
+        require(signature.length == 65, 'ECDSA: invalid signature length');
 
         // 서명 분해를 위한 변수 선언
         bytes32 r;
@@ -34,11 +34,11 @@ library ECDSA {
         require(
             uint256(s) <=
                 0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff,
-            "ECDSA: invalid s"
+            'ECDSA: invalid s'
         );
         // v는 서명 검증을 위한 파라미터, 보통 "recovery id" 라고도 불림
         // v는 꼭 27 또는 28이어야 함
-        require(v == 27 || v == 28, "ECDSA: invalid v");
+        require(v == 27 || v == 28, 'ECDSA: invalid v');
 
         // 최종적으로 서명에서 주소를 복원
         return ecrecover(hash, v, r, s);
