@@ -29,7 +29,6 @@ contract Payment is ERC2771Context, Ownable {
         uint256 originalAmount
     );
     event CashbackWrapped(address indexed to, uint256 amount);
-
     event CashbackRateUpdated(uint256 oldRate, uint256 newRate);
     event VaultAddressUpdated(address oldVault, address newVault);
 
@@ -46,11 +45,11 @@ contract Payment is ERC2771Context, Ownable {
         vaultAddress = _vaultAddress;
     }
 
-    function pay(uint256 amount) external {
+    // 내부 결제 로직을 따로 분리
+    function _processPayment(uint256 amount, address sender) internal {
         require(amount > 0, "Amount must be greater than 0");
 
         // 1. 사용자에게서 토큰 받기
-        address sender = _msgSender(); // ✅ 메타트랜잭션에 대비; 여기서 msgSender는 진짜 사용자(relayer말고)
         bool success = token.transferFrom(sender, address(this), amount);
         require(success, "Payment failed");
 
@@ -74,6 +73,20 @@ contract Payment is ERC2771Context, Ownable {
         require(sent, "Vault transfer failed");
 
         emit Paid(sender, amount, vaultAddress, cashbackRate, cashbackAmount);
+    }
+
+    // 외부 호출용
+    function pay(uint256 amount) external {
+        _processPayment(amount, _msgSender());
+    }
+
+    // 메타트랜잭션 전용 진입점
+    function metaPay(uint256 amount) external {
+        require(
+            isTrustedForwarder(msg.sender),
+            "Only trusted forwarder can call metaPay"
+        );
+        _processPayment(amount, _msgSender());
     }
 
     // Forwarder를 통해 전달된 원래 호출자 주소를 반환한다
