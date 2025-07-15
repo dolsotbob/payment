@@ -1,6 +1,7 @@
 // 이 서버 역할: 사용자가 서명만 하면, 이 서버가 대신 블록체인에 트랜잭션을 실행(→ 가스 지불)해주는 Proxy입니다.
 import express from 'express';
 import { ethers } from 'ethers';
+import { arrayify } from '@ethersproject/bytes';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { MyForwarder } from './typechain-types';
@@ -34,7 +35,7 @@ if (!MyForwarderAbi.abi) {
     throw new Error('❌ MyForwarder ABI is missing. Check your ABI JSON file.');
 }
 
-const forwarderInterface = new ethers.Interface(MyForwarderAbi.abi);
+// const forwarderInterface = new ethers.Interface(MyForwarderAbi.abi);
 const forwarder = new ethers.Contract(
     FORWARDER_ADDRESS,
     MyForwarderAbi.abi,
@@ -173,7 +174,9 @@ app.post('/relay', async (req, res) => {
                 ],
             };
 
-            const toSign = {
+            // toSign을 2개로 분리: toSignForSignature(EIP-712용), toSignForExecute(실행용)
+            // data 필드: verifyTypedData() -> string 그대로, execute() -> arrayify() 처리 
+            const toSignForSignature = {
                 from: request.from,
                 to: request.to,
                 value: BigInt(request.value || '0'),
@@ -182,15 +185,13 @@ app.post('/relay', async (req, res) => {
                 data: request.data,
                 nonce: BigInt(request.nonce || '0'),
             };
-            console.log('🧾 [metaPay] toSign:', toSign);
-            console.log('🧾 [Relayer] toSign.data (bytes):', toSign.data);
-            console.log('typeof toSign.data:', typeof toSign.data);
-            console.log('ethers.isHexString(toSign.data):', ethers.isHexString(toSign.data));
+            console.log('🧾 [metaPay] toSign:', toSignForSignature);
+            console.log('🧾 [Relayer] toSign.data (bytes):', toSignForSignature.data);
             console.log('✍️ [metaPay] signature:', signature);
             console.log('👤 expected from:', request.from);
             console.log('➡️ expected to:', request.to);
 
-            const recovered = ethers.verifyTypedData(domain, types, toSign, signature);
+            const recovered = ethers.verifyTypedData(domain, types, toSignForSignature, signature);
             console.log('👤 [metaPay] recovered:', recovered);
 
             if (recovered.toLowerCase() !== request.from.toLowerCase()) {
@@ -204,20 +205,18 @@ app.post('/relay', async (req, res) => {
             // console.log('🔍 forwarder.populateTransaction keys:', Object.keys(forwarder.populateTransaction));
 
             // 메타 트랜잭션 실행 (Relayer가 가스 지불)            
-            console.log("🚀 실행 전 전달 data:", toSign.data);
-            // // 여기서 명시적으로 ABI 인코딩 (이 방식은 안됨 > 주석 처리 )
-            // const data = forwarderInterface.encodeFunctionData('execute', [toSign, signature]);
+            console.log("🚀 실행 전 전달 data:", toSignForSignature.data);
 
-            // tx = await wallet.sendTransaction({
-            //     to: FORWARDER_ADDRESS,
-            //     data,
-            //     gasLimit: BigInt(request.gas || 500000),
-            // });
+            const toSignForExecute = {
+                ...toSignForSignature,
+                data: arrayify(request.data),
+            }
 
             // forwarder.execute() 호출 대신 encodeFunctionData() + sendTransaction() 방식으로 전환
             // 트랜잭션이 전송되기 전에 반드시 ABI 인코딩 확인
             // forwarder.execute() 호출을 Relayer가 signer로 실행했기 때문에 Relayer가 가스비를 냄 
-            tx = await forwarder.execute(toSign, signature, {
+            const forwarderConnected = forwarder.connect(wallet);
+            tx = await forwarderConnected.execute(toSignForExecute, signature, {
                 gasLimit: BigInt(request.gas || 500000),
             });
         }
@@ -253,4 +252,3 @@ app.listen(PORT, () => {
     console.log(`🛠️ Forwarder address: ${FORWARDER_ADDRESS}`);
     console.log(`🔗 Provider: ${RPC_URL}`);
 });
-
