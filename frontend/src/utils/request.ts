@@ -141,6 +141,7 @@ export const buildPayRequest = async (
         data, // hex string 그대로 사용 
         nonce,
     }
+    console.log('🧾 [DEBUG] to (should be Payment contract address):', to);
     console.log('🧾 [DEBUG] toSign.data (bytes):', getBytes(data));
     console.log('🧾 [DEBUG] EIP-712 domain:', domain);
 
