@@ -1,11 +1,15 @@
-// !!! contract//contarcts에 쌍둥이 파일 있음
+// ⚠️ contract/contarcts에 쌍둥이 파일 있음
+// EIP-2771 호환 버전
 
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import './ECDSA.sol';
+import '@openzeppelin/contracts/utils/cryptography/ECDSA.sol';
+// import "./ECDSA.sol";
 
 contract MyForwarder {
+    using ECDSA for bytes32;
+
     // 1. ForwardRequest 구조체 정의
     struct ForwardRequest {
         address from; // 실제 사용자 주소
@@ -69,7 +73,7 @@ contract MyForwarder {
 
         // ForwardRequest 구조체를 EIP-712 형식에 맞춰 해시한다
         bytes32 digest = keccak256(
-            abi.encodePacked('\x19\x01', DOMAIN_SEPARATOR, hashStruct)
+            abi.encode('\x19\x01', DOMAIN_SEPARATOR, hashStruct)
         );
         // 최종적으로 서명된 해시(digest) 계산 (EIP-712 표준)
         address signer = recoverSigner(digest, signature);
@@ -81,6 +85,7 @@ contract MyForwarder {
 
     // 5. execute 함수: 실제 트랜잭션 실행
     /// 실제로 메타트랜잭션을 실행하는 함수. 외부에서 호출됨. Forwarder가 msg.sender로 호출.
+    // 이 execute 함수는 Relayer가 사용자를 대신해 사용자의 서명된 요청을 검증하고, 지정된 컨트랙트를 대신 호출하는 역할을 한다.
     function execute(
         ForwardRequest calldata req,
         bytes calldata signature
@@ -93,12 +98,18 @@ contract MyForwarder {
 
         // 요청 대상 컨트랙트에 직접 함수 호출
         // ABI 인코딩된 함수 호출 req.data 뒤에 req.from을 붙임으로써 msg.sender를 복원할 수 있게 함
+        // req.to 주소(Payment 컨트랙트)에 대해 low-level call을 수행
+        // ✅ EIP-2771 표준에 따라 calldata 끝에 from 주소를 붙여서 호출
+        bytes memory fullData = abi.encodePacked(req.data, req.from);
+
         (bool success, bytes memory returndata) = req.to.call{
-            gas: req.gas,
+            gas: req.gas, // 사용자가 요청한 만큼의 gas를 호출에 사용
             value: req.value
-        }(
-            abi.encodePacked(req.data, req.from) // 👈 _msgSender 추적을 위한 from을 함께 전달
-        );
+        }(fullData); // 함께 전송할 ETH 의 양 (보통은 0)
+        // req.from 은 뺌. EIP-2771 표준에서는 req.data는 그대로 전달하기 때문
+        // 호출할 함수 데이터(data)에 사용자의 주소(from)를 붙여 msg.sender처럼 사용 가능하도록 함
+        // abi.encodePacked(req.data, req.from) // 👈 _msgSender 추적을 위한 from을 함께 전달
+        // );
 
         require(success, 'Target call failed');
         return returndata;
