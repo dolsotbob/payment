@@ -99,10 +99,13 @@ contract MyForwarder {
         // 요청 대상 컨트랙트에 직접 함수 호출
         // ABI 인코딩된 함수 호출 req.data 뒤에 req.from을 붙임으로써 msg.sender를 복원할 수 있게 함
         // req.to 주소(Payment 컨트랙트)에 대해 low-level call을 수행
+        // ✅ EIP-2771 표준에 따라 calldata 끝에 from 주소를 붙여서 호출
+        bytes memory fullData = abi.encodePacked(req.data, req.from);
+
         (bool success, bytes memory returndata) = req.to.call{
             gas: req.gas, // 사용자가 요청한 만큼의 gas를 호출에 사용
             value: req.value
-        }(req.data); // 함께 전송할 ETH 의 양 (보통은 0)
+        }(fullData); // 함께 전송할 ETH 의 양 (보통은 0)
         // req.from 은 뺌. EIP-2771 표준에서는 req.data는 그대로 전달하기 때문
         // 호출할 함수 데이터(data)에 사용자의 주소(from)를 붙여 msg.sender처럼 사용 가능하도록 함
         // abi.encodePacked(req.data, req.from) // 👈 _msgSender 추적을 위한 from을 함께 전달
