@@ -16,7 +16,7 @@ contract MyForwarder {
         address to; // 실행할 대상 컨트랙트 주소; req.to; Payment 기능 실행 시 req.to는 Payment.sol 주소, Approve 실행 시 req.to는 TestToken.sol 주소
         uint256 value; // 전송할 이더 (보통 0)
         uint256 gas; // 사용할 가스 한도
-        uint48 deadline; // tx 만료 시간
+        uint256 deadline; // tx 만료 시간
         bytes data; // 호출할 함수의 ABI 인코딩된 데이터
         uint256 nonce; // 유저별 중복 방지용 일회성 신호
     }
@@ -29,7 +29,7 @@ contract MyForwarder {
     bytes32 private constant TYPE_HASH =
         // 위 구조체 정의를 그대로 문자열로 넣고 keccak256 해시를 계산한다
         keccak256(
-            'ForwardRequest(address from,address to,uint256 value,uint256 gas,uint48 deadline,bytes data,uint256 nonce)'
+            'ForwardRequest(address from,address to,uint256 value,uint256 gas,uint256 deadline,bytes data,uint256 nonce)'
         );
 
     // 도메인 구분자. EIP-712 서명 범위를 구분해 replay attack을 방지하는 중요한 값
