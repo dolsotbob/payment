@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 // ConfigModule은 .env 환경 변수 로드 
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { dbConfig } from './common/db/db.config';
+import { AppController } from './app.controller';
 
 import { ProductModule } from './product/product.module';
 import { PaymentModule } from './payment/payment.module';
@@ -34,5 +35,6 @@ import { ScheduleFeatureModule } from './schedule/schedule_feature.module';
     ScheduleModule.forRoot(), // // Cron을 NestJS에 활성화
     ScheduleFeatureModule,  // @Cron 스케줄러를 통해 주기적으로 CashbackService.processCashbacks() 실행 
   ],
+  controllers: [AppController],
 })
 export class AppModule { }  // 전체 앱을 조립하고 모듈들을 연결 (최상위 루트)
