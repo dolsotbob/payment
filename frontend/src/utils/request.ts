@@ -96,7 +96,7 @@ export const buildMetaApproveRequest = async (
 export const buildPayRequest = async (
     from: string,  // 사용자 주소 (signer.address)
     to: string,  // Payment.sol 주소 – 즉, 실제로 실행될 스마트 컨트랙트
-    data: string,  // Payment.pay()에 전달할 calldata
+    data: string,  // Payment.pay()에 전달할 calldata; hex string 이어야 함 
     forwarder: ethers.Contract,
     provider: ethers.Provider,
     signer: ethers.Signer,
@@ -138,7 +138,7 @@ export const buildPayRequest = async (
         value: BigInt(0),
         gas: gasLimit,
         deadline,
-        data: getBytes(data),
+        data, // hex string 그대로 사용 
         nonce,
     }
     console.log('🧾 [DEBUG] toSign.data (bytes):', getBytes(data));
@@ -154,7 +154,7 @@ export const buildPayRequest = async (
         value: '0',
         gas: gasLimit.toString(),
         deadline: deadline.toString(),
-        data,
+        data,  // hex string 그대로 전달 
         nonce: nonce.toString(),
         signature,
     };

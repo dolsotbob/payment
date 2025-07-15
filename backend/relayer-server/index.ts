@@ -179,7 +179,7 @@ app.post('/relay', async (req, res) => {
                 value: BigInt(request.value || '0'),
                 gas: BigInt(request.gas || '500000'),
                 deadline: Number(request.deadline),
-                data: hexlify(request.data),
+                data: request.data,
                 nonce: BigInt(request.nonce || '0'),
             };
             console.log('🧾 [metaPay] toSign:', toSign);
