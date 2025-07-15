@@ -61,6 +61,7 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount, pr
             ], provider);
 
             const payment = new ethers.Contract(paymentAddress, PaymentJson.abi, provider);
+            console.log("🏷️ Payment contract address (to):", paymentAddress);
             const chainId = (await provider.getNetwork()).chainId;
 
             // 6. metaApprove 요청 생성
@@ -96,7 +97,8 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount, pr
             const payRequest: SignedForwardRequest = await buildPayRequest(
                 account,
                 paymentAddress,
-                data,
+                amount,
+                payment,
                 forwarder,
                 provider,
                 signer,

@@ -1,11 +1,15 @@
 // !!! backend/relayer-server/contarcts에 쌍둥이 파일 있음
+// EIP-2771 호환 버전
 
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+// import "./ECDSA.sol";
 
 contract MyForwarder {
+    using ECDSA for bytes32;
+
     // 1. ForwardRequest 구조체 정의
     struct ForwardRequest {
         address from; // 실제 사용자 주소
@@ -69,7 +73,7 @@ contract MyForwarder {
 
         // ForwardRequest 구조체를 EIP-712 형식에 맞춰 해시한다
         bytes32 digest = keccak256(
-            abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, hashStruct)
+            abi.encode("\x19\x01", DOMAIN_SEPARATOR, hashStruct)
         );
         // 최종적으로 서명된 해시(digest) 계산 (EIP-712 표준)
         address signer = recoverSigner(digest, signature);
@@ -98,10 +102,11 @@ contract MyForwarder {
         (bool success, bytes memory returndata) = req.to.call{
             gas: req.gas, // 사용자가 요청한 만큼의 gas를 호출에 사용
             value: req.value
-        }( // 함께 전송할 ETH 의 양 (보통은 0)
-            // 호출할 함수 데이터(data)에 사용자의 주소(from)를 붙여 msg.sender처럼 사용 가능하도록 함
-            abi.encodePacked(req.data, req.from) // 👈 _msgSender 추적을 위한 from을 함께 전달
-        );
+        }(req.data); // 함께 전송할 ETH 의 양 (보통은 0)
+        // req.from 은 뺌. EIP-2771 표준에서는 req.data는 그대로 전달하기 때문
+        // 호출할 함수 데이터(data)에 사용자의 주소(from)를 붙여 msg.sender처럼 사용 가능하도록 함
+        // abi.encodePacked(req.data, req.from) // 👈 _msgSender 추적을 위한 from을 함께 전달
+        // );
 
         require(success, "Target call failed");
         return returndata;

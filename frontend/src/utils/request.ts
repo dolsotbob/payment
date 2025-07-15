@@ -96,18 +96,25 @@ export const buildMetaApproveRequest = async (
 export const buildPayRequest = async (
     from: string,  // 사용자 주소 (signer.address)
     to: string,  // Payment.sol 주소 – 즉, 실제로 실행될 스마트 컨트랙트
-    data: string,  // Payment.pay()에 전달할 calldata; hex string 이어야 함 
+    amount: string, // 사용자가 결제할 토큰 양 (예: '0.05') 
+    payment: ethers.Contract, // payment 인스턴스 필요
     forwarder: ethers.Contract,
     provider: ethers.Provider,
     signer: ethers.Signer,
     chainId: number
 ): Promise<SignedForwardRequest> => {
     const nonce = await forwarder.nonces(from); // Forwarder에서 현재 사용자 nonce 조회
-    const gasLimit = await provider.estimateGas({ from, to, data }); // 대략적인 가스 비용 추정
     const deadline = Math.floor(Date.now() / 1000) + 300; // 5분 유효
 
-    console.log('🔎 Frontend nonce:', nonce);
-    console.log('🔎 Frontend deadline:', deadline);
+    const encodedData = payment.interface.encodeFunctionData('pay', [
+        ethers.parseUnits(amount, 18),
+    ]);
+
+    const gasLimit = await provider.estimateGas({
+        from,
+        to,
+        data: encodedData
+    }); // 대략적인 가스 비용 추정
 
     // domain.verifyingContract: MyForwarder의 주소 (Forwarder에서 검증)
     const domain = {
@@ -132,17 +139,19 @@ export const buildPayRequest = async (
         ],
     };
 
+
+
     const toSign = {
         from,
         to,
         value: BigInt(0),
         gas: gasLimit,
-        deadline,
-        data, // hex string 그대로 사용 
-        nonce,
+        deadline: BigInt(deadline),
+        data: encodedData,
+        nonce: BigInt(nonce),
     }
     console.log('🧾 [DEBUG] to (should be Payment contract address):', to);
-    console.log('🧾 [DEBUG] toSign.data (bytes):', getBytes(data));
+    console.log('🧾 [DEBUG] toSign.data:', encodedData);
     console.log('🧾 [DEBUG] EIP-712 domain:', domain);
 
     // signature는 단지 서명 값임. 
@@ -155,7 +164,7 @@ export const buildPayRequest = async (
         value: '0',
         gas: gasLimit.toString(),
         deadline: deadline.toString(),
-        data,  // hex string 그대로 전달 
+        data: encodedData,
         nonce: nonce.toString(),
         signature,
     };
