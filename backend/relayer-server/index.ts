@@ -56,31 +56,19 @@ const decodeAmount = (data: string): string => {
 app.post('/relay', async (req, res) => {
     console.log('📥 POST /relay 요청 수신');  // ✅ 요청 도착 로그 추가
 
-    // ✅ [여기!] request 객체 유효성 검사
+    // request 객체 유효성 검사
     const { request, productId } = req.body;
     if (!request.to || !request.data) {
         return res.status(400).json({ error: 'Missing "to" or "data" field in request' });
     }
 
-    console.log("📥 Received metaPay request:", req.body.request);
-    console.log('📥 받은 request.data:', request.data);
-    console.log("typeof:", typeof request.data);
-    console.log("isHexString:", ethers.isHexString(request.data));
-    console.log('📥 받은 request.data 길이:', request.data.length);
-    console.log('📥 받은 request 전체:', request);
-
     try {
-        // 프론트앤드에서 전송한 ForwardRequest 객체와 서명을 추출한다 
-        const { request, productId } = req.body;
-        console.log("🔍 [relay] 전체 request.body:", JSON.stringify(req.body, null, 2));
         const signature = request.signature;
-        console.log('📦 받은 productId 타입:', typeof productId, productId);
         let tx;
 
         if (signature === undefined || signature === null || signature === '') {
             // ✅ 메타 Approve 직접 실행 (Forwarder 아님)
             const tokenContract = new ethers.Contract(request.to, TestTokenAbi.abi, wallet);
-
             // ABI 디코딩으로 metaApprove 파라미터 추출 
             const decoded = tokenContract.interface.decodeFunctionData('metaApprove', request.data);
             const [owner, spender, value, deadline, sig] = decoded;
@@ -140,19 +128,10 @@ app.post('/relay', async (req, res) => {
                 productId, // relayer -> backend 
             });
 
-            const allowance = await tokenContract.allowance(owner, SPENDER_ADDRESS);
-            console.log('✅ Allowance after metaApprove:', allowance.toString());
-
             return res.json({ success: true, txHash: receipt.hash });
         } else {
             // ✅ Forwarder를 통해 일반 메타 PAY 트랜잭션 실행 
-
-            // EIP-712 서명 검증 (verifyTypedData)
-            if (!wallet.provider) {
-                throw new Error("❌ Wallet에 provider가 연결되어 있지 않습니다.");
-            }
-
-            const network = await wallet.provider.getNetwork();
+            const network = await wallet.provider!.getNetwork();
 
             const domain = {
                 name: 'MyForwarder',
@@ -212,13 +191,21 @@ app.post('/relay', async (req, res) => {
                 data: arrayify(request.data),
             }
 
+            const iface = new ethers.Interface(MyForwarderAbi.abi);
+            const txData = iface.encodeFunctionData('execute', [toSignForExecute, signature]);
+
+            tx = await wallet.sendTransaction({
+                to: FORWARDER_ADDRESS,
+                data: txData,
+                gasLimit: BigInt(request.gas || 500_000),
+            });
             // forwarder.execute() 호출 대신 encodeFunctionData() + sendTransaction() 방식으로 전환
             // 트랜잭션이 전송되기 전에 반드시 ABI 인코딩 확인
             // forwarder.execute() 호출을 Relayer가 signer로 실행했기 때문에 Relayer가 가스비를 냄 
-            const forwarderConnected = forwarder.connect(wallet);
-            tx = await forwarderConnected.execute(toSignForExecute, signature, {
-                gasLimit: BigInt(request.gas || 500000),
-            });
+            // const forwarderConnected = forwarder.connect(wallet);
+            // tx = await forwarderConnected.execute(toSignForExecute, signature, {
+            //     gasLimit: BigInt(request.gas || 500000),
+            // });
         }
 
         const receipt = await tx.wait();
