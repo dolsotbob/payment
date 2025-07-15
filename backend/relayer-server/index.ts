@@ -184,15 +184,18 @@ app.post('/relay', async (req, res) => {
             // console.log('🔍 forwarder.populateTransaction keys:', Object.keys(forwarder.populateTransaction));
 
             // 메타 트랜잭션 실행 (Relayer가 가스 지불)            
-            console.log("🚀 실행 전 전달 data:", toSignForSignature.data);
-
             const toSignForExecute = {
                 ...toSignForSignature,
-                data: arrayify(request.data),
+                data: arrayify(request.data), // bytes 처리 
             }
 
             const iface = new ethers.Interface(MyForwarderAbi.abi);
-            const txData = iface.encodeFunctionData('execute', [toSignForExecute, signature]);
+            const txData = iface.encodeFunctionData(
+                'execute((address,address,uint256,uint256,uint256,bytes,uint256),bytes)',
+                [toSignForExecute, signature]
+            );
+
+            console.log('🚀 ABI encoded txData:', txData);
 
             tx = await wallet.sendTransaction({
                 to: FORWARDER_ADDRESS,
