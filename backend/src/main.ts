@@ -16,6 +16,7 @@ async function bootstrap() {
   });
   // Render는 자체 포트를 process.env.PORT로 전달함; .env의 PORT는 주석처리 되어 있음 
   await app.listen(process.env.PORT ?? 4000);
+  console.log(`✅ Server is running on port ${process.env.PORT ?? 4000}`);
 }
 bootstrap();
 
