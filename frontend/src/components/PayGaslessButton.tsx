@@ -86,19 +86,11 @@ const PayGaslessButton: React.FC<PayGaslessButtonProps> = ({ account, amount, pr
             console.log('✅ MetaApprove relayed txHash:', approveTx.txHash);
 
             // 7. 결제용 데이터 준비 
-            const parsedAmount = ethers.parseUnits(amount, 18);
-            console.log('📦 [DEBUG] pay parsedAmount:', parsedAmount.toString());
-
-            const data = payment.interface.encodeFunctionData('pay', [
-                parsedAmount,   // BigInt 타입 그대로 전달 
-            ]);
-            console.log('📦 [DEBUG] encoded pay calldata:', data);
-
             const payRequest: SignedForwardRequest = await buildPayRequest(
-                account,
-                paymentAddress,
-                amount,
-                payment,
+                account,   // from 
+                paymentAddress,  // to 
+                amount,    // 문자열 금액 
+                payment,   // Payment.sol 인스턴스 
                 forwarder,
                 provider,
                 signer,

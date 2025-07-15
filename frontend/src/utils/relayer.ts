@@ -125,18 +125,11 @@ export const sendMetaTx = async (
 
     console.log('📦 payment interface:', payment.interface);
 
-    // 메타트랜잭션을 위해 pay() 함수 호출 내용을 ABI 인코딩한 것 
-    // * payment.interfact는 위에 const payment로 생성된 스마트 컨트랙트 인스턴스의 abi 기반 인터페이스 객체 
-    // * encodeFunctionData('pay', [...]): pay 함수의 이름과 그에 전달할 파라미터들을 ABI 인코딩된 calldata로 변환 
-    // * ethers.parseUnits(amount, 18): 사용자가 입력한 금액(amount)을 18자리 소수 기준으로 변환하는 역할
-    const calldata = payment.interface.encodeFunctionData('pay', [
-        ethers.parseUnits(amount, 18)]);
-    console.log('📦 Encoded calldata for pay():', calldata);
-
     const payRequest = await buildPayRequest(
-        from,
+        from,   // 사용자 주소 
         paymentAddress,
-        calldata,
+        amount,  // 결제 금액 
+        payment, // Payment 컨트랙트 인스턴스 
         forwarder,
         provider,
         signer,
