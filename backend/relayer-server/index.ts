@@ -1,7 +1,6 @@
 // 이 서버 역할: 사용자가 서명만 하면, 이 서버가 대신 블록체인에 트랜잭션을 실행(→ 가스 지불)해주는 Proxy입니다.
 import express from 'express';
 import { ethers } from 'ethers';
-import { hexlify } from 'ethers';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { MyForwarder } from './typechain-types';
@@ -35,6 +34,7 @@ if (!MyForwarderAbi.abi) {
     throw new Error('❌ MyForwarder ABI is missing. Check your ABI JSON file.');
 }
 
+const forwarderInterface = new ethers.Interface(MyForwarderAbi.abi);
 const forwarder = new ethers.Contract(
     FORWARDER_ADDRESS,
     MyForwarderAbi.abi,
@@ -203,12 +203,23 @@ app.post('/relay', async (req, res) => {
             // console.log('📦 예상 txRequest.data:', txRequest.data);
             // console.log('🔍 forwarder.populateTransaction keys:', Object.keys(forwarder.populateTransaction));
 
-            // 메타 트랜잭션 실행 (Relayer가 가스 지불)
-            // forwarder.execute() 호출을 Relayer가 signer로 실행했기 때문에 Relayer가 가스비를 냄 
+            // 메타 트랜잭션 실행 (Relayer가 가스 지불)            
             console.log("🚀 실행 전 전달 data:", toSign.data);
-            tx = await forwarder.execute(toSign, signature, {
+            // ✅ 여기서 명시적으로 ABI 인코딩
+            const data = forwarderInterface.encodeFunctionData('execute', [toSign, signature]);
+
+            tx = await wallet.sendTransaction({
+                to: FORWARDER_ADDRESS,
+                data,
                 gasLimit: BigInt(request.gas || 500000),
             });
+            // 아래 삭제. 위에걸로 대체 
+            // forwarder.execute() 호출 대신 encodeFunctionData() + sendTransaction() 방식으로 전환
+            // 트랜잭션이 전송되기 전에 반드시 ABI 인코딩 확인
+            // forwarder.execute() 호출을 Relayer가 signer로 실행했기 때문에 Relayer가 가스비를 냄 
+            // tx = await forwarder.execute(toSign, signature, {
+            //     gasLimit: BigInt(request.gas || 500000),
+            // });
         }
 
         const receipt = await tx.wait();

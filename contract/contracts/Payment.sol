@@ -68,7 +68,8 @@ contract Payment is ERC2771Context, Ownable {
 
         // 3. Vault에 나머지 급액 전송
         uint256 vaultAmount = amount - cashbackAmount;
-        token.transfer(vaultAddress, vaultAmount);
+        bool sent = token.transfer(vaultAddress, vaultAmount);
+        require(sent, "Vault transfer failed");
 
         emit Paid(sender, amount, vaultAddress, cashbackRate, cashbackAmount);
     }
@@ -112,9 +113,8 @@ contract Payment is ERC2771Context, Ownable {
         emit CashbackWrapped(to, amount);
     }
 
-    // (수정 전) 자동으로 호출할 때 사용하는 백앤드용 래퍼 함수 (onlyOwner 없이 호출 가능)
-    // onlyBackend를 onlyOwner로 바꿈
-    // ???
+    // 자동으로 호출할 때 사용하는 백앤드용 래퍼 함수 (onlyOwner 없이 호출 가능)
+    // 원래 onlyBackend 접근 제어가 있었으나, 현재는 onlyOwner로 제한 중
     function executeProvideCashback(
         address to,
         uint256 amount
