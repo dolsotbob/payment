@@ -1,6 +1,6 @@
 // ForwardRequestData 생성 
 
-import { ethers, getBytes } from 'ethers';
+import { ethers } from 'ethers';
 
 // 실제 Solidity 구조체에 해당 (MyForwarder.sol의 request와 동일)
 export interface ForwardRequestData {
@@ -139,23 +139,23 @@ export const buildPayRequest = async (
         ],
     };
 
-
-
+    // 서명 대상 객체 구성 
     const toSign = {
         from,
         to,
         value: BigInt(0),
-        gas: gasLimit,
+        gas: BigInt(gasLimit.toString()),
         deadline: BigInt(deadline),
         data: encodedData,
         nonce: BigInt(nonce),
     }
-    console.log('🧾 [DEBUG] to (should be Payment contract address):', to);
-    console.log('🧾 [DEBUG] toSign.data:', encodedData);
-    console.log('🧾 [DEBUG] EIP-712 domain:', domain);
+    // 디버깅 로그
+    console.log('🧾 toSign:', toSign);
+    console.log('📦 encodedData (pay calldata):', encodedData);
+    console.log('🔎 EIP-712 domain:', domain);
 
-    // signature는 단지 서명 값임. 
-    // // 이 서명은 ForwardRequestData 구조체 전체(from, to, value, gas, deadline, data, nonce)를 해시해서, 그 위에 서명한 결과물임 
+    // 서명 생성 (EIP-712 방식)
+    // 이 서명은 ForwardRequestData 구조체 전체(from, to, value, gas, deadline, data, nonce)를 해시해서, 그 위에 서명한 결과물임 
     const signature = await (signer as any).signTypedData(domain, types, toSign);
 
     return {
