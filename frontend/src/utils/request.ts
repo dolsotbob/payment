@@ -2,6 +2,8 @@
 
 import { ethers } from 'ethers';
 
+// metaPay()와 같은 함수 호출 시 Relayer가 실제로 Forwarder에 전달할 값들
+// EIP-712 서명 시 해시 대상 구조체이며, 스마트 컨트랙트와 1:1 매칭되어야 함
 // 실제 Solidity 구조체에 해당 (MyForwarder.sol의 request와 동일)
 export interface ForwardRequestData {
     from: string;
@@ -13,7 +15,10 @@ export interface ForwardRequestData {
     nonce: string;
 }
 
+// ForwardRequestData에 signature 필드가 추가된 버전
 // 프론트에서 relayer로 보내기 위한 전체 요청
+// metaApprove()는 Forwarder를 거치지 않아서 signature는 calldata에 포함되어 따로 필요 없음 
+// metaPay()는 Forwarder를 통해 실행되므로 서명이 반드시 필요 
 export interface SignedForwardRequest extends ForwardRequestData {
     signature?: string;
 }
@@ -23,7 +28,7 @@ export const buildMetaApproveRequest = async (
     signer: ethers.Signer,
     token: ethers.Contract,  // token이란 이름의 TestToken.sol 인스턴스를 PayGaslessButton.tsx에서 전달받음  
     owner: string,     // signer.address
-    spender: string,   // Payment.sol 주소 (토큰을 사용할 컨트랙트)
+    spender: string,   // Payment.sol 주소 (토큰을 사용할 컨트랙트, spender)
     value: string,     // 허용할 토큰 양 
     chainId: number
 ): Promise<SignedForwardRequest> => {
@@ -92,7 +97,7 @@ export const buildMetaApproveRequest = async (
 // 	3.	Relayer는 token.target에 대해 metaApprove(...) 호출하게 됨
 
 
-// 메타 PAY용 요청 생성 (Forwarder.execute -> Payment.sol)
+// 메타 PAY용 요청 생성 (Forwarder.execute -> Payment.sol의 metaPay() 호출 )
 export const buildPayRequest = async (
     from: string,  // 사용자 주소 (signer.address)
     to: string,  // Payment.sol 주소 – 즉, 실제로 실행될 스마트 컨트랙트
@@ -103,12 +108,20 @@ export const buildPayRequest = async (
     signer: ethers.Signer,
     chainId: number
 ): Promise<SignedForwardRequest> => {
+    // Forwarder는 유저별 nonce를 관리하며, nonce는 replay attack 방지용 
     const nonce = await forwarder.nonces(from); // Forwarder에서 현재 사용자 nonce 조회
+    // 트랜잭션 유효 기간 
     const deadline = Math.floor(Date.now() / 1000) + 300; // 5분 유효
 
+    // calldata 생성 (ABI 인코딩) 
     const encodedData = payment.interface.encodeFunctionData('metaPay', [
-        ethers.parseUnits(amount, 18),
+        ethers.parseUnits(amount, 18),  // amount를 wei 단위로 변환 
     ]);
+
+    console.log('encodedData:', encodedData);
+    if (!encodedData || encodedData === '0x') {
+        throw new Error('metaPay 인코딩 실패: metaPay 함수가 ABI에 없거나 인자 이상');
+    }
 
     const gasLimit = await provider.estimateGas({
         from,
@@ -155,6 +168,7 @@ export const buildPayRequest = async (
     console.log('🔎 EIP-712 domain:', domain);
 
     // 서명 생성 (EIP-712 방식)
+    // Relayer가 위조되지 않았음을 확인하는 핵심 증거 
     // 이 서명은 ForwardRequestData 구조체 전체(from, to, value, gas, deadline, data, nonce)를 해시해서, 그 위에 서명한 결과물임 
     const signature = await (signer as any).signTypedData(domain, types, toSign);
 

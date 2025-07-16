@@ -47,10 +47,9 @@ export const sendMetaApproveTx = async (
     }
 };
 
-// ✅ 메타 PAY 실행 (signature는 따로 전달)
-// 반환 타입 명시 
+// 프론트엔드에서 서명 완료된 metaPay 요청을 Relayer 서버의 /relay 엔드포인트에 전송하는 함수
 export const sendMetaPayTx = async (
-    request: SignedForwardRequest,
+    request: SignedForwardRequest, // buildPayRequest()를 통해 만들어진 EIP-712 서명 포함된 요청
     relayerUrl: string,
     productId: number
 ): Promise<RelayResponse> => {

@@ -159,8 +159,8 @@ app.post('/relay', async (req, res) => {
             // toSign을 2개로 분리: toSignForSignature(EIP-712용), toSignForExecute(실행용)
             // data 필드: verifyTypedData() -> string 그대로, execute() -> arrayify() 처리 
             const toSignForSignature = {
-                from: request.from, // ***(1) user
-                to: request.to, // ***(2) recipient
+                from: request.from, // ***(1) user - metaPay를 호출하려는 사용자 지갑 주소  
+                to: request.to, // ***(2) recipient - metaPay 함수가 실행될 대상 컨트랙트인 Payment.sol 주소 
                 value: BigInt(request.value || '0'),
                 gas: BigInt(request.gas || '500000'),
                 deadline: Number(request.deadline),
@@ -172,6 +172,11 @@ app.post('/relay', async (req, res) => {
             console.log('✍️ [metaPay] signature:', signature);
             console.log('👤 expected from:', request.from);
             console.log('➡️ expected to:', request.to);
+
+            //  Relayer 가 받은 논스가 Forwarder 컨트랙트에서 on-chain으로 조회한 nonce와 일치하는지 확인 
+            const onChainNonce = await forwarder.nonces(request.from);
+            console.log(`🧾 [CHECK] Forwarder nonce for ${request.from}:`, onChainNonce.toString());
+            console.log(`📦 [REQ] Request nonce:`, request.nonce);
 
             const recovered = ethers.verifyTypedData(domain, types, toSignForSignature, signature);
             console.log('👤 [metaPay] recovered:', recovered);
