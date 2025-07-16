@@ -44,6 +44,7 @@
   },
   "type": "commonjs",
   "scripts": {
+    "start": "node dist/main.js",
     "start:nest": "nest start",
     "start:relayer": "cd relayer-server && npm run start:relayer",
     "start:both": "concurrently \"npm run start:dev\" \"npm run start:relayer\"",
