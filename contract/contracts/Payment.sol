@@ -84,13 +84,25 @@ contract Payment is ERC2771Context, Ownable {
     }
 
     // 메타트랜잭션 전용 진입점
-    function metaPay(uint256 amount) external {
+    function metaPay(uint256 amount, address userAddress) external onlyOwner {
         require(
             isTrustedForwarder(msg.sender),
             "Only trusted forwarder can call metaPay"
         );
         _processPayment(amount, _msgSender());
     }
+
+    /*
+        Spender: Payment Contract
+        metaPay를 relayer가 살행만 시켜주면 되잖아요
+
+        1. User가 Pay를 실행
+        1-1. User가 Payment에게 token에 대한 권한을 metaApprove
+            - 결과, Payment가 User의 토큰을 Transfer할 수 있는 권한이 생김.
+        2. 프론트에서 유저의 주소(address)를 받아서 서버로 보냄
+        3. 서버에서 프론트에서 방은 유저의 address를 이용해서 Payment의 metaPay를 실행
+            - 이 때, 실행하는(트랜잭션을 생성하는, 트랜잭션 서명하는) 주소는 Relayer
+     */
 
     // Forwarder를 통해 전달된 원래 호출자 주소를 반환한다
     function _msgSender()

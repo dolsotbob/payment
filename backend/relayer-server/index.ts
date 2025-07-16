@@ -243,6 +243,22 @@ app.post('/relay', async (req, res) => {
                 }
             };
 
+            verifySignature(
+                toSignForSignature,
+                forwarder
+            )
+
+            /*
+                 from: string;
+                to: string;
+                value: string;
+                gas: string;
+                deadline: string;
+                data: string;
+                nonce: string;
+                signature: string;
+            */
+
             const forwarderConnected = forwarder.connect(wallet); // ***(5)relayer
             console.log('forwarderConnected:', forwarderConnected);
             tx = await forwarderConnected.execute(toSignForExecute, signature, {
