@@ -9,6 +9,7 @@ import MyForwarderAbi from '../src/abis/MyForwarder.json';
 import TestTokenAbi from '../src/abis/TestToken.json';  // metaApprove 지원하는 토큰 ABI 추가
 import PaymentAbi from '../src/abis/Payment.json';
 import { sendPaymentToBackend } from './utils/sendPaymentToBackend';
+import type { SignedForwardRequest } from './utils/types';
 
 dotenv.config();
 
@@ -56,7 +57,7 @@ const decodeAmount = (data: string): string => {
 app.post('/relay', async (req, res) => {
     console.log('📥 POST /relay 요청 수신');  // ✅ 요청 도착 로그 추가
 
-    // request 객체 유효성 검사
+    // relayer.ts에서 보낸 request와 productId 객체 유효성 검사
     const { request, productId } = req.body;
     if (!request.to || !request.data) {
         return res.status(400).json({ error: 'Missing "to" or "data" field in request' });
@@ -215,8 +216,35 @@ app.post('/relay', async (req, res) => {
             // forwarder.execute() 호출을 Relayer가 signer로 실행했기 때문에 Relayer가 가스비를 냄 
 
             // (4) verify 실행
+            const verifySignature = async (
+                request: SignedForwardRequest,
+                forwarder: ethers.Contract
+            ): Promise<boolean> => {
+                try {
+                    // MyForwarder.sol의 verify() 함수 호출
+                    const isValid = await forwarder.verify(
+                        {
+                            from: request.from,
+                            to: request.to,
+                            value: request.value,
+                            gas: request.gas,
+                            deadline: request.deadline,
+                            data: request.data,
+                            nonce: request.nonce,
+                        },
+                        request.signature
+                    );
+
+                    console.log(`✅ Forwarder.verify 결과: ${isValid}`);
+                    return isValid;
+                } catch (error) {
+                    console.error('❌ Forwarder.verify 호출 실패:', error);
+                    return false;
+                }
+            };
 
             const forwarderConnected = forwarder.connect(wallet); // ***(5)relayer
+            console.log('forwarderConnected:', forwarderConnected);
             tx = await forwarderConnected.execute(toSignForExecute, signature, {
                 gasLimit: BigInt(request.gas || 500000),
             });
