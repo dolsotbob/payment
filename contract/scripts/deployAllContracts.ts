@@ -35,10 +35,10 @@ async function main() {
     await makeAbi('MyForwarder', forwarderAddress);
 
     // forwarderAddress를 .env에 자동 저장
-    fs.appendFileSync(
-        path.resolve(__dirname, '../.env'),
-        `FORWARDER_ADDRESS=${forwarderAddress}\n`
-    );
+    // fs.appendFileSync(
+    //     path.resolve(__dirname, '../.env'),
+    //     `FORWARDER_ADDRESS=${forwarderAddress}\n`
+    // );
 
     // ✅ 2. Vault 배포
     console.log('🔹 Deploying Vault...');
@@ -59,10 +59,10 @@ async function main() {
     await makeAbi('Payment', paymentAddress);
 
     // Payment Address를 .env에 자동 저장
-    fs.appendFileSync(
-        path.resolve(__dirname, '../.env'),
-        `CONTRACT_ADDRESS=${paymentAddress}\n`
-    );
+    // fs.appendFileSync(
+    //     path.resolve(__dirname, '../.env'),
+    //     `CONTRACT_ADDRESS=${paymentAddress}\n`
+    // );
 
 
     // ✅ 4. Vault에 Payment 등록

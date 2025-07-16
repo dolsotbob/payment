@@ -96,7 +96,7 @@ contract MyForwarder {
         // 요청 처리 후 nonce 증가 (재사용 방지)
         nonces[req.from] += 1;
 
-        // 요청 대상 컨트랙트에 직접 함수 호출
+        // 요청 대상 컨트랙트에 직접 함수 호출.
         // req.to 주소(Payment 컨트랙트)에 대해 low-level call을 수행
         (bool success, bytes memory returndata) = req.to.call{
             gas: req.gas, // 사용자가 요청한 만큼의 gas를 호출에 사용

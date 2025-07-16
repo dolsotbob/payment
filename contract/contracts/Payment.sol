@@ -33,11 +33,14 @@ contract Payment is ERC2771Context, Ownable {
     event VaultAddressUpdated(address oldVault, address newVault);
 
     // 배포 시 토큰 주소와 스토어 지갑 주소를 전달 받고, Ownable의 생성자도 함께 호출
+    // _msgSender()는 Forwarder를 통해 호출된 경우에만 원래 유저 주소를 반환하는데,
+    // construct()는 외부에서 단 한 번 직접 실행되는 함수이기 때문에 Ownable(msg.sender).
+    // msg.sender == 컨트랙트를 처음 블록체인에 배포한 배포자 계정
     constructor(
         address _token,
         address _vaultAddress,
         address _trustedForwarder
-    ) Ownable(_msgSender()) ERC2771Context(_trustedForwarder) {
+    ) Ownable(msg.sender) ERC2771Context(_trustedForwarder) {
         require(_token != address(0), "Invalid token address");
         require(_vaultAddress != address(0), "Invalid vault address");
 
