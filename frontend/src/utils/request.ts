@@ -106,7 +106,7 @@ export const buildPayRequest = async (
     const nonce = await forwarder.nonces(from); // Forwarder에서 현재 사용자 nonce 조회
     const deadline = Math.floor(Date.now() / 1000) + 300; // 5분 유효
 
-    const encodedData = payment.interface.encodeFunctionData('pay', [
+    const encodedData = payment.interface.encodeFunctionData('metaPay', [
         ethers.parseUnits(amount, 18),
     ]);
 

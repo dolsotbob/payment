@@ -63,6 +63,7 @@ app.post('/relay', async (req, res) => {
     }
 
     try {
+        // ***(5)
         const signature = request.signature;
         let tx;
 
@@ -130,6 +131,8 @@ app.post('/relay', async (req, res) => {
 
             return res.json({ success: true, txHash: receipt.hash });
         } else {
+            // *** (6) pay 부분은 다른 API 로 나누기 ?? 
+
             // ✅ Forwarder를 통해 일반 메타 PAY 트랜잭션 실행 
             const network = await wallet.provider!.getNetwork();
 
@@ -156,13 +159,13 @@ app.post('/relay', async (req, res) => {
             // toSign을 2개로 분리: toSignForSignature(EIP-712용), toSignForExecute(실행용)
             // data 필드: verifyTypedData() -> string 그대로, execute() -> arrayify() 처리 
             const toSignForSignature = {
-                from: request.from,
-                to: request.to,
+                from: request.from, // ***(1) user
+                to: request.to, // ***(2) recipient
                 value: BigInt(request.value || '0'),
                 gas: BigInt(request.gas || '500000'),
                 deadline: Number(request.deadline),
                 data: request.data, // string 그대로 사용 
-                nonce: BigInt(request.nonce || '0'),
+                nonce: BigInt(request.nonce || '0'), // ***(3)forwarder에서 nonces 확인(user address)
             };
             console.log('🧾 [metaPay] toSign:', toSignForSignature);
             console.log('🧾 [Relayer] toSign.data (bytes):', toSignForSignature.data);
@@ -197,18 +200,21 @@ app.post('/relay', async (req, res) => {
 
             console.log('🚀 ABI encoded txData:', txData);
 
-            tx = await wallet.sendTransaction({
-                to: FORWARDER_ADDRESS,
-                data: txData,
-                gasLimit: BigInt(request.gas || 500_000),
-            });
+            // tx = await wallet.sendTransaction({
+            //     to: FORWARDER_ADDRESS,
+            //     data: txData,
+            //     gasLimit: BigInt(request.gas || 500_000),
+            // });
             // forwarder.execute() 호출 대신 encodeFunctionData() + sendTransaction() 방식으로 전환
             // 트랜잭션이 전송되기 전에 반드시 ABI 인코딩 확인
             // forwarder.execute() 호출을 Relayer가 signer로 실행했기 때문에 Relayer가 가스비를 냄 
-            // const forwarderConnected = forwarder.connect(wallet);
-            // tx = await forwarderConnected.execute(toSignForExecute, signature, {
-            //     gasLimit: BigInt(request.gas || 500000),
-            // });
+
+            // (4) verify 실행
+
+            const forwarderConnected = forwarder.connect(wallet); // ***(5)relayer
+            tx = await forwarderConnected.execute(toSignForExecute, signature, {
+                gasLimit: BigInt(request.gas || 500000),
+            });
         }
 
         const receipt = await tx.wait();

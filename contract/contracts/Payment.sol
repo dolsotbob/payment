@@ -99,6 +99,12 @@ contract Payment is ERC2771Context, Ownable {
         return ERC2771Context._msgSender();
     }
 
+    function isTrustedForwarder(
+        address forwarder
+    ) public view override returns (bool) {
+        return ERC2771Context.isTrustedForwarder(forwarder);
+    }
+
     // 원래 유저가 의도한 호출 데이터만 추출해준다
     function _msgData()
         internal
