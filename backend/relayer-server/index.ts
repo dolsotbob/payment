@@ -216,37 +216,37 @@ app.post('/relay', async (req, res) => {
             // forwarder.execute() 호출을 Relayer가 signer로 실행했기 때문에 Relayer가 가스비를 냄 
 
             // (4) verify 실행
-            const verifySignature = async (
-                request: SignedForwardRequest,
-                forwarder: ethers.Contract
-            ): Promise<boolean> => {
-                try {
-                    // MyForwarder.sol의 verify() 함수 호출
-                    const isValid = await forwarder.verify(
-                        {
-                            from: request.from,
-                            to: request.to,
-                            value: request.value,
-                            gas: request.gas,
-                            deadline: request.deadline,
-                            data: request.data,
-                            nonce: request.nonce,
-                        },
-                        request.signature
-                    );
+            // const verifySignature = async (
+            //     request: SignedForwardRequest,
+            //     forwarder: ethers.Contract
+            // ): Promise<boolean> => {
+            //     try {
+            //         // MyForwarder.sol의 verify() 함수 호출
+            //         const isValid = await forwarder.verify(
+            //             {
+            //                 from: request.from,
+            //                 to: request.to,
+            //                 value: request.value,
+            //                 gas: request.gas,
+            //                 deadline: request.deadline,
+            //                 data: request.data,
+            //                 nonce: request.nonce,
+            //             },
+            //             request.signature
+            //         );
 
-                    console.log(`✅ Forwarder.verify 결과: ${isValid}`);
-                    return isValid;
-                } catch (error) {
-                    console.error('❌ Forwarder.verify 호출 실패:', error);
-                    return false;
-                }
-            };
+            //         console.log(`✅ Forwarder.verify 결과: ${isValid}`);
+            //         return isValid;
+            //     } catch (error) {
+            //         console.error('❌ Forwarder.verify 호출 실패:', error);
+            //         return false;
+            //     }
+            // };
 
-            verifySignature(
-                toSignForSignature,
-                forwarder
-            )
+            // verifySignature(
+            //     toSignForSignature,
+            //     forwarder
+            // )
 
             /*
                  from: string;
