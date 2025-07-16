@@ -84,7 +84,7 @@ contract Payment is ERC2771Context, Ownable {
     }
 
     // 메타트랜잭션 전용 진입점
-    function metaPay(uint256 amount, address userAddress) external onlyOwner {
+    function metaPay(uint256 amount) external onlyOwner {
         require(
             isTrustedForwarder(msg.sender),
             "Only trusted forwarder can call metaPay"
