@@ -123,11 +123,15 @@ export const buildPayRequest = async (
         throw new Error('metaPay 인코딩 실패: metaPay 함수가 ABI에 없거나 인자 이상');
     }
 
-    const gasLimit = await provider.estimateGas({
-        from,
-        to,
-        data: encodedData
-    }); // 대략적인 가스 비용 추정
+    const gasLimit = BigInt(200_000); // 또는 300_000
+    // 아래 코드 삭제 & 위에 코드로 대체. 
+    // 아래 코드에서 data가 metaPay() 호출을 인코딩 한 것이고, 
+    // from 은 유저 주소이기 때문에 유저가 직접 metaPay()를 호출 하는 것처럼 gas 추정 시도함 
+    // const gasLimit = await provider.estimateGas({
+    //     from,
+    //     to,
+    //     data: encodedData
+    // }); // 대략적인 가스 비용 추정
 
     // domain.verifyingContract: MyForwarder의 주소 (Forwarder에서 검증)
     const domain = {
