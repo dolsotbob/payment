@@ -1,5 +1,3 @@
-// ERC2771Context 기반
-
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 

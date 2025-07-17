@@ -12,8 +12,9 @@
     "deploy:testToken": "npx hardhat run scripts/deployTestToken.ts --network kairos",
     "deploy:transferTEST": "npx hardhat run scripts/transferTEST.ts --network kairos",
     "test": "hardhat test",
-    "test:gasless_vault_payment": "npx hardhat test test/gasless_vault_payment.test.ts",
-    "test:vault-payment": "npx hardhat test test/vault-payment.test.ts",
+    "test:testToken": "npx hardhat test test/testToken.test.ts",
+    "test:vault": "npx hardhat test test/vault.test.ts",
+    "test:payment": "npx hardhat test test/payment.test.ts",
     "clean": "npx hardhat clean"
   },
   "keywords": [],
