@@ -16,8 +16,6 @@ interface PayButtonProps {
 const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuccess }) => {
     const handlePay = async () => {
         try {
-            console.log('🚀 Gasless 결제 시작');
-
             // 1. 메마 설치 되어 있는지 확인 
             if (!window.ethereum) {
                 alert('🦊 MetaMask가 필요합니다.');
@@ -58,26 +56,28 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
             );
 
             // 4. 결제 트랜잭션 실행 
+            const value = ethers.parseUnits(amount, 18);
+
             const tx = await payment.permitAndPayWithCashback(
                 account,
-                ethers.parseUnits(amount, 18),
+                value,
                 deadline,
                 v,
                 r,
                 s,
-                ethers.parseUnits(amount, 18)
+                value
             );
             await tx.wait();
 
             // 5. 백엔드로 결제 정보 전송
             const receipt = await tx.wait();
             const txHash = receipt.hash;
-            const value = ethers.parseUnits(amount, 18);
+
             // 캐시백 계산
             let cashbackAmount = '0';
             try {
                 const cashbackRate = await payment.cashbackRate();
-                cashbackAmount = ethers.formatUnits((ethers.parseUnits(amount, 18) * cashbackRate) / 100n, 18);
+                cashbackAmount = ethers.formatUnits((value * cashbackRate) / 100n, 18);
             } catch (err) {
                 console.warn('⚠️ 캐시백 비율 조회 실패:', err);
             }
@@ -94,9 +94,9 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
             // 6. 유저에게 완료 알림 
             alert('결제 완료!');
             onSuccess();
-        } catch (err) {
+        } catch (err: any) {
             console.error('❌ 결제 실패:', err);
-            alert('❌ 결제에 실패했습니다.');
+            alert(`결제 실패: ${err?.reason || err?.message || '알 수 없는 오류'}`);
         }
     };
 

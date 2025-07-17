@@ -16,6 +16,7 @@ export const buildPermitCallData = async (
 }> => {
     const value = ethers.parseUnits(amount, 18);  // 허용할 토큰 금액 
     const nonce = await token.nonces(owner);  // 중복 서명 방지를 위한 고유값 
+    console.log(nonce);
     const deadline = Math.floor(Date.now() / 1000) + 300;  // 5분 후 만료 
 
     // EIP-712 Domain 정의 
