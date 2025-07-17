@@ -129,6 +129,10 @@ contract Vault is Ownable {
         return token.balanceOf(address(this));
     }
 
+    function getCashbackReserve() external view returns (uint256) {
+        return token.balanceOf(address(this));
+    }
+
     function getTokenAddress() external view returns (address) {
         return address(token);
     }
