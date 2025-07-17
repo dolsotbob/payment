@@ -2,7 +2,7 @@
 import React from 'react';
 import { ethers } from 'ethers';
 import { sendMetaApproveTx, sendMetaPayTx } from '../utils/relayer';
-import { buildMetaApproveRequest, buildPayRequest, SignedForwardRequest } from '../utils/request';
+import { buildMetaApproveRequest, buildPayRequest, SignedForwardRequest } from '../utils/permit';
 import { sendPaymentToBackend } from '../utils/payment';
 import TestTokenJson from '../abis/TestToken.json';
 import PaymentJson from '../abis/Payment.json';
