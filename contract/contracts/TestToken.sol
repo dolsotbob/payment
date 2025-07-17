@@ -1,53 +1,29 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
-contract TestToken is ERC20, Ownable, EIP712 {
-    mapping(address => uint256) public nonces;
-
-    bytes32 private constant METAAPPROVE_TYPEHASH =
-        keccak256(
-            "MetaApprove(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
-        );
-
+contract TestToken is ERC20Permit, Ownable {
+    // 이 컨트랙트를 배포할 때 초기 토큰량을 전달 받는다. 예: 1000 * 10**18을 넣으면 1000개의 토큰이 발핸된다
     constructor(
         uint256 initialSupply
-    ) ERC20("TestToken", "TTKN") Ownable(msg.sender) EIP712("TestToken", "1") {
+    ) ERC20("TestToken", "TORI") ERC20Permit("TestToken") Ownable(msg.sender) {
         _mint(msg.sender, initialSupply);
     }
 
     function mint(address to, uint256 amount) external onlyOwner {
         _mint(to, amount);
     }
-
-    function metaApprove(
-        address owner,
-        address spender,
-        uint256 value,
-        uint256 deadline,
-        bytes calldata signature // signature는 사실상 v, r, s 로 구성되어 있다
-    ) external {
-        require(block.timestamp <= deadline, "MetaApprove: expired");
-
-        bytes32 structHash = keccak256(
-            abi.encode(
-                METAAPPROVE_TYPEHASH,
-                owner,
-                spender,
-                value,
-                nonces[owner]++,
-                deadline
-            )
-        );
-
-        bytes32 digest = _hashTypedDataV4(structHash);
-        address signer = ECDSA.recover(digest, signature);
-        require(signer == owner, "MetaApprove: invalid signature");
-
-        _approve(owner, spender, value);
-    }
 }
+
+/* 
+ERC20Permit("TestToken")
+	•	EIP-2612 Permit 기능을 위한 설정
+	•	내부적으로 EIP712 도메인을 다음과 같이 설정합니다:
+	•	name: “TestToken”
+	•	version: “1”
+	•	chainId: 현재 체인 ID
+	•	verifyingContract: 이 컨트랙트 주소
+	•	이 설정은 이후 signTypedData()를 통해 만들어진 서명을 검증할 때 사용됩니다.
+*/

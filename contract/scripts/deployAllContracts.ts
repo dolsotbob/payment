@@ -1,15 +1,11 @@
-// Forwarder, Vault, Payment를 한 번에 배포하고, 필요한 주소 연동까지 자동으로 처리 
+// Vault, Payment를 한 번에 배포하고, 필요한 주소 연동까지 자동으로 처리 
 // 🧩 배포 스크립트 구성은 이렇게 하면 좋아요:
 // 1.	Vault.sol → 가장 먼저 배포
 // 2.	Payment.sol → Vault 주소를 생성자에 넣어야 할 수도 있음
-// 3.	MyForwarder.sol → 단독 배포
 
 import { ethers } from 'hardhat';
 import { makeAbi } from './abiGenerator';
 import 'dotenv/config';
-
-import fs from 'fs';
-import path from 'path';
 
 async function main() {
     const [deployer] = await ethers.getSigners();
@@ -21,24 +17,8 @@ async function main() {
     const treasuryAddress = process.env.STORE_WALLET;
 
     // 환경 변수 체크 
-    if (!tokenAddress || !treasuryAddress) {
-        throw new Error('❌ .env에 TOKEN_ADDRESS 및 STORE_WALLET 설정이 필요합니다.');
-    }
-
-    // ✅ 1. Forwarder 배포
-    console.log('🔹 Deploying MyForwarder...');
-    const ForwarderFactory = await ethers.getContractFactory('MyForwarder');
-    const forwarder = await ForwarderFactory.deploy();
-    await forwarder.waitForDeployment();
-    const forwarderAddress = await forwarder.getAddress();
-    console.log(`✅ Forwarder deployed: ${forwarderAddress}`);
-    await makeAbi('MyForwarder', forwarderAddress);
-
-    // forwarderAddress를 .env에 자동 저장
-    // fs.appendFileSync(
-    //     path.resolve(__dirname, '../.env'),
-    //     `FORWARDER_ADDRESS=${forwarderAddress}\n`
-    // );
+    if (!tokenAddress) throw new Error("❌ .env에 TOKEN_ADDRESS가 설정되어야 합니다.");
+    if (!treasuryAddress) throw new Error("❌ .env에 STORE_WALLET이 설정되어야 합니다.");
 
     // ✅ 2. Vault 배포
     console.log('🔹 Deploying Vault...');
@@ -47,32 +27,26 @@ async function main() {
     await vault.waitForDeployment();
     const vaultAddress = await vault.getAddress();
     console.log(`✅ Vault deployed: ${vaultAddress}`);
+    console.log(`👉 .env에 추가하세요: VAULT_ADDRESS=${vaultAddress}`);
     await makeAbi('Vault', vaultAddress);
 
-    // ✅ 3. Payment 배포 (Forwarder 주소 포함)
+    // ✅ 3. Payment 배포 
     console.log('🔹 Deploying Payment...');
     const PaymentFactory = await ethers.getContractFactory('Payment');
-    const payment = await PaymentFactory.deploy(tokenAddress, vaultAddress, forwarderAddress, {});
+    const payment = await PaymentFactory.deploy(tokenAddress, vaultAddress);
     await payment.waitForDeployment();
     const paymentAddress = await payment.getAddress();
     console.log(`✅ Payment deployed: ${paymentAddress}`);
+    console.log(`👉 .env에 추가하세요: PAYMENT_ADDRESS=${paymentAddress}`);
     await makeAbi('Payment', paymentAddress);
-
-    // Payment Address를 .env에 자동 저장
-    // fs.appendFileSync(
-    //     path.resolve(__dirname, '../.env'),
-    //     `CONTRACT_ADDRESS=${paymentAddress}\n`
-    // );
-
 
     // ✅ 4. Vault에 Payment 등록
     console.log('🔹 Setting paymentContract on Vault...');
-    const vaultSigned = vault.connect(deployer);
-    const tx = await vaultSigned.setPaymentContract(paymentAddress);
+    const tx = await vault.connect(deployer).setPaymentContract(paymentAddress);
     await tx.wait();
-    console.log(`✅ Vault.setPaymentContract -> ${paymentAddress}`);
+    console.log(`✅ vault.setPaymentContract(${paymentAddress}) 완료`);
 
-    console.log('🎉 Vault & Forward & Payment 배포 및 연결 완료!');
+    console.log('🎉 Vault & Payment 배포 및 연결 완료!');
 }
 
 main().catch((error) => {

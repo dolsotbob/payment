@@ -1,3 +1,4 @@
+// 배포 후 총 공급량 = 소유자 잔액을 검증하는 단위 테스트
 import { ethers } from "hardhat";
 import { expect } from "chai";
 

@@ -10,6 +10,7 @@ import { makeAbi } from "./abiGenerator";
 
 async function main() {
     const [deployer] = await ethers.getSigners();
+    console.log("Deploying TestToken with account:", deployer.address);
 
     const TestToken = await ethers.getContractFactory("TestToken");
     const token = await TestToken.deploy(ethers.parseEther("1000000")); // 100만 TEST 발행
@@ -17,12 +18,12 @@ async function main() {
     await token.waitForDeployment();
 
     console.log("✅ TestToken deployed at:", token.target);
-    console.log(`👉 .env 파일에 추가: REACT_APP_TOKEN_ADDRESS=${token.target}`);
+    console.log(`👉 .env 파일에 추가: TOKEN_ADDRESS=${token.target}`);
 
     await makeAbi("TestToken", token.target);
 }
 
 main().catch((error) => {
-    console.error(error);
+    console.error("❌ Deployment failed:", error);
     process.exitCode = 1;
 });

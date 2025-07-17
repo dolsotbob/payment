@@ -1,3 +1,5 @@
+// 수익금 저장 및 관리자만 출금 가능
+
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
@@ -27,7 +29,7 @@ contract Vault is Ownable {
 
     // 생성자 정의: token과 treasury 초기화
     // Ownable(_msgSender()): 배포한 계정을 owner로 설정
-    constructor(address _token, address _treasury) Ownable(_msgSender()) {
+    constructor(address _token, address _treasury) Ownable(msg.sender) {
         require(_token != address(0), "Invalid token");
         require(_treasury != address(0), "Invalid treasury");
 
@@ -70,8 +72,11 @@ contract Vault is Ownable {
         bool success = token.transferFrom(msg.sender, address(this), amount);
         require(success, "Transfer failed");
 
-        uint256 newBalance = token.balanceOf(address(this));
-        emit CashbackCharged(msg.sender, amount, newBalance);
+        emit CashbackCharged(
+            msg.sender,
+            amount,
+            token.balanceOf(address(this))
+        );
     }
 
     // onlyPayment: msg.sender가 등록된 paymentContract일 때만 실행됨
@@ -124,15 +129,15 @@ contract Vault is Ownable {
         return token.balanceOf(address(this));
     }
 
-    function getCashbackReserve() external view returns (uint256) {
-        return token.balanceOf(address(this));
-    }
-
     function getTokenAddress() external view returns (address) {
         return address(token);
     }
 
     function getTreasuryAddress() external view returns (address) {
         return treasury;
+    }
+
+    function getPaymentContract() external view returns (address) {
+        return paymentContract;
     }
 }
