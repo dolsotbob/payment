@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { ethers } from 'ethers';  // 메타마스크와 통신할 수 있는 Ethereum JS 라이브러리
 import ProductList from './components/ProductList';
 import { Product } from './types';
-import PayGaslessButton from './components/PayGaslessButton';
+import PayButton from './components/PayButton';
 import PaymentHistory from './pages/PaymentHistory';
 import Navbar from './components/Navbar';
 import './components/css/ConnectWalletButton.css';
@@ -109,7 +109,7 @@ const App: React.FC = () => {
                   <div className='overlay' onClick={() => setSelectedProduct(null)} />
                   <div className="popup-wrapper">
                     <button className="close-button" onClick={() => setSelectedProduct(null)}>✖</button>
-                    <PayGaslessButton
+                    <PayButton
                       account={account}
                       amount={selectedProduct.price}
                       productId={selectedProduct.id}

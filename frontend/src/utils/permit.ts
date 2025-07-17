@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 
 // 이 함수는 EIP-2612 Permit 서명 정보를 생성하여, permit() 함수 호출에 필요한 v, r, s, deadline 값을 반환한다 
 export const buildPermitCallData = async (
-    token: ethers.Contract,  // token이란 이름의 TestToken.sol 인스턴스를 PayGaslessButton.tsx에서 전달받음  
+    token: ethers.Contract,  // token이란 이름의 TestToken.sol 인스턴스를 PayButton.tsx에서 전달받음  
     payment: ethers.Contract,
     signer: ethers.Signer,  // 사용자 지갑 객체 
     owner: string,      // 서명할 사용자 지갑 주소 
