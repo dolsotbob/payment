@@ -44,7 +44,7 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
             const tokenAddress = process.env.REACT_APP_TOKEN_ADDRESS!;
             const token = new ethers.Contract(tokenAddress, TestTokenJson.abi, provider)
 
-            const paymentAddress = process.env.REACT_APP_CONTRACT_ADDRESS!;
+            const paymentAddress = process.env.REACT_APP_PAYMENT_ADDRESS!;
             const payment = new ethers.Contract(paymentAddress, PaymentJson.abi, signer);
 
             // 3. Permit 서명 데이터 생성 

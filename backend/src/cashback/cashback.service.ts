@@ -29,7 +29,7 @@ export class CashbackService {
     private readonly wallet = new ethers.Wallet(process.env.PRIVATE_KEY, this.provider);
 
     private readonly paymentContract = new ethers.Contract(
-        process.env.CONTRACT_ADDRESS!,
+        process.env.PAYMENT_ADDRESS!,
         PaymentAbi.abi,
         this.wallet
     );

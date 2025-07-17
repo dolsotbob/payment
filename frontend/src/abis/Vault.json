@@ -179,12 +179,12 @@
     },
     {
       "inputs": [],
-      "name": "getCashbackReserve",
+      "name": "getPaymentContract",
       "outputs": [
         {
-          "internalType": "uint256",
+          "internalType": "address",
           "name": "",
-          "type": "uint256"
+          "type": "address"
         }
       ],
       "stateMutability": "view",
@@ -371,5 +371,5 @@
       "type": "function"
     }
   ],
-  "address": "0x7Ff1CF2ded8E33bad20229eeCd942e675d6e7e41"
+  "address": "0x21dB9034Fe5C806e05E347cad0a440485a82e67c"
 }
