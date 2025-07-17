@@ -60,8 +60,8 @@ export const buildPermitCallData = async (
 
 
 /*
-Permit 방식은 사용자가 approve() 없이도 사전 서명만으로 결제 컨트랙트에게 토큰 전송 권한을 부여할 수 있게 해준다.
+Permit 방식은 사용자가 approve() 없이도 사전 서명만으로 결제 컨트랙트에게 토큰 전송 권한을 부여
 → 즉, 이 함수는 유저 서명을 위한 메시지를 구성하고, 
 EIP-712 방식으로 서명한 후, 
-Payment.sol에서 쓸 v, r, s, deadline을 만들어내는 역할을 한다.
+Payment.sol에서 쓸 v, r, s, deadline을 만들어내는 역할을 맡음 
 */
