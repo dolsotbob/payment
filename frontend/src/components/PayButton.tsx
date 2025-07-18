@@ -45,6 +45,7 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
 
             const paymentAddress = process.env.REACT_APP_PAYMENT_ADDRESS!;
             const payment = new ethers.Contract(paymentAddress, PaymentJson.abi, signer);
+            console.log("ABI keys:", Object.keys(PaymentJson));
 
             const value = ethers.parseUnits(amount, 18);
 
