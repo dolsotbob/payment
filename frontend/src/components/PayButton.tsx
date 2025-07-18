@@ -58,6 +58,10 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
 
             // 4. 결제 트랜잭션 실행 
             const value = ethers.parseUnits(amount, 18);
+            // permitValue >= amount 인지 확인  
+            console.log("✅ permit value vs amount", {
+                permitValue: value.toString(),
+            });
 
             const tx = await payment.permitAndPayWithCashback(
                 account,

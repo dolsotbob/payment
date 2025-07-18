@@ -16,7 +16,11 @@ export const buildPermitCallData = async (
 }> => {
     const value = ethers.parseUnits(amount, 18);  // 허용할 토큰 금액 
     const nonce = await token.nonces(owner);  // 중복 서명 방지를 위한 고유값 
-    console.log(nonce);
+
+    const onChainNonce = await token.nonces(owner); // 서명에 쓰이는 값 
+    // onChainnonce는 트랜잭션 실행 직전에 다시 블록체인에서 조회한 현재 nonce 값 (실제 체인에 반영된 상태)
+    console.log("✅ nonce 비교", { expected: nonce, onChain: onChainNonce });
+
     const deadline = Math.floor(Date.now() / 1000) + 300;  // 5분 후 만료 
 
     // EIP-712 Domain 정의 
@@ -26,6 +30,7 @@ export const buildPermitCallData = async (
         chainId,
         verifyingContract: await token.getAddress(),  // TestToken.sol의 주소 
     };
+    console.log("✅ domain", domain);
 
     // EIP-712 Typed Data 구조 정의 
     // ERC20 Permit 표준 구조체 
