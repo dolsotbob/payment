@@ -19,8 +19,9 @@ export const getTokenContract = (signer: ethers.Signer) => {
 };
 
 // Payment 컨트랙트 인스턴스를 signer와 함께 반환
+const paymentAddress = process.env.REACT_APP_PAYMENT_ADDRESS!;
 export const getPaymentContract = (signer: ethers.Signer) => {
-    return new ethers.Contract(PaymentJson.address, PaymentJson.abi, signer);
+    return new ethers.Contract(paymentAddress, PaymentJson.abi, signer);
 };
 
 // Vault 컨트랙트 인스턴스를 signer와 함께 반환 
