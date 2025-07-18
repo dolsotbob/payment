@@ -86,6 +86,8 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
 
             // 5. 백엔드로 결제 정보 전송
             const receipt = await tx.wait();
+            console.log("📜 이벤트 로그 목록:", receipt.logs);
+
             const txHash = receipt.hash;
 
             // 캐시백 계산
