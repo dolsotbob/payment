@@ -55,6 +55,10 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
                 Number(chainId)
             );
             console.log("🧾 permit values", { v, r, s, deadline });
+            console.log("✅ spender",
+                { spender: payment.target });
+            const allowance = await token.allowance(account, payment.target);
+            console.log("✅ allowance after permit", ethers.formatUnits(allowance, 18));
 
             // 4. 결제 트랜잭션 실행 
             const value = ethers.parseUnits(amount, 18);
