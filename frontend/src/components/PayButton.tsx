@@ -54,6 +54,7 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
                 amount,
                 Number(chainId)
             );
+            console.log("🧾 permit values", { v, r, s, deadline });
 
             // 4. 결제 트랜잭션 실행 
             const value = ethers.parseUnits(amount, 18);
@@ -68,6 +69,12 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
                 value
             );
             await tx.wait();
+
+            console.log("📦 결제 요청", {
+                account,
+                value: ethers.parseUnits(amount, 18),
+                paymentAddress,
+            });
 
             // 5. 백엔드로 결제 정보 전송
             const receipt = await tx.wait();
@@ -95,6 +102,15 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
             alert('결제 완료!');
             onSuccess();
         } catch (err: any) {
+            // 디버깅 위해 아래 const errorMsg 추가 
+            const errorMsg =
+                err?.reason ||
+                err?.error?.reason ||
+                err?.data?.message ||
+                err?.message ||
+                "알 수 없는 오류";
+
+
             console.error('❌ 결제 실패:', err);
             alert(`결제 실패: ${err?.reason || err?.message || '알 수 없는 오류'}`);
         }
