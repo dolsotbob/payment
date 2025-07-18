@@ -37,10 +37,15 @@
     ]
   },
   "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "@typechain/ethers-v6": "^0.5.1",
+    "@typechain/hardhat": "^9.1.0",
     "@types/axios": "^0.9.36",
     "@types/jest": "^30.0.0",
     "@types/mocha": "^10.0.10",
     "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6"
+    "@types/react-dom": "^19.1.6",
+    "hardhat": "^2.26.0",
+    "typechain": "^8.3.2"
   }
 }

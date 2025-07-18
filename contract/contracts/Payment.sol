@@ -46,7 +46,7 @@ contract Payment is Ownable {
         uint8 v,
         bytes32 r,
         bytes32 s,
-        uint256 amount
+        uint256 amount // 실제 결제 금액
     ) external {
         require(owner != address(0), "Invalid owner address");
 
