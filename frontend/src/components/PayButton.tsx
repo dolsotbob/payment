@@ -4,7 +4,6 @@ import PaymentJson from '../abis/Payment.json';
 import TestTokenJson from '../abis/TestToken.json';
 import React from 'react';
 import { ethers } from 'ethers';
-import type { Contract } from 'ethers';
 import './css/ConnectWalletButton.css';
 
 interface PayButtonProps {
@@ -46,6 +45,12 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
             const paymentAddress = process.env.REACT_APP_PAYMENT_ADDRESS!;
             const payment = new ethers.Contract(paymentAddress, PaymentJson.abi, signer);
             console.log("ABI keys:", Object.keys(PaymentJson));
+            console.log(
+                "📄 ABI 함수 목록:",
+                payment.interface.fragments
+                    .filter((f): f is ethers.FunctionFragment => f.type === "function")
+                    .map((f) => f.name)
+            );
 
             const value = ethers.parseUnits(amount, 18);
 
