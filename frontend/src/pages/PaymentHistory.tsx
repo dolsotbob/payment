@@ -55,8 +55,8 @@ const PaymentHistory: React.FC<Props> = ({ account }) => {
                         }}>
                             <p><strong>📅 날짜:</strong> {new Date(r.createdAt).toLocaleString()}</p>
                             <p><strong>📦 상품: </strong> {r.productName || '이름 없음'}</p>
-                            <p><strong>💸 결제:</strong> {Number(formatEther(r.amount)).toFixed(6)} KAIA</p>
-                            <p><strong>🎁 캐시백:</strong> {Number(formatEther(r.cashbackAmount)).toFixed(6)} KAIA</p>
+                            <p><strong>💸 결제:</strong> {Number(formatEther(r.amount)).toFixed(6)} TORI</p>
+                            <p><strong>🎁 캐시백:</strong> {Number(formatEther(r.cashbackAmount)).toFixed(6)} TORI</p>
                             <p>
                                 <strong>🔗 Tx:</strong>{' '}
                                 <a

@@ -172,6 +172,7 @@ export class CashbackService {
             payment.cashbackStatus = CashbackStatus.COMPLETED; // 상태 변경
             payment.cashbackTxHash = receipt.hash;
             payment.retryCount = 0;
+            payment.cashbackAmount = cashbackAmount.toString();
             await this.paymentRepository.save(payment); // DB에 저장
 
             this.logger.log(`✅ 캐시백 완료: ${payment.id} | Tx: ${receipt.hash}`);
