@@ -72,66 +72,66 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
             const allowance = await token.allowance(account, payment.target);
             console.log("✅ allowance after permit", ethers.formatUnits(allowance, 18));
 
-            // 5. 가스 추정 및 callStatic 테스트
-            // 🐞 결제 트랜잭션 실행 전, 디버깅 코드
-            const paymentRaw = new ethers.Contract(
-                paymentAddress,
-                PaymentJson.abi,
-                signer
-            ) as ethers.Contract & {
-                estimateGas: {
-                    permitAndPayWithCashback: (
-                        owner: string,
-                        value: bigint,
-                        deadline: number,
-                        v: number,
-                        r: string,
-                        s: string,
-                        amount: bigint
-                    ) => Promise<bigint>;
-                };
-                callStatic: {
-                    permitAndPayWithCashback: (
-                        owner: string,
-                        value: bigint,
-                        deadline: number,
-                        v: number,
-                        r: string,
-                        s: string,
-                        amount: bigint
-                    ) => Promise<any>;
-                };
-            };
+            // // 5. 가스 추정 및 callStatic 테스트
+            // // 🐞 결제 트랜잭션 실행 전, 디버깅 코드
+            // const paymentRaw = new ethers.Contract(
+            //     paymentAddress,
+            //     PaymentJson.abi,
+            //     signer
+            // ) as ethers.Contract & {
+            //     estimateGas: {
+            //         permitAndPayWithCashback: (
+            //             owner: string,
+            //             value: bigint,
+            //             deadline: number,
+            //             v: number,
+            //             r: string,
+            //             s: string,
+            //             amount: bigint
+            //         ) => Promise<bigint>;
+            //     };
+            //     callStatic: {
+            //         permitAndPayWithCashback: (
+            //             owner: string,
+            //             value: bigint,
+            //             deadline: number,
+            //             v: number,
+            //             r: string,
+            //             s: string,
+            //             amount: bigint
+            //         ) => Promise<any>;
+            //     };
+            // };
 
-            try {
-                const gasEstimate = await paymentRaw.estimateGas.permitAndPayWithCashback(
-                    account,
-                    value,
-                    deadline,
-                    v,
-                    r,
-                    s,
-                    value
-                );
-                console.log("🟢 gasEstimate 성공:", gasEstimate.toString());
-            } catch (err: any) {
-                console.error("❌ gasEstimate 실패:", err.reason || err.message || err);
-            }
+            // try {
+            //     const gasEstimate = await paymentRaw.estimateGas.permitAndPayWithCashback(
+            //         account,
+            //         value,
+            //         deadline,
+            //         v,
+            //         r,
+            //         s,
+            //         value
+            //     );
+            //     console.log("🟢 gasEstimate 성공:", gasEstimate.toString());
+            // } catch (err: any) {
+            //     console.error("❌ gasEstimate 실패:", err.reason || err.message || err);
+            // }
 
-            try {
-                const result = await paymentRaw.callStatic.permitAndPayWithCashback(
-                    account,
-                    value,
-                    deadline,
-                    v,
-                    r,
-                    s,
-                    value
-                );
-                console.log("✅ callStatic 성공:", result);
-            } catch (err: any) {
-                console.error("❌ callStatic 실패:", err.reason || err.message || err);
-            }
+            // try {
+            //     const result = await paymentRaw.callStatic.permitAndPayWithCashback(
+            //         account,
+            //         value,
+            //         deadline,
+            //         v,
+            //         r,
+            //         s,
+            //         value
+            //     );
+            //     console.log("✅ callStatic 성공:", result);
+            // } catch (err: any) {
+            //     console.error("❌ callStatic 실패:", err.reason || err.message || err);
+            // }
 
             // 6. 결제 트랜잭션 실행 
             const tx = await payment.permitAndPayWithCashback(
