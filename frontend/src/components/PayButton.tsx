@@ -5,6 +5,8 @@ import TestTokenJson from '../abis/TestToken.json';
 import React from 'react';
 import { ethers } from 'ethers';
 import './css/ConnectWalletButton.css';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReacToastify.css';
 
 interface PayButtonProps {
     account: string; // 유저 주소
@@ -107,12 +109,23 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
             );
 
             // 8. 유저에게 완료 알림 
-            alert('결제 완료!');
+            toast.success('🎉 결제 완료!', {
+                position: 'top-center',
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+            });
+
             onSuccess();
         } catch (err: any) {
-
             console.error('❌ 결제 실패:', err);
-            alert(`결제 실패: ${err?.reason || err?.message || '알 수 없는 오류'}`);
+
+            toast.error(`❌ 결제 실패: ${err?.reason || err?.message || '알 수 없는 오류'}`, {
+                position: 'top-center',
+                autoClose: 5000,
+            });
         }
     };
 
