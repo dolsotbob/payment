@@ -72,68 +72,8 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
             const allowance = await token.allowance(account, payment.target);
             console.log("✅ allowance after permit", ethers.formatUnits(allowance, 18));
 
-            // // 5. 가스 추정 및 callStatic 테스트
-            // // 🐞 결제 트랜잭션 실행 전, 디버깅 코드
-            // const paymentRaw = new ethers.Contract(
-            //     paymentAddress,
-            //     PaymentJson.abi,
-            //     signer
-            // ) as ethers.Contract & {
-            //     estimateGas: {
-            //         permitAndPayWithCashback: (
-            //             owner: string,
-            //             value: bigint,
-            //             deadline: number,
-            //             v: number,
-            //             r: string,
-            //             s: string,
-            //             amount: bigint
-            //         ) => Promise<bigint>;
-            //     };
-            //     callStatic: {
-            //         permitAndPayWithCashback: (
-            //             owner: string,
-            //             value: bigint,
-            //             deadline: number,
-            //             v: number,
-            //             r: string,
-            //             s: string,
-            //             amount: bigint
-            //         ) => Promise<any>;
-            //     };
-            // };
 
-            // try {
-            //     const gasEstimate = await paymentRaw.estimateGas.permitAndPayWithCashback(
-            //         account,
-            //         value,
-            //         deadline,
-            //         v,
-            //         r,
-            //         s,
-            //         value
-            //     );
-            //     console.log("🟢 gasEstimate 성공:", gasEstimate.toString());
-            // } catch (err: any) {
-            //     console.error("❌ gasEstimate 실패:", err.reason || err.message || err);
-            // }
-
-            // try {
-            //     const result = await paymentRaw.callStatic.permitAndPayWithCashback(
-            //         account,
-            //         value,
-            //         deadline,
-            //         v,
-            //         r,
-            //         s,
-            //         value
-            //     );
-            //     console.log("✅ callStatic 성공:", result);
-            // } catch (err: any) {
-            //     console.error("❌ callStatic 실패:", err.reason || err.message || err);
-            // }
-
-            // 6. 결제 트랜잭션 실행 
+            // 5. 결제 트랜잭션 실행 
             const tx = await payment.permitAndPayWithCashback(
                 account,
                 value,
@@ -147,7 +87,7 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
 
             console.log("📜 트랜잭션 로그:", receipt.logs);
 
-            // 7. 캐시백 금액 계산
+            // 6. 캐시백 금액 계산
             let cashbackAmount = '0';
             try {
                 const cashbackRate = await payment.cashbackRate();
@@ -156,7 +96,7 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
                 console.warn('⚠️ 캐시백 비율 조회 실패:', err);
             }
 
-            // 8. 백엔드 전송 
+            // 7. 백엔드 전송 
             await sendPaymentToBackend(
                 receipt.hash,
                 amount,
@@ -166,18 +106,10 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
                 productId
             );
 
-            // 9. 유저에게 완료 알림 
+            // 8. 유저에게 완료 알림 
             alert('결제 완료!');
             onSuccess();
         } catch (err: any) {
-            // 디버깅 위해 아래 const errorMsg 추가 
-            // const errorMsg =
-            //     err?.reason ||
-            //     err?.error?.reason ||
-            //     err?.data?.message ||
-            //     err?.message ||
-            //     "알 수 없는 오류";
-
 
             console.error('❌ 결제 실패:', err);
             alert(`결제 실패: ${err?.reason || err?.message || '알 수 없는 오류'}`);
