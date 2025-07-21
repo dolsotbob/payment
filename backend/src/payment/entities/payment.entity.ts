@@ -17,6 +17,8 @@ export class Payment {
     @Column('numeric', { precision: 78, scale: 0 }) // wei 단위, 큰 정수 
     amount: string; // 결제 금액 (문자열로 저장)
 
+    //     @Column({ type: 'varchar', nullable: true })
+    // cashbackAmount: string;
     @Column('numeric', { precision: 78, scale: 0, default: '0' })
     cashbackAmount: string; // 캐시백 금액 (wei, 문자열로 저장)
 
