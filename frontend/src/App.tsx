@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { ethers } from 'ethers';  // 메타마스크와 통신할 수 있는 Ethereum JS 라이브러리
 import ProductList from './components/ProductList';
 import { Product } from './types';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import PayButton from './components/PayButton';
 import PaymentHistory from './pages/PaymentHistory';
 import Navbar from './components/Navbar';
@@ -121,6 +123,7 @@ const App: React.FC = () => {
                         }, 2500);  // 2.5초 후에 자동 닫기 
                       }}
                     />
+                    <ToastContainer />
                   </div>
                 </>
               )}
