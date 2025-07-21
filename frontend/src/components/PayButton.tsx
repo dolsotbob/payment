@@ -6,7 +6,7 @@ import React from 'react';
 import { ethers } from 'ethers';
 import './css/ConnectWalletButton.css';
 import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReacToastify.css';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface PayButtonProps {
     account: string; // 유저 주소
