@@ -171,12 +171,12 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
             onSuccess();
         } catch (err: any) {
             // 디버깅 위해 아래 const errorMsg 추가 
-            const errorMsg =
-                err?.reason ||
-                err?.error?.reason ||
-                err?.data?.message ||
-                err?.message ||
-                "알 수 없는 오류";
+            // const errorMsg =
+            //     err?.reason ||
+            //     err?.error?.reason ||
+            //     err?.data?.message ||
+            //     err?.message ||
+            //     "알 수 없는 오류";
 
 
             console.error('❌ 결제 실패:', err);
