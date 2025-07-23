@@ -57,6 +57,7 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
             const value = ethers.parseUnits(amount, 18);
 
             // 3. Permit 서명 데이터 생성 
+            // 이 때 메타마스크 창이 뜬다. 
             const { v, r, s, deadline } = await buildPermitCallData(
                 token,
                 payment,
