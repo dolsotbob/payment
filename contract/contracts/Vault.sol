@@ -1,12 +1,14 @@
-// 수익금 저장 및 관리자만 출금 가능
+// UUPS 업그레이드 가능한 버전
 
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts/interfaces/IERC20.sol";
 
-contract Vault is Ownable {
+contract Vault is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     IERC20 public token; // Vault가 보관할 ERC20 토큰 컨트랙트 주소 저장
     address public treasury; // Vault의 잔액을 보낼(수익을 인출할) 기본 지갑 주소
     address public paymentContract; // 캐시백 요청 권한이 있는 컨트랙트 주소 저장
@@ -27,20 +29,25 @@ contract Vault is Ownable {
     event TreasuryUpdated(address oldTreasury, address newTreasury);
     event PaymentContractSet(address paymentContract);
 
-    // 생성자 정의: token과 treasury 초기화
-    // Ownable(_msgSender()): 배포한 계정을 owner로 설정
-    constructor(address _token, address _treasury) Ownable(msg.sender) {
-        require(_token != address(0), "Invalid token");
-        require(_treasury != address(0), "Invalid treasury");
-
-        token = IERC20(_token);
-        treasury = _treasury;
-    }
+    // 생성자 정의 모두 삭제
 
     // 커스텀 modifier: provideCashback() 같은 민감한 함수는 paymentContract에서만 호출 가능하도록 제한
     modifier onlyPayment() {
         require(msg.sender == paymentContract, "Not authorized");
         _;
+    }
+
+    // upgradeable로 전환하면서 constructor 지우고 아래 함수 추가
+    /// @notice 초기화 함수 (생성자 대체)
+    function initialize(address _token, address _treasury) public initializer {
+        require(_token != address(0), "Invalid token");
+        require(_treasury != address(0), "Invalid treasury");
+
+        __Ownable_init(msg.sender);
+        __UUPSUpgradeable_init();
+
+        token = IERC20(_token);
+        treasury = _treasury;
     }
 
     // Vault 컨트랙트에 Payment 컨트랙트 주소를 등록하여 권한을 설정하는 함수
