@@ -7,7 +7,7 @@
     "deploy:allContracts": "npx hardhat run scripts/deployAllContracts.ts --network kairos",
     "deploy:vaultAndPayment": "npx hardhat run scripts/deployVaultAndPayment.ts --network kairos",
     "deploy:myForwarder": "npx hardhat run scripts/deployMyForwarder.ts --network kairos",
-    "deploy:vault": "npx hardhat run scripts/deployVault.ts --network kairos",
+    "deploy:vault": "npx hardhat run scripts/deployVaultWithImpl.ts --network kairos",
     "deploy:payment": "npx hardhat run scripts/deployPayment.ts --network kairos",
     "deploy:testToken": "npx hardhat run scripts/deployTestToken.ts --network kairos",
     "deploy:transferTEST": "npx hardhat run scripts/transferTEST.ts --network kairos",
@@ -15,6 +15,7 @@
     "test:testToken": "npx hardhat test test/testToken.test.ts",
     "test:vault": "npx hardhat test test/vault.test.ts",
     "test:payment": "npx hardhat test test/payment.test.ts",
+    "test:vaultUpgrade": "npx hardhat test test/vault.upgrade.test.ts",
     "clean": "npx hardhat clean"
   },
   "keywords": [],
@@ -25,6 +26,7 @@
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.9",
     "@nomicfoundation/hardhat-ethers": "^3.0.9",
     "@nomicfoundation/hardhat-toolbox": "^6.0.0",
+    "@openzeppelin/hardhat-upgrades": "^3.9.1",
     "@typechain/ethers-v6": "^0.5.1",
     "@typechain/hardhat": "^9.1.0",
     "chai": "^4.5.0",
@@ -34,6 +36,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.3.0",
+    "@openzeppelin/contracts-upgradeable": "^5.4.0",
     "dotenv": "^16.5.0",
     "ethers": "^6.14.4"
   }
