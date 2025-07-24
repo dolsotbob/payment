@@ -11,6 +11,7 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',
       'https://payment-git-main-dolsotbobs-projects.vercel.app',
+      'https://payment-git-feature-payment-expansion-dolsotbobs-projects.vercel.app/'
     ],
     credentials: true, // 쿠키 등 자격 정보 포함 여부 (필요 없으면 false)
   });
