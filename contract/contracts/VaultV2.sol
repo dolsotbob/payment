@@ -9,6 +9,7 @@ contract VaultV2 is Vault {
     string public note;
 
     // 업그레이드된 컨트랙트 전용 초기화 함수
+    /// @custom:oz-upgrades-validate-as-initializer
     function initializeV2() public reinitializer(2) {
         // 이 값은 업그레이드 이후에만 설정된
         note = "Vault Upgraded";
