@@ -2,7 +2,7 @@ import React, { Component, useState, useEffect } from 'react';  // React 라이�
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { ethers } from 'ethers';  // 메타마스크와 통신할 수 있는 Ethereum JS 라이브러리
 import ProductList from './components/ProductList';
-import { Product } from './types';
+import { Product, ShippingInfo } from './types';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import PayButton from './components/PayButton';
@@ -17,6 +17,8 @@ const App: React.FC = () => {
   // 처음엔 null이지만, 지갑을 연결하면 주소가 여기 저장됨
   const [account, setAccount] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [shippingInfo, setShippingInfo] = useState<ShippingInfo | null>(null);
+  const [showShippingForm, setShowShippingForm] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   // 1. 상품 목록 (App이 상태 주도권을 가짐)
@@ -81,7 +83,25 @@ const App: React.FC = () => {
   // 저장된 selectedProduct는 아래 컴포넌트들(PayButton, ApproveAndPay)에서 amount={selectedProduct.price} 형태로 전달된다 
   const handlePurchase = (product: Product) => {
     setSelectedProduct(product);
+    setShowShippingForm(true);
   };
+
+  const handleShippingSubmit = async (info: Omit<ShippingInfo, 'id'>) => {
+    // 배송지 백엔드 저장
+    await fetch(`${process.env.REACT_APP_BACKEND_URL}/shipping-info`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...info, userAddress: account }),
+    });
+
+    setShippingInfo({ ...info, id: 0 }); // id는 모름 → 더미 처리
+    setShowShippingForm(false);
+  };
+
+  const handleCancelShipping = () => {
+    setShowShippingForm(false);
+  };
+
 
   const [selectedAmount, setSelectedAmount] = useState<string | null>(null);
 
@@ -103,26 +123,38 @@ const App: React.FC = () => {
             <>
               <ProductList
                 products={products}
-                onPurchase={(product) => setSelectedProduct(product)}
+                onPurchase={handlePurchase}
               />
-              {/* <ProductList products={products} onPurchase={handlePurchase} /> */}
+
               {account && selectedProduct && (
                 <>
                   <div className='overlay' onClick={() => setSelectedProduct(null)} />
                   <div className="popup-wrapper">
                     <button className="close-button" onClick={() => setSelectedProduct(null)}>✖</button>
-                    <PayButton
-                      account={account}
-                      amount={selectedProduct.price}
-                      productId={selectedProduct.id}
-                      onSuccess={() => {
-                        setPaymentSuccess(true);
-                        setTimeout(() => {
-                          setPaymentSuccess(false);
-                          setSelectedProduct(null);
-                        }, 2500);  // 2.5초 후에 자동 닫기 
-                      }}
-                    />
+
+                    {/* 배송지 입력 폼 */}
+                    {showShippingForm && (
+                      <ShippingForm
+                        onSubmit={handleShippingSubmit}
+                        onCancel={handleCancelShipping}
+                      />
+                    )}
+
+                    {/* 배송지 입력이 끝났을 때만 결제창 표시 */}
+                    {!showShippingForm && shippingInfo &&
+                      <PayButton
+                        account={account}
+                        amount={selectedProduct.price}
+                        productId={selectedProduct.id}
+                        onSuccess={() => {
+                          setPaymentSuccess(true);
+                          setTimeout(() => {
+                            setPaymentSuccess(false);
+                            setSelectedProduct(null);
+                          }, 2500);  // 2.5초 후에 자동 닫기 
+                        }}
+                      />
+              )}
                     <ToastContainer />
                   </div>
                 </>
