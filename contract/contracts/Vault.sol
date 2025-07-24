@@ -1,7 +1,7 @@
 // UUPS 업그레이드 가능한 버전
 
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
@@ -9,10 +9,12 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 
 contract Vault is Initializable, OwnableUpgradeable, UUPSUpgradeable {
+    // ===== Storage layout V1 =========
     IERC20 public token; // Vault가 보관할 ERC20 토큰 컨트랙트 주소 저장
     address public treasury; // Vault의 잔액을 보낼(수익을 인출할) 기본 지갑 주소
     address public paymentContract; // 캐시백 요청 권한이 있는 컨트랙트 주소 저장
 
+    // ===== Events ======
     event CashbackCharged(
         address indexed from,
         uint256 amount,
@@ -31,15 +33,21 @@ contract Vault is Initializable, OwnableUpgradeable, UUPSUpgradeable {
 
     // 생성자 정의 모두 삭제
 
+    // ======= Modifiers ========
     // 커스텀 modifier: provideCashback() 같은 민감한 함수는 paymentContract에서만 호출 가능하도록 제한
     modifier onlyPayment() {
         require(msg.sender == paymentContract, "Not authorized");
         _;
     }
 
+    // ========== Initializer ===========
     // upgradeable로 전환하면서 constructor 지우고 아래 함수 추가
     /// @notice 초기화 함수 (생성자 대체)
-    function initialize(address _token, address _treasury) public initializer {
+    // 추후 버전 2를 도입하고 된다면, 버전 번호를 넣는 것이 유지 보수에 좋음
+    function initialize(
+        address _token,
+        address _treasury
+    ) public reinitializer(1) {
         require(_token != address(0), "Invalid token");
         require(_treasury != address(0), "Invalid treasury");
 
@@ -50,13 +58,20 @@ contract Vault is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         treasury = _treasury;
     }
 
+    // ========== UUPS 권한 함수 ==========
+    // UUPSUpgradeable 컨트랙트는 upgradeTo() 같은 업그레이드 함수 호출 시 아래 함수 호출한다
+    function _authorizeUpgrade(
+        address newImplementation
+    ) internal override onlyOwner {}
+
+    // ====== 관리 함수 =========
     // Vault 컨트랙트에 Payment 컨트랙트 주소를 등록하여 권한을 설정하는 함수
-    function setPaymentContract(address _payment) external onlyOwner {
-        require(_payment != address(0), "Invalid payment contract");
+    function setPaymentContract(address _paymentContract) external onlyOwner {
+        require(_paymentContract != address(0), "Invalid payment contract");
         // 입력된 _payment 주소를 Vault에 저장하고,
         // 이 저장된 주소만 provideCashback() 같은 주요 함수의 msg.sender로 인정됨
-        paymentContract = _payment;
-        emit PaymentContractSet(_payment);
+        paymentContract = _paymentContract;
+        emit PaymentContractSet(_paymentContract);
     }
 
     // Vault 컨트랙트에 캐시백 자금을 미리 예치함
@@ -151,4 +166,10 @@ contract Vault is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     function getPaymentContract() external view returns (address) {
         return paymentContract;
     }
+
+    // ========== future-safe: 업그레이드용 reserved storage ==========
+    // 업그레이드 시 안전한 변수 추가 위해 추가됨
+    // 50개의 빈 슬롯을 예약해 두어 나중에 변수 추가를 이 슬롯에 덧붙일 수 있게 한다
+    // ⚠️ 업그레이드할 때마다 몇 개의 gap을 소모했는지 정확히 기록해 관래해야 한다
+    uint256[50] private __gap;
 }
