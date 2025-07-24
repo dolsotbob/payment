@@ -13,6 +13,7 @@ import { PaymentModule } from './payment/payment.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CashbackModule } from './cashback/cashback.module';
 import { ScheduleFeatureModule } from './schedule/schedule_feature.module';
+import { ShippingInfoModule } from './shipping/shipping-info.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { ScheduleFeatureModule } from './schedule/schedule_feature.module';
     CashbackModule, // DB에서 캐시백 대상 조회 -> 스마트 컨트랙트 호출로 캐시백 처리 
     ScheduleModule.forRoot(), // // Cron을 NestJS에 활성화
     ScheduleFeatureModule,  // @Cron 스케줄러를 통해 주기적으로 CashbackService.processCashbacks() 실행 
+    ShippingInfoModule,
   ],
   controllers: [AppController],
 })
