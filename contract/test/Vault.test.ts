@@ -1,15 +1,15 @@
-import { ethers } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
 import "@nomicfoundation/hardhat-chai-matchers";
 import type { TestToken, Vault } from "../typechain-types";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 
-describe("Vault", () => {
+describe("Vault (UUPS)", () => {
     let token: TestToken;
     let vault: Vault;
     let owner: SignerWithAddress;
-    let treasury: any;
-    let user: any;
+    let treasury: SignerWithAddress;
+    let user: SignerWithAddress;
 
     beforeEach(async () => {
         [owner, treasury, user] = await ethers.getSigners();
@@ -18,7 +18,14 @@ describe("Vault", () => {
         token = await Token.deploy(ethers.parseUnits("1000000", 18));
 
         const Vault = await ethers.getContractFactory("Vault");
-        vault = await Vault.deploy(token.target, treasury.address);
+        vault = await upgrades.deployProxy(
+            Vault,
+            [token.target, treasury.address],
+            {
+                initializer: 'initialize',
+                kind: 'uups',
+            }
+        ) as unknown as Vault;
 
         // Vault에 수익금 토큰 입금 
         await token.transfer(vault.target, ethers.parseUnits("1000", 18));

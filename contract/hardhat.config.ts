@@ -2,6 +2,7 @@ import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-ethers";
 import "@typechain/hardhat";
 import '@nomicfoundation/hardhat-chai-matchers';
+import '@openzeppelin/hardhat-upgrades';
 import dotenv from 'dotenv';
 
 dotenv.config();
