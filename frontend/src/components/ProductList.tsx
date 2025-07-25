@@ -11,33 +11,46 @@ interface ProductListProps {
 
 const ProductList: React.FC<ProductListProps> = ({ products, onPurchase }) => {
     const [hoveredProductId, setHoveredProductId] = useState<number | null>(null);
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
     return (
         <div className="product-list">
             <h2 className="product-list-title">⭐️ NEW ARRIVALS ⭐️</h2>
-            <ul>
-                {products.map((product) => (
-                    <li key={product.id}
-                        className="product-item"
-                        onMouseEnter={() => setHoveredProductId(product.id)}
-                        onMouseLeave={() => setHoveredProductId(null)}
-                    >
-                        <img
-                            src={
-                                hoveredProductId === product.id && product.hoverImageUrl
-                                    ? product.hoverImageUrl
-                                    : product.imageUrl
-                            }
-                            alt={product.name}
-                            className="product-image"
-                        />
-                        <h3>{product.name}</h3>
-                        <p>가격: {product.price} TORI</p>
-                        <button onClick={() => onPurchase(product)}>선택하기</button>
-                    </li>
-                ))}
-            </ul>
-        </div>
+
+            {/* 가로 스크롤 가능한 캐러셀 */}
+            <div className="carousel-container">
+                <ul className="carousel">
+                    {products.map((product) => (
+                        <li key={product.id}
+                            className="carousel-item"
+                            onMouseEnter={() => setHoveredProductId(product.id)}
+                            onMouseLeave={() => setHoveredProductId(null)}
+                            onClick={() => setSelectedProduct(product)}
+                        >
+                            <img
+                                src={
+                                    hoveredProductId === product.id && product.hoverImageUrl
+                                        ? product.hoverImageUrl
+                                        : product.imageUrl
+                                }
+                                alt={product.name}
+                                className="product-image"
+                            />
+                        </li>
+                    ))}
+                </ul>
+            </div>
+
+            {/* 선택한 상품 정보 */}
+            {selectedProduct && (
+                <div className="product-detail">
+                    <h3>{selectedProduct.name}</h3>
+                    <p>가격: {selectedProduct.price} TORI</p>
+                    <p>색상: {/* 나중에 color 필드 추가 시 여기에 출력 */}</p>
+                    <button onClick={() => onPurchase(selectedProduct)}>결제하기</button>
+                </div>
+            )}
+        </div >
     );
 };
 
