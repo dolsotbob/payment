@@ -1,0 +1,65 @@
+/* 모달 배경 */
+.modal {
+    background-color: #f0f8ff;
+    /* AliceBlue */
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+    max-width: 400px;
+    margin: 0 auto;
+    text-align: center;
+    font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+    color: #003366;
+    /* 진한 남색 */
+}
+
+/* 입력 필드 */
+.modal input {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid #add8e6;
+    /* 연한 파랑 */
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border 0.3s ease;
+}
+
+.modal input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 4px rgba(0, 123, 255, 0.4);
+}
+
+/* 버튼 영역 */
+.actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+/* 버튼 스타일 */
+.actions button {
+    flex: 1;
+    padding: 0.75rem;
+    font-size: 1rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.actions button:hover {
+    background-color: #0056b3;
+}
+
+/* 취소 버튼 별도 스타일 */
+.actions button:last-child {
+    background-color: #6c757d;
+}
+
+.actions button:last-child:hover {
+    background-color: #495057;
+}

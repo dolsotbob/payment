@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { ShippingInfo } from "../types";
+import './css/ShippingForm.css';
+import './css/Modal.css'
 
 // ShippingForm 컴포넌트가 외부로부터 어떤 props를 받는지 정의한 TypeScript 인터페이스 
 interface ShippingFormProps {

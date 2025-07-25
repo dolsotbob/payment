@@ -1,10 +1,12 @@
+// 결제 로직 집중 
+
 import { buildPermitCallData } from '../utils/permit';
 import { sendPaymentToBackend } from '../utils/payment';
 import PaymentJson from '../abis/Payment.json';
 import TestTokenJson from '../abis/TestToken.json';
 import React from 'react';
 import { ethers } from 'ethers';
-import './css/ConnectWalletButton.css';
+import './css/PayButton.css';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -13,19 +15,15 @@ interface PayButtonProps {
     amount: string;  // 예: '0.01'
     productId: number;
     onSuccess: () => void;
+    onCancel: () => void;
 }
 
-const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuccess }) => {
+const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuccess, onCancel }) => {
     const handlePay = async () => {
         try {
             // 1. 메마 설치 되어 있는지 확인 
             if (!window.ethereum) {
-                alert('🦊 MetaMask가 필요합니다.');
-                return;
-            }
-
-            if (!account) {
-                alert('🦊 지갑을 연결해주세요.');
+                toast.error('🦊 MetaMask가 설치되어 있지 않습니다.');
                 return;
             }
 
@@ -46,14 +44,6 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
 
             const paymentAddress = process.env.REACT_APP_PAYMENT_ADDRESS!;
             const payment = new ethers.Contract(paymentAddress, PaymentJson.abi, signer);
-            console.log("ABI keys:", Object.keys(PaymentJson));
-            console.log(
-                "📄 ABI 함수 목록:",
-                payment.interface.fragments
-                    .filter((f): f is ethers.FunctionFragment => f.type === "function")
-                    .map((f) => f.name)
-            );
-
             const value = ethers.parseUnits(amount, 18);
 
             // 3. Permit 서명 데이터 생성 
@@ -66,15 +56,6 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
                 amount,
                 Number(chainId)
             );
-            console.log("🧾 permit values", { v, r, s, deadline });
-            console.log("✅ spender", { spender: payment.target });
-            console.log("✅ permit value vs amount", { permitValue: value.toString() });
-
-            // 4. permit 이후 allowance 확인 (성공적으로 적용됐는지 체크)
-            // permit() 호출 직후 allowance 값은 permit()으로 넘긴 value 값과 정확히 일치해야 함 
-            const allowance = await token.allowance(account, payment.target);
-            console.log("✅ allowance after permit", ethers.formatUnits(allowance, 18));
-
 
             // 5. 결제 트랜잭션 실행 
             const tx = await payment.permitAndPayWithCashback(
@@ -87,8 +68,6 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
                 value
             );
             const receipt = await tx.wait();
-
-            console.log("📜 트랜잭션 로그:", receipt.logs);
 
             // 6. 캐시백 금액 계산
             let cashbackAmount = '0';
@@ -118,11 +97,9 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
                 pauseOnHover: true,
                 draggable: true,
             });
-
             onSuccess();
         } catch (err: any) {
             console.error('❌ 결제 실패:', err);
-
             toast.error(`❌ 결제 실패: ${err?.reason || err?.message || '알 수 없는 오류'}`, {
                 position: 'top-center',
                 autoClose: 5000,
@@ -130,7 +107,12 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
         }
     };
 
-    return <button onClick={handlePay} className='pay-button'>결제하기</button>;
+    return (
+        <div className='pay-popup'>
+            <button onClick={handlePay} className='pay-button'>결제하기</button>
+            <button onClick={onCancel} className='close-buton'>x</button>
+        </div>
+    )
 };
 
 export default PayButton;

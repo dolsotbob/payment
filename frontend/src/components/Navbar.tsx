@@ -2,7 +2,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+    account: string | null;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ account }) => {
     return (
         <nav style={{
             backgroundColor: '#f5f5f5',
@@ -15,8 +19,13 @@ const Navbar: React.FC = () => {
                 <Link to="/" style={{ marginRight: '1rem' }}>🛒 쇼핑</Link>
                 <Link to="/payment-history">🧾 결제 내역</Link>
             </div>
+            {account && (
+                <p className="wallet-info" style={{ fontSize: '0.9rem', color: '#333' }}>
+                    🦊 {account}
+                </p>
+            )}
         </nav>
-    );
-};
+    )
+}
 
 export default Navbar;
