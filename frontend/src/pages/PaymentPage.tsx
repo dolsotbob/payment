@@ -1,6 +1,6 @@
 // 상품 목록과 배송지 + 결제 흐름만 관리  
 
-import React, { useState, useEffect } from 'react';  // React 라이브러리와 useState 상태 저장 리액트 훅 
+import React, { useState, useEffect, useCallback } from 'react';  // React 라이브러리와 useState 상태 저장 리액트 훅 
 import { Product, ShippingInfo } from '../types';
 import ProductList from '../components/ProductList';
 import { ShippingForm } from '../components/ShippingForm';
@@ -45,22 +45,22 @@ const PaymentPage: React.FC<Props> = ({ account, connectWallet }) => {
     }, []);
 
     // 2. 배송지 정보 로드 - 지갑 주소(account)가 있을 때만 실행 
-    useEffect(() => {
-        const fetchShippingInfo = async () => {
-            if (!account) return;
+    const fetchShippingInfo = useCallback(async () => {
+        if (!account) return;
 
-            try {
-                const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/shipping-info/${account}`);
-                if (!res.ok) throw new Error('배송지 조회 실패');
-                const data = await res.json();
-                setShippingInfo(data);  // 기존 상태 업데이트
-            } catch (err) {
-                console.error('❌ 배송지 정보 로드 실패:', err);
-            }
-        };
-
-        fetchShippingInfo();
+        try {
+            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/shipping-info/${account}`);
+            if (!res.ok) throw new Error('배송지 조회 실패');
+            const data = await res.json();
+            setShippingInfo(data);  // 기존 상태 업데이트
+        } catch (err) {
+            console.error('❌ 배송지 정보 로드 실패:', err);
+        }
     }, [account]);
+
+    useEffect(() => {
+        fetchShippingInfo();
+    }, [fetchShippingInfo]);
 
     // 3. 상품 선택 
     // 상품을 클릭(선택) 했을 때 호출되는 함수 

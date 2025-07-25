@@ -16,7 +16,7 @@ export class ShippingInfoController {
     }
 
     @Get(':userAddress')
-    getShippingInfo(@Param('userAddress') userAddress: string): Promise<ShippingInfo[]> {
+    getShippingInfo(@Param('userAddress') userAddress: string): Promise<ShippingInfo | null> {
         return this.shippingService.getShippingInfoByUser(userAddress);
     }
 

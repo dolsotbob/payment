@@ -29,8 +29,11 @@ export class ShippingService {
         return this.shippingRepo.save(shipping);
     }
 
-    async getShippingInfoByUser(userAddress: string): Promise<ShippingInfo[]> {
-        return this.shippingRepo.find({ where: { userAddress }, order: { createdAt: 'DESC' }, });
+    async getShippingInfoByUser(userAddress: string): Promise<ShippingInfo | null> {
+        return await this.shippingRepo.findOne({
+            where: { userAddress },
+            order: { id: 'DESC' },
+        });
     }
 
     async updateShippingInfo(id: number, update: Partial<ShippingInfo>): Promise<ShippingInfo> {
