@@ -109,8 +109,8 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
 
     return (
         <div className='pay-popup'>
+            <button onClick={onCancel} className='close-button'>x</button>
             <button onClick={handlePay} className='pay-button'>결제하기</button>
-            <button onClick={onCancel} className='close-buton'>x</button>
         </div>
     )
 };

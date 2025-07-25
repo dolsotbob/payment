@@ -24,6 +24,7 @@ const PaymentPage: React.FC<Props> = ({ account, connectWallet }) => {
     const [paymentSuccess, setPaymentSuccess] = useState(false);
 
     useEffect(() => {
+        // 1. 상품 목록 로드 
         const fetchProducts = async () => {
             try {
                 const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/product`);
@@ -43,6 +44,24 @@ const PaymentPage: React.FC<Props> = ({ account, connectWallet }) => {
 
         fetchProducts();
     }, []);
+
+    // 2. 배송지 정보 로드 - 지갑 주소(account)가 있을 때만 실행 
+    useEffect(() => {
+        const fetchShippingInfo = async () => {
+            if (!account) return;
+
+            try {
+                const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/shipping-info/${account}`);
+                if (!res.ok) throw new Error('배송지 조회 실패');
+                const data = await res.json();
+                setShippingInfo(data);  // 기존 상태 업데이트
+            } catch (err) {
+                console.error('❌ 배송지 정보 로드 실패:', err);
+            }
+        };
+
+        fetchShippingInfo();
+    }, [account]);
 
     // 상품을 클릭(선택) 했을 때 호출되는 함수 
     // 전달 받은 product 객체를 상태 변수 selectedProduct에 저장 
@@ -87,6 +106,7 @@ const PaymentPage: React.FC<Props> = ({ account, connectWallet }) => {
                     <ShippingForm
                         onSubmit={handleShippingSubmit}
                         onCancel={handleCancelShipping}
+                        initialData={shippingInfo ?? undefined} // 초기값 전달 
                     />
                 </Modal>
             )}
