@@ -9,6 +9,7 @@ import Modal from '../components/Modal';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './paymentPage.css';
+import mainImage from '../images/payment_main_img.jpg';
 
 interface Props {
     account: string | null;  // 유저 주소 
@@ -102,6 +103,12 @@ const PaymentPage: React.FC<Props> = ({ account, connectWallet }) => {
             ) : (
                 <p>✅ 연결된 지갑: {account}</p>
             )}
+
+            <img
+                src={mainImage}
+                alt="Payment Visual"
+                className="main-image"
+            />
 
             {products.length === 0 ? (
                 <p>상품 목록을 불러오는 중입니다...</p>

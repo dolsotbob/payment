@@ -44,3 +44,14 @@
     color: #2e7d32;
     text-align: center;
 }
+
+.main-image {
+    width: 100%;
+    /* 가로 전체 채움 */
+    height: 60vh;
+    /* 높이는 뷰포트 기준으로 지정 (60% 정도) */
+    object-fit: cover;
+    /* 이미지 비율 유지하면서 채움 */
+    display: block;
+    /* 불필요한 아래 여백 제거 */
+}

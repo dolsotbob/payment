@@ -17,6 +17,9 @@ export class Product {
     @Column({ nullable: true })
     imageUrl: string;
 
+    @Column({ nullable: true })
+    hoverImageUrl: string;
+
     @OneToMany(() => Payment, (payment) => payment.product)
     payments: Payment[];
 }

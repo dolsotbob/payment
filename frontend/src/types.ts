@@ -3,6 +3,7 @@ export interface Product {
     name: string;
     price: string;  // 예: "0.01 ETH" 
     imageUrl: string;
+    hoverImageUrl?: string;
 }
 
 export interface ShippingInfo {
