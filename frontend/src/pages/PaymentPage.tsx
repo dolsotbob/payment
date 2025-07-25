@@ -9,7 +9,6 @@ import Modal from '../components/Modal';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './paymentPage.css';
-// import '../components/css/ConnectWalletButton.css';
 
 interface Props {
     account: string | null;  // 유저 주소 
@@ -63,6 +62,7 @@ const PaymentPage: React.FC<Props> = ({ account, connectWallet }) => {
         fetchShippingInfo();
     }, [account]);
 
+    // 3. 상품 선택 
     // 상품을 클릭(선택) 했을 때 호출되는 함수 
     // 전달 받은 product 객체를 상태 변수 selectedProduct에 저장 
     // 저장된 selectedProduct는 아래 컴포넌트들(PayButton...)에서 amount={selectedProduct.price} 형태로 전달된다 
@@ -71,17 +71,24 @@ const PaymentPage: React.FC<Props> = ({ account, connectWallet }) => {
         setShowShippingForm(true);
     };
 
+    // 4. 배송지 제출 
     const handleShippingSubmit = async (info: Omit<ShippingInfo, 'id'>) => {
-        // 배송지 백엔드 저장
-        await fetch(`${process.env.REACT_APP_BACKEND_URL}/shipping-info`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...info, userAddress: account }),
-        });
-        setShippingInfo({ ...info, id: 0 }); // id는 모름 → 더미 처리
-        setShowShippingForm(false);
+        try {
+            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/shipping-info`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...info, userAddress: account }),
+            });
+            const savedInfo = await res.json(); // id 포함된 응답
+            setShippingInfo(savedInfo);
+        } catch (err) {
+            console.error('❌ 배송지 저장 실패:', err);
+        } finally {
+            setShowShippingForm(false);
+        }
     };
 
+    // 5. 배송지 폼 닫기 
     const handleCancelShipping = () => {
         setShowShippingForm(false);
     };
@@ -96,17 +103,18 @@ const PaymentPage: React.FC<Props> = ({ account, connectWallet }) => {
                 <p>✅ 연결된 지갑: {account}</p>
             )}
 
-            <ProductList
-                products={products}
-                onPurchase={handlePurchase}
-            />
+            {products.length === 0 ? (
+                <p>상품 목록을 불러오는 중입니다...</p>
+            ) : (
+                <ProductList products={products} onPurchase={handlePurchase} />
+            )}
 
             {account && selectedProduct && showShippingForm && (
                 <Modal onClose={() => setShowShippingForm(false)}>
                     <ShippingForm
+                        initialData={shippingInfo ?? undefined} // 초기값 전달 
                         onSubmit={handleShippingSubmit}
                         onCancel={handleCancelShipping}
-                        initialData={shippingInfo ?? undefined} // 초기값 전달 
                     />
                 </Modal>
             )}
