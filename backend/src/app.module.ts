@@ -14,6 +14,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { CashbackModule } from './cashback/cashback.module';
 import { ScheduleFeatureModule } from './schedule/schedule_feature.module';
 import { ShippingInfoModule } from './shipping/shipping-info.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -21,7 +22,6 @@ import { ShippingInfoModule } from './shipping/shipping-info.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-
     // TypeORM(PostgreSQL) 연결을 비동기 방식으로 설정
     // ConfigService를 사용해 .env에서 DB 정보 읽고 dbConfig 함수로 설정을 넘긴다 
     TypeOrmModule.forRootAsync({
@@ -30,12 +30,13 @@ import { ShippingInfoModule } from './shipping/shipping-info.module';
       useFactory: dbConfig,
     }),
 
+    AuthModule,
     ProductModule,
     PaymentModule,  // 결제 정보 저장, 상태 업뎃 등 DB 조작 담당 
     CashbackModule, // DB에서 캐시백 대상 조회 -> 스마트 컨트랙트 호출로 캐시백 처리 
     ScheduleModule.forRoot(), // // Cron을 NestJS에 활성화
     ScheduleFeatureModule,  // @Cron 스케줄러를 통해 주기적으로 CashbackService.processCashbacks() 실행 
-    ShippingInfoModule,
+    ShippingInfoModule, AuthModule,
   ],
   controllers: [AppController],
 })
