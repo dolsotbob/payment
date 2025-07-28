@@ -1,8 +1,10 @@
 .store-name {
-    font-size: 2rem;
+    font-size: 3rem;
     margin-bottom: 1.5rem;
     text-align: center;
     font-weight: bold;
+    color: #4a90e2;
+    font-family: 'Playwrite Magyarorszag', cursive;
 }
 
 .connect-wallet-button {

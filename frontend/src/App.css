@@ -1,12 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Alumni+Sans+Pinstripe:ital@0;1&family=Single+Day&display=swap');
 
-
-h1.store-name {
-  font-family: 'Single Day', cursive;
-  color: skyblue;
-  font-size: 50px;
-}
-
 .popup-wrapper {
   position: fixed;
   top: 50%;

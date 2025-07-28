@@ -96,7 +96,7 @@ const PaymentPage: React.FC<Props> = ({ account, connectWallet }) => {
 
     return (
         <div>
-            <h1 className='store-name'>🛍️ <span style={{ color: 'darkblue' }}>코</span>인로 <span style={{ color: 'darkblue' }}>쇼</span>핑하는 <span style={{ color: 'darkblue' }}>스</span>토어</h1>
+            <h1 className='store-name'>🛍️ My Little Coin Cart</h1>
 
             {!account ? (
                 <button onClick={connectWallet} className="connect-wallet-button">🦊 지갑 연결</button>

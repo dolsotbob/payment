@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import PaymentHistory from './pages/PaymentHistory';
 import PaymentPage from './pages/PaymentPage';
+import Footer from './components/Footer';
 import { ethers } from 'ethers';
 import './App.css';
 
@@ -52,6 +53,7 @@ const App: React.FC = () => {
             account ? <PaymentHistory account={account} /> : <p>🦊 지갑을 먼저 연결해주세요</p>
           } />
         </Routes>
+        <Footer />
       </div>
     </Router >
   );
