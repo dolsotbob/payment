@@ -9,6 +9,6 @@ export class User {
     @Column({ unique: true })
     walletAddress: string;
 
-    @OneToMany(() => LoginHistory, (login) => login.user)
+    @OneToMany(() => LoginHistory, (loginHistory) => loginHistory.user)
     loginHistories: LoginHistory[];
 }

@@ -18,6 +18,7 @@ export const connectAndLogin = async (
 
         const message = `Login to My Little Coin Cart at ${new Date().toISOString()}`;
         const signature = await signer.signMessage(message);
+        console.log('signature:', signature);
 
         const res = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/auth/login`, {
             address,
