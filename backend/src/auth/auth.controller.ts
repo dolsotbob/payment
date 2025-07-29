@@ -9,11 +9,22 @@ export class AuthController {
     constructor(private readonly authService: AuthService) { }
 
     @Post('login')
-    async login(@Body() body: { username: string; password: string }) {
-        const user = await this.authService.validateUser(body.username, body.password);
-        if (!user) {
-            throw new UnauthorizedException('Invalid credentials');
+    async login(
+        @Body()
+        body: { address: string; message: string; signature: string }
+    ) {
+        const { address, message, signature } = body;
+
+        const isValid = await this.authService.verifySignature(
+            address,
+            message,
+            signature
+        );
+
+        if (!isValid) {
+            throw new UnauthorizedException('Invalid wallet signature');
         }
-        return this.authService.login(user);
+
+        return this.authService.login(address);
     }
 }

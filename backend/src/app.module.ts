@@ -7,7 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { dbConfig } from './common/db/db.config';
 import { AppController } from './app.controller';
-
+import { UserModule } from './user/user.module';
 import { ProductModule } from './product/product.module';
 import { PaymentModule } from './payment/payment.module';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -30,6 +30,7 @@ import { AuthModule } from './auth/auth.module';
       useFactory: dbConfig,
     }),
 
+    UserModule,
     AuthModule,
     ProductModule,
     PaymentModule,  // 결제 정보 저장, 상태 업뎃 등 DB 조작 담당 

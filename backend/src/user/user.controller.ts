@@ -11,7 +11,7 @@ interface JwtPayload {
 export class UserController {
     @UseGuards(AuthGuard('jwt'))  // 보호된 API 
     @Get('me')
-    getProfile(@Req() req: Request) {
-        return req.user; // JwtStrategy에서 리턴한 값이 여기에 담김
+    getProfile(@Req() req) {
+        return req.user.walletAddress; // JwtStrategy에서 리턴한 값이 여기에 담김
     }
 }
