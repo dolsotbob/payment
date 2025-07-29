@@ -1,4 +1,4 @@
-// AuthService는 다음을 담당: 
+// AuthService는 다음을 담당: (로그인, 토큰 관련 로직 구현)
 // 	1.	유저 검증 (validateUser)→ 주어진 username과 password가 유효한지 확인
 // 	2.	JWT 토큰 발급 (login) → 로그인 성공 시 JWT 토큰을 생성하여 반환
 

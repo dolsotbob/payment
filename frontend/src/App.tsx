@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import LoginPage from './pages/LoginPage';
+import ProfilePage from './pages/ProfilePage';
 import PaymentHistory from './pages/PaymentHistory';
 import PaymentPage from './pages/PaymentPage';
 import Footer from './components/Footer';
@@ -43,6 +45,8 @@ const App: React.FC = () => {
       <Navbar account={account} />
       <div className='container'>
         <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/" element={
             <PaymentPage
               account={account}

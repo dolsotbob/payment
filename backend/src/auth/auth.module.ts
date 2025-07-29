@@ -1,3 +1,5 @@
+// Auth 관련 의존성 모듈 (JwtModule, Strategy 등) 등록 
+
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';  // JWT를 발급하고 검증하는 기능 제공하는 NestJS의 모듈 
 import { PassportModule } from '@nestjs/passport';  // NestJS의 미들웨어인 Passport 사용하기 위한 모듈
