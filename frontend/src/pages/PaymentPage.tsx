@@ -4,19 +4,23 @@ import React, { useState, useEffect, useCallback } from 'react';  // React 라�
 import { Product, ShippingInfo } from '../types';
 import ProductList from '../components/ProductList';
 import { ShippingForm } from '../components/ShippingForm';
+import { connectAndLogin } from '../utils/walletLogin';
+import LogoutButton from '../components/LogoutButton';
 import PayButton from '../components/PayButton';
 import Modal from '../components/Modal';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './paymentPage.css';
 import mainImage from '../images/payment_main_img.jpg';
+import { Log } from 'ethers';
 
 interface Props {
     account: string | null;  // 유저 주소 
-    connectWallet: () => Promise<void>;
+    onLogin: () => void;
+    onLogout: () => void;
 }
 
-const PaymentPage: React.FC<Props> = ({ account, connectWallet }) => {
+const PaymentPage: React.FC<Props> = ({ account, onLogin, onLogout }) => {
     const [products, setProducts] = useState<Product[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [shippingInfo, setShippingInfo] = useState<ShippingInfo | null>(null);
@@ -98,10 +102,15 @@ const PaymentPage: React.FC<Props> = ({ account, connectWallet }) => {
         <div>
             <h1 className='store-name'>🛍️ My Little Coin Cart</h1>
 
-            {!account ? (
-                <button onClick={connectWallet} className="connect-wallet-button">🦊 지갑 연결</button>
+            {!account || !localStorage.getItem('token') ? (
+                <button onClick={onLogin} className="connect-wallet-button">
+                    🦊 지갑으로 로그인
+                </button>
             ) : (
-                <p>✅ 연결된 지갑: {account}</p>
+                <>
+                    <p>✅ 연결된 지갑: {account}</p>
+                    <LogoutButton onLogout={onLogout} />
+                </>
             )}
 
             <img

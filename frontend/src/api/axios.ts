@@ -4,7 +4,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'https://your-api.com',
+    baseURL: `${process.env.REACT_APP_BACKEND_URL}`,
 });
 
 api.interceptors.request.use((config) => {

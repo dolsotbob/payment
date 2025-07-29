@@ -1,13 +1,9 @@
 // 프로필, 보호된 유저 API 
 
-import axios from 'axios';
+// user.ts
+import api from './axios';
 
 export const getProfile = async () => {
-    const token = localStorage.getItem('token');
-    const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/user/me`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
+    const res = await api.get('/user/me');
     return res.data;
-}
+};

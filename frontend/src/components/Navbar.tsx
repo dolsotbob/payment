@@ -13,17 +13,25 @@ const Navbar: React.FC<NavbarProps> = ({ account }) => {
             padding: '1rem',
             display: 'flex',
             justifyContent: 'space-between',
+            alignItems: 'center',
             marginBottom: '2rem',
         }}>
+
             <div>
-                <Link to="/" style={{ marginRight: '1rem' }}>🛒 쇼핑</Link>
-                <Link to="/payment-history">🧾 결제 내역</Link>
+                <Link to="/" style={{ marginRight: '1rem', fontSize: '2rem' }}>🛍️</Link>
             </div>
+
             {account && (
-                <p className="wallet-info" style={{ fontSize: '0.9rem', color: '#333' }}>
+                <p className="wallet-info" style={{ fontSize: '1.5rem', color: '#333' }}>
                     🦊 {account}
                 </p>
             )}
+
+            <div style={{ display: 'flex', alignItems: 'center', fontSize: '2rem' }}>
+                <Link to="/payment-history" style={{ marginRight: '1rem' }}>🧾</Link>
+                <Link to="/mypage" style={{ marginRight: '1rem' }}>👤</Link>
+            </div>
+
         </nav>
     )
 }
