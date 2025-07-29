@@ -1,10 +1,14 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { LoginHistory } from 'src/login-history/entities/login-history.entity';
 
 @Entity()
 export class User {
     @PrimaryGeneratedColumn()
-    userId: number;
+    id: number;
 
     @Column({ unique: true })
     walletAddress: string;
+
+    @OneToMany(() => LoginHistory, (login) => login.user)
+    loginHistories: LoginHistory[];
 }

@@ -21,11 +21,11 @@ const Navbar: React.FC<NavbarProps> = ({ account }) => {
                 <Link to="/" style={{ marginRight: '1rem', fontSize: '2rem' }}>🛍️</Link>
             </div>
 
-            {account && (
+            {/* {account && (
                 <p className="wallet-info" style={{ fontSize: '1.5rem', color: '#333' }}>
                     🦊 {account}
                 </p>
-            )}
+            )} */}
 
             <div style={{ display: 'flex', alignItems: 'center', fontSize: '2rem' }}>
                 <Link to="/payment-history" style={{ marginRight: '1rem' }}>🧾</Link>
