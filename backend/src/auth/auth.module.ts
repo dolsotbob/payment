@@ -7,17 +7,16 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';  // JWT 토큰을 검증하고, 유저 정보를 복원하는 Passport 전략 클래스
 import { UserService } from '../user/user.service';  // 유저 정보 조회하는 서비스 (지금은 더미 유저 조회)
+import { UserModule } from 'src/user/user.module';
 
 @Module({
   imports: [
     PassportModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: process.env.JWT_EXPIRES_IN },
-    }),
+    JwtModule.register({}),
+    UserModule,
   ],
+  providers: [AuthService, JwtStrategy],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, UserService],
   /* 
   providers: 서비스, 전략 등 이 모듈의 의존성 주입 대상을 등록합니다.
   •	AuthService: 로그인/토큰 발급 로직
