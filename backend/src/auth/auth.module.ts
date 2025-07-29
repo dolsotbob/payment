@@ -3,20 +3,35 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';  // JWT를 발급하고 검증하는 기능 제공하는 NestJS의 모듈 
 import { PassportModule } from '@nestjs/passport';  // NestJS의 미들웨어인 Passport 사용하기 위한 모듈
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';  // JWT 토큰을 검증하고, 유저 정보를 복원하는 Passport 전략 클래스
-import { UserService } from '../user/user.service';  // 유저 정보 조회하는 서비스 (지금은 더미 유저 조회)
+
 import { UserModule } from 'src/user/user.module';
+
 
 @Module({
   imports: [
-    PassportModule,
-    JwtModule.register({}),
+    ConfigModule.forRoot({ isGlobal: true }),
+
+    PassportModule, // Passport 전략 활성화 
+
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (ConfigService: ConfigService) => ({
+        secret: ConfigService.get<string>('JWT_SECRET'),
+        signOptions: { expiresIn: '1h' },
+      }),
+      inject: [ConfigService],
+    }),
+
     UserModule,
   ],
   providers: [AuthService, JwtStrategy],
   controllers: [AuthController],
+  exports: [JwtModule],
   /* 
   providers: 서비스, 전략 등 이 모듈의 의존성 주입 대상을 등록합니다.
   •	AuthService: 로그인/토큰 발급 로직

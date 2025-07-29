@@ -19,7 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     // JWT가 유효할 경우 이 함수가 자동으로 호출됨 
-    async validate(payload: any) {
+    async validate(payload: any): Promise<{ walletAddress: string }> {
         // 토큰에서 payload 추출됨
         return { walletAddress: payload.sub };
     }

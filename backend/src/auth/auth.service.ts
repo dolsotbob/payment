@@ -32,7 +32,7 @@ export class AuthService {
         const payload = { sub: address };
         // payload를 서명(sign)하여 토큰을 만들고 access_token 형식으로 반환한다 
         return {
-            access_token: this.jwtService.sign(payload),
+            access_token: this.jwtService.sign(payload, { expiresIn: '1h' }),
         };
     }
 }
