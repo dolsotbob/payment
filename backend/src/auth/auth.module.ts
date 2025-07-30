@@ -8,6 +8,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';  // JWT 토큰을 검증하고, 유저 정보를 복원하는 Passport 전략 클래스
+import { LoginHistoryModule } from 'src/login-history/login-history.module';
 
 import { UserModule } from 'src/user/user.module';
 
@@ -28,6 +29,7 @@ import { UserModule } from 'src/user/user.module';
     }),
 
     UserModule,
+    LoginHistoryModule
   ],
   providers: [AuthService, JwtStrategy],
   controllers: [AuthController],
