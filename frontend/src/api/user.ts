@@ -3,7 +3,7 @@
 // user.ts
 import api from './axios';
 
-export const fetchUserInfo = async () => {
+export const getProfile = async () => {
     const res = await api.get('/user/me');
     return res.data;
 };
