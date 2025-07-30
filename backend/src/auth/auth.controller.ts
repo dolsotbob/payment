@@ -5,7 +5,7 @@ import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginHistoryService } from 'src/login-history/login-history.service';
 import { UserService } from 'src/user/user.service';
-import { LoginDto } from './dto /login.dto';
+import { LoginDto } from './dto/login.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -26,6 +26,7 @@ export class AuthController {
 
         const isValid = await this.authService.verifySignature(address, message, signature);
         if (!isValid) {
+            console.warn('❌ Invalid signature', { address, message, signature })
             throw new UnauthorizedException('Invalid wallet signature');
         }
 
