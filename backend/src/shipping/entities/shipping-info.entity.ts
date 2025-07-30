@@ -1,5 +1,5 @@
 // DB 모델 설계 
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
 import { DeliveryStatus } from 'src/common/enums/delivery-status.enum';
 
 @Entity()
@@ -8,6 +8,7 @@ export class ShippingInfo {
     id: number;
 
     @Column()
+    @Index()
     userAddress: string; // 지갑 주소
 
     @Column()
@@ -19,7 +20,7 @@ export class ShippingInfo {
     @Column()
     address: string;
 
-    @Column()
+    @Column({ type: 'enum', enum: DeliveryStatus, default: DeliveryStatus.Ready })
     deliveryStatus: DeliveryStatus;
 
     @CreateDateColumn()

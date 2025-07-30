@@ -56,8 +56,10 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin, onLogout }) => {
         try {
             const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/shipping-info/${account}`);
             if (!res.ok) throw new Error('배송지 조회 실패');
-            const data = await res.json();
-            setShippingInfo(data);  // 기존 상태 업데이트
+
+            const text = await res.text();
+            const data = text ? JSON.parse(text) : null;
+            setShippingInfo(data);  // 기존 상태 업데이트; null이면 배송지 없음으로 처리 가능 
         } catch (err) {
             console.error('❌ 배송지 정보 로드 실패:', err);
         }

@@ -16,8 +16,8 @@ export class ShippingInfoController {
     }
 
     @Get(':userAddress')
-    getShippingInfo(@Param('userAddress') userAddress: string): Promise<ShippingInfo | null> {
-        return this.shippingService.getShippingInfoByUser(userAddress);
+    async getShippingInfo(@Param('userAddress') userAddress: string): Promise<ShippingInfo | null> {
+        return await this.shippingService.getShippingInfoByUser(userAddress);
     }
 
     @Patch(':id')

@@ -26,9 +26,11 @@ export class AuthController {
         }
 
         const ip =
+            // x-forwarded-for는 프록시(Render, Nginx 등)를 통과할 때 실제 클라이언트의 IP를 담고 있음
             (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+            // Express의 low-level 네트워크 주소
             (req as any).socket?.remoteAddress ||
-            'unknown';
+            'unknown';  // 모든 방식 실패 시 fallback 
 
         // 로그인 기록 저장
         await this.loginHistoryService.create({
