@@ -1,6 +1,7 @@
 // 로그인 API 제공 
 
-import { Controller, Post, Body, Req, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Body, UnauthorizedException, Req } from '@nestjs/common';
+import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginHistoryService } from 'src/login-history/login-history.service';
 
@@ -14,25 +15,25 @@ export class AuthController {
 
     @Post('login')
     async login(
-        @Body()
-        body: { address: string; message: string; signature: string },
+        @Body() body: { address: string; message: string; signature: string },
         @Req() req: Request
     ) {
         const { address, message, signature } = body;
 
-        const isValid = await this.authService.verifySignature(
-            address,
-            message,
-            signature
-        );
+        const isValid = await this.authService.verifySignature(address, message, signature);
         if (!isValid) {
             throw new UnauthorizedException('Invalid wallet signature');
         }
 
+        const ip =
+            (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+            (req as any).socket?.remoteAddress ||
+            'unknown';
+
         // 로그인 기록 저장
         await this.loginHistoryService.create({
             walletAddress: address,
-            ipAddress: req.referrerPolicy,
+            ipAddress: ip,
             userAgent: req.headers['user-agent']?.toString() ?? '',
         })
 
