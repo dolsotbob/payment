@@ -21,6 +21,7 @@ export class AuthController {
         @Body() body: LoginDto,
         @Req() req: Request
     ) {
+        console.log('LoginDto:', body);
         const { address, message, signature } = body;
 
         const isValid = await this.authService.verifySignature(address, message, signature);
