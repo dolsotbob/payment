@@ -18,6 +18,8 @@ export class AuthService {
     async verifySignature(address: string, message: string, signature: string): Promise<boolean> {
         try {
             const recoveredAddress = ethers.verifyMessage(message, signature);
+            console.log('Recovered address:', recoveredAddress);
+            console.log('Input address:', address);
             return recoveredAddress.toLowerCase() === address.toLowerCase();
         } catch (error) {
             return false;
