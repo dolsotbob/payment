@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { LoginHistory } from './entities/login-history.entity';
 import { CreateLoginHistoryDto } from './dto/create-login-history.dto';
 import { UserService } from 'src/user/user.service';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class LoginHistoryService {
@@ -14,14 +15,12 @@ export class LoginHistoryService {
     ) { }
 
     async create(dto: CreateLoginHistoryDto): Promise<LoginHistory> {
-        const user = await this.userService.findOrCreate(dto.walletAddress); // 지갑주소로 유저 조회
+        const user = await this.userService.findOrCreate(dto.walletAddress);
+        return this.createWithUser(dto, user); // 내부 재사용
+    }
 
-        const record = this.loginHistoryRepo.create({
-            user, // User 객체를 직접 받아야 함 
-            ipAddress: dto.ipAddress,
-            userAgent: dto.userAgent,
-        })
-
+    createWithUser(dto: CreateLoginHistoryDto, user: User): Promise<LoginHistory> {
+        const record = this.loginHistoryRepo.create({ user, ipAddress: dto.ipAddress, userAgent: dto.userAgent });
         return this.loginHistoryRepo.save(record);
     }
 

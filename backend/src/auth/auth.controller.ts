@@ -4,6 +4,7 @@ import { Controller, Post, Body, UnauthorizedException, Req } from '@nestjs/comm
 import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginHistoryService } from 'src/login-history/login-history.service';
+import { UserService } from 'src/user/user.service';
 
 @Controller('auth')
 export class AuthController {
@@ -11,6 +12,7 @@ export class AuthController {
     constructor(
         private readonly authService: AuthService,
         private readonly loginHistoryService: LoginHistoryService,
+        private readonly userService: UserService,
     ) { }
 
     @Post('login')
@@ -32,12 +34,18 @@ export class AuthController {
             (req as any).socket?.remoteAddress ||
             'unknown';  // 모든 방식 실패 시 fallback 
 
+        // 유저 객체 먼저 확보 
+        const user = await this.userService.findOrCreate(address);
+
         // 로그인 기록 저장
-        await this.loginHistoryService.create({
-            walletAddress: address,
-            ipAddress: ip,
-            userAgent: req.headers['user-agent']?.toString() ?? '',
-        })
+        await this.loginHistoryService.createWithUser(
+            {
+                walletAddress: address,
+                ipAddress: ip,
+                userAgent: req.headers['user-agent'] ?? '',
+            },
+            user // 별도 인자로 전달
+        );
 
         // JWT 토큰 발급 
         return this.authService.login(address);
