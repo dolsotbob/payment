@@ -1,6 +1,7 @@
 // utils/walletLogin.ts
 // 지갑 주소 + 서명 기반 로그인 
 import { ethers } from 'ethers';
+import { requestLoginToken } from '../api/auth';
 import axios from 'axios';
 
 export const connectAndLogin = async (
@@ -23,13 +24,7 @@ export const connectAndLogin = async (
         console.log('message', message);
         console.log('signature:', signature);
 
-        const res = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/auth/login`, {
-            address,
-            message,
-            signature,
-        });
-
-        const token = res.data.access_token;
+        const token = await requestLoginToken(address, message, signature);
         localStorage.setItem('token', token);
         onAccountConnected(address);  // App.tsx의 setAccount에 반영 
     } catch (error) {
