@@ -16,7 +16,8 @@ export const connectAndLogin = async (
         const signer = await provider.getSigner();
         const address = await signer.getAddress();
 
-        const message = `Login to My Little Coin Cart at ${new Date().toISOString()}`;
+        const message = "Login to My Little Coin Cart (test)";
+        // const message = `Login to My Little Coin Cart at ${new Date().toISOString()}`;
         const signature = await signer.signMessage(message);
         console.log('address', address);
         console.log('message', message);
