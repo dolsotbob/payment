@@ -5,6 +5,7 @@ import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginHistoryService } from 'src/login-history/login-history.service';
 import { UserService } from 'src/user/user.service';
+import { LoginDto } from './dto /login.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -17,7 +18,7 @@ export class AuthController {
 
     @Post('login')
     async login(
-        @Body() body: { address: string; message: string; signature: string },
+        @Body() body: LoginDto,
         @Req() req: Request
     ) {
         const { address, message, signature } = body;
