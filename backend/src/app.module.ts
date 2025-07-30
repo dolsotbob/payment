@@ -37,7 +37,7 @@ import { AuthModule } from './auth/auth.module';
     CashbackModule, // DB에서 캐시백 대상 조회 -> 스마트 컨트랙트 호출로 캐시백 처리 
     ScheduleModule.forRoot(), // // Cron을 NestJS에 활성화
     ScheduleFeatureModule,  // @Cron 스케줄러를 통해 주기적으로 CashbackService.processCashbacks() 실행 
-    ShippingInfoModule, AuthModule,
+    ShippingInfoModule,
   ],
   controllers: [AppController],
 })
