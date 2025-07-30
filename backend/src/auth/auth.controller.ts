@@ -41,7 +41,7 @@ export class AuthController {
         await this.loginHistoryService.createWithUser(
             {
                 walletAddress: address,
-                ipAddress: ip,
+                ipAddress: ip.toString(),
                 userAgent: req.headers['user-agent'] ?? '',
             },
             user // 별도 인자로 전달
