@@ -6,8 +6,9 @@ export class LoginHistory {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => User, (user) => user.loginHistories, { onDelete: 'CASCADE' })
-    user: User;
+    // 로그인 시점의 지갑 주소를 별도로 기록 (user.walletAddress와 중복되더라도 히스토리 관리용)
+    @Column({ length: 66 })
+    walletAddress: string;
 
     @Column({ length: 45 })
     ipAddress: string;
@@ -18,4 +19,7 @@ export class LoginHistory {
     @CreateDateColumn()
     loginAt: Date;
 
+    @ManyToOne(() => User, (user) => user.loginHistories, { onDelete: 'CASCADE' })
+    user: User;
 }
+

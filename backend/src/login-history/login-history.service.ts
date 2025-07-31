@@ -19,8 +19,14 @@ export class LoginHistoryService {
         return this.createWithUser(dto, user); // 내부 재사용
     }
 
-    createWithUser(dto: CreateLoginHistoryDto, user: User): Promise<LoginHistory> {
-        const record = this.loginHistoryRepo.create({ user, ipAddress: dto.ipAddress, userAgent: dto.userAgent });
+    async createWithUser(dto: CreateLoginHistoryDto, user: User): Promise<LoginHistory> {
+        const record = this.loginHistoryRepo.create({
+            walletAddress: dto.walletAddress,
+            ipAddress: dto.ipAddress,
+            userAgent: dto.userAgent,
+            user
+        });
+
         return this.loginHistoryRepo.save(record);
     }
 
