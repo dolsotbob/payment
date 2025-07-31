@@ -1,7 +1,7 @@
 // src/components/LogoutButton.tsx
 import React from 'react';
 import './css/Logout.css'
-import doorImage from '../images/door.png'
+import doorImage from '../images/door_new.png'
 
 interface LogoutButtonProps {
     onLogout: () => void;
