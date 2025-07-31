@@ -4,7 +4,7 @@ import { IsString, IsOptional, IsEthereumAddress } from 'class-validator';
 
 export class CreateLoginHistoryDto {
     @IsEthereumAddress()
-    walletAddress: string; // 지갑 주소 (User 식별용)
+    address: string; // 지갑 주소 (User 식별용)
 
     @IsString()
     ipAddress: string;

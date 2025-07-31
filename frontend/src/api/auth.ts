@@ -4,6 +4,10 @@
 import api from './axios';
 
 export const requestLoginToken = async (address: string, message: string, signature: string) => {
-    const response = await api.post('/auth/login', { address, message, signature });
+    const response = await api.post('/auth/login', {
+        address,
+        message,
+        signature
+    });
     return response.data.access_token;
 };

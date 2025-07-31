@@ -2,7 +2,6 @@
 // 지갑 주소 + 서명 기반 로그인 
 import { ethers } from 'ethers';
 import { requestLoginToken } from '../api/auth';
-import axios from 'axios';
 
 export const connectAndLogin = async (
     onAccountConnected: (address: string) => void
@@ -17,8 +16,8 @@ export const connectAndLogin = async (
         const signer = await provider.getSigner();
         const address = await signer.getAddress();
 
-        // const message = "Login to My Little Coin Cart (test)";
-        const message = `Login to My Little Coin Cart at ${new Date().toISOString()}`;
+        const message = "Login Test";
+        // const message = `Login to My Little Coin Cart at ${new Date().toISOString()}`;
         const signature = await signer.signMessage(message);
         console.log('address', address);
         console.log('message', message);
