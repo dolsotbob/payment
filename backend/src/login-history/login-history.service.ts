@@ -15,13 +15,13 @@ export class LoginHistoryService {
     ) { }
 
     async create(dto: CreateLoginHistoryDto): Promise<LoginHistory> {
-        const user = await this.userService.findOrCreate(dto.address);
+        const user = await this.userService.findOrCreate(dto.walletAddress);
         return this.createWithUser(dto, user); // 내부 재사용
     }
 
     async createWithUser(dto: CreateLoginHistoryDto, user: User): Promise<LoginHistory> {
         const record = this.loginHistoryRepo.create({
-            walletAddress: dto.address,
+            walletAddress: dto.walletAddress,
             ipAddress: dto.ipAddress,
             userAgent: dto.userAgent,
             user
