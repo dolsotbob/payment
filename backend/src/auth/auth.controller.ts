@@ -12,6 +12,7 @@ export class AuthController {
 
     @Post('login')
     async login(@Body() body: LoginDto, @Req() req: Request) {
+        console.log('📩 로그인 요청 도착:', body);
         // JWT 토큰 발급 
         return this.authService.loginWithSignature(body, req);
     }

@@ -41,6 +41,7 @@ export class AuthService {
     }
 
     async loginWithSignature(body: LoginDto, req: Request) {
+        console.log('✅ loginWithSignature 실행됨');
         const { address, message, signature } = body;
 
         const isValid = await this.verifySignature(address, message, signature);
