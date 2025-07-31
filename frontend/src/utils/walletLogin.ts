@@ -16,7 +16,7 @@ export const connectAndLogin = async (
         const signer = await provider.getSigner();
         const address = await signer.getAddress();
 
-        const message = "Login Test";   // 실제 배포 시 아래 코드로 변경 
+        const message = "Login Test";   // 실제 배포 시 리플레이 공격 방지 위해 아래 코드로 변경 
         // const message = `Login to My Little Coin Cart at ${new Date().toISOString()}`;
         const signature = await signer.signMessage(message);
         console.log('address', address);

@@ -1,6 +1,8 @@
 // src/components/Navbar.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
+import storeImage from '../images/online-shop.png'
+import './css/Navbar.css'
 
 interface NavbarProps {
     account: string | null;
@@ -8,29 +10,24 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ account }) => {
     return (
-        <nav style={{
-            backgroundColor: '#f5f5f5',
-            padding: '1rem',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '2rem',
-        }}>
+        <nav className='nav'>
 
             <div>
-                <Link to="/" style={{ marginRight: '1rem', fontSize: '2rem' }}>🛍️</Link>
+                <Link to="/" className="store-link">
+                    <img src={storeImage} alt="Store Image" className='store-image'></img>
+                </Link>
             </div>
 
             {/* {account && (
-                <p className="wallet-info" style={{ fontSize: '1.5rem', color: '#333' }}>
-                    🦊 {account}
-                </p>
+                <p className="wallet-info">🦊 {account}</p>
             )} */}
 
-            <div style={{ display: 'flex', alignItems: 'center', fontSize: '2rem' }}>
-                <Link to="/payment-history" style={{ marginRight: '1rem' }}>🧾</Link>
-                <Link to="/mypage" style={{ marginRight: '1rem' }}>👤</Link>
-            </div>
+            {account && (
+                <div className='nav-right'>
+                    <Link to="/payment-history">🧾</Link>
+                    <Link to="/mypage">👤</Link>
+                </div>
+            )}
 
         </nav>
     )

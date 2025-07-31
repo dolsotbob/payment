@@ -15,7 +15,7 @@ const ProductList: React.FC<ProductListProps> = ({ products, onPurchase }) => {
 
     return (
         <div className="product-list">
-            <h2 className="product-list-title">⭐️ NEW ARRIVALS ⭐️</h2>
+            <h2 className="product-list-title">🎉 NEW ARRIVALS 🎉</h2>
 
             {/* 가로 스크롤 가능한 캐러셀 */}
             <div className="carousel-container">

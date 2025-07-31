@@ -4,15 +4,13 @@ import React, { useState, useEffect, useCallback } from 'react';  // React 라�
 import { Product, ShippingInfo } from '../types';
 import ProductList from '../components/ProductList';
 import { ShippingForm } from '../components/ShippingForm';
-import { connectAndLogin } from '../utils/walletLogin';
 import LogoutButton from '../components/LogoutButton';
 import PayButton from '../components/PayButton';
 import Modal from '../components/Modal';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './paymentPage.css';
-import mainImage from '../images/payment_main_img.jpg';
-import { Log } from 'ethers';
+import HeroSection from '../components/HeroSection';
 
 interface Props {
     account: string | null;  // 유저 주소 
@@ -102,7 +100,8 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin, onLogout }) => {
 
     return (
         <div>
-            <h1 className='store-name'>🛍️ My Little Coin Cart</h1>
+            {/* 🛍️  */}
+            <h1 className='store-name'>My Little Coin Cart</h1>
 
             {!account || !localStorage.getItem('token') ? (
                 <button onClick={onLogin} className="connect-wallet-button">
@@ -115,11 +114,7 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin, onLogout }) => {
                 </>
             )}
 
-            <img
-                src={mainImage}
-                alt="Payment Visual"
-                className="main-image"
-            />
+            <HeroSection />
 
             {products.length === 0 ? (
                 <p>상품 목록을 불러오는 중입니다...</p>
