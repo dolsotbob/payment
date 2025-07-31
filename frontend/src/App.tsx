@@ -18,9 +18,14 @@ const App: React.FC = () => {
     await connectAndLogin(setAccount);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // JWT 제거
+    setAccount(null); // 상태 초기화
+  };
+
   return (
     <Router>
-      <Navbar account={account} />
+      <Navbar account={account} onLogout={handleLogout} />
       <div className='container'>
         <Routes>
           <Route path="/mypage" element={<ProfilePage />} />
@@ -28,7 +33,6 @@ const App: React.FC = () => {
             <PaymentPage
               account={account}
               onLogin={handleLoginWithWallet}
-              onLogout={() => setAccount(null)}
             />}
           />
           <Route path="/payment-history" element={

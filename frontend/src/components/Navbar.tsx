@@ -3,12 +3,14 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import storeImage from '../images/online-shop.png'
 import './css/Navbar.css'
+import LogoutButton from '../components/LogoutButton';
 
 interface NavbarProps {
     account: string | null;
+    onLogout: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ account }) => {
+const Navbar: React.FC<NavbarProps> = ({ account, onLogout }) => {
     return (
         <nav className='nav'>
 
@@ -26,6 +28,7 @@ const Navbar: React.FC<NavbarProps> = ({ account }) => {
                 <div className='nav-right'>
                     <Link to="/payment-history">🧾</Link>
                     <Link to="/mypage">👤</Link>
+                    <LogoutButton onLogout={onLogout} />
                 </div>
             )}
 

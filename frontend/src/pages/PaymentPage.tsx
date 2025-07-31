@@ -4,7 +4,6 @@ import React, { useState, useEffect, useCallback } from 'react';  // React 라�
 import { Product, ShippingInfo } from '../types';
 import ProductList from '../components/ProductList';
 import { ShippingForm } from '../components/ShippingForm';
-import LogoutButton from '../components/LogoutButton';
 import PayButton from '../components/PayButton';
 import Modal from '../components/Modal';
 import { ToastContainer } from 'react-toastify';
@@ -15,10 +14,9 @@ import HeroSection from '../components/HeroSection';
 interface Props {
     account: string | null;  // 유저 주소 
     onLogin: () => void;
-    onLogout: () => void;
 }
 
-const PaymentPage: React.FC<Props> = ({ account, onLogin, onLogout }) => {
+const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
     const [products, setProducts] = useState<Product[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [shippingInfo, setShippingInfo] = useState<ShippingInfo | null>(null);
@@ -108,10 +106,7 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin, onLogout }) => {
                     🦊 지갑으로 로그인
                 </button>
             ) : (
-                <>
-                    <p>✅ 연결된 지갑: {account}</p>
-                    <LogoutButton onLogout={onLogout} />
-                </>
+                <p>✅ 연결된 지갑: {account}</p>
             )}
 
             <HeroSection />
