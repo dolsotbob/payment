@@ -65,3 +65,4 @@ export class Payment {
     })
     product: Product;
 }
+
