@@ -32,6 +32,9 @@ export const sendPaymentToBackend = async (
 
         // 프론트에선 ether → wei 변환 후 string으로 전송
         const weiAmount = ethers.parseUnits(amount).toString();
+        const cashbackAmountInWei = cashbackAmount
+            ? ethers.parseUnits(cashbackAmount).toString()
+            : '0';
 
         // gasUsed와 gasCost는 optional
         const gasUsedStr = gasUsed?.toString();
@@ -41,7 +44,7 @@ export const sendPaymentToBackend = async (
             txHash: txHash,
             from: userAddress,
             amount: weiAmount,
-            cashbackAmount: cashbackAmount ?? '0',
+            cashbackAmount: cashbackAmountInWei,
             status,
             productId,
             ...(gasUsedStr && { gasUsed: gasUsedStr }),
