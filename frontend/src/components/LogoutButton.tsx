@@ -14,8 +14,8 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({ onLogout }) => {
     };
 
     return (
-        <button onClick={handleLogout} className="logout-button">
-            <img src={doorImage} alt='door image' className='doorImage'></img>
+        <button onClick={handleLogout} className="logout-button">🚪
+            {/* <img src={doorImage} alt='door image' className='doorImage'></img> */}
         </button>
     );
 };
