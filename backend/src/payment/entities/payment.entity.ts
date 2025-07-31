@@ -12,15 +12,24 @@ export class Payment {
     id: number;
 
     @Column()
+    txHash: string;
+
+    @Column()
     from: string; // 결제자 지갑 주소
 
     @Column('numeric', { precision: 78, scale: 0 }) // wei 단위, 큰 정수 
     amount: string; // 결제 금액 (문자열로 저장)
 
-    //     @Column({ type: 'varchar', nullable: true })
+    // @Column({ type: 'varchar', nullable: true })
     // cashbackAmount: string;
     @Column('numeric', { precision: 78, scale: 0, default: '0' })
     cashbackAmount: string; // 캐시백 금액 (wei, 문자열로 저장)
+
+    @Column({ nullable: true })
+    gasUsed?: string;
+
+    @Column({ nullable: true })
+    gasCost?: string;
 
     @Column({
         type: 'enum',
@@ -34,9 +43,6 @@ export class Payment {
         default: CashbackStatus.PENDING,
     })
     cashbackStatus: CashbackStatus;
-
-    @Column()
-    txHash: string; // 결제 트랜잭션 해시
 
     @Column({ nullable: true })
     cashbackTxHash: string; // 캐시백 트랜잭션 해시 

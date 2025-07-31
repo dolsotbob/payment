@@ -30,7 +30,14 @@ export class PaymentService {
     // DTO를 복사한 후 status: 'PENDING'을 추가해 DB에 저장할 객체를 만든다 
     // 아직 .save()는 하지 않는다 
     try {
-      const { productId, status, ...rest } = createPaymentDto;
+      const { productId,
+        status,
+        txHash,
+        from,
+        amount,
+        cashbackAmount,
+        gasUsed,
+        gasCost, } = createPaymentDto;
 
       let product = null;
       if (productId) {
@@ -42,7 +49,12 @@ export class PaymentService {
       }
 
       const payment = this.paymentRepository.create({
-        ...rest,
+        txHash,
+        from,
+        amount,
+        cashbackAmount,
+        gasUsed,
+        gasCost,
         status: createPaymentDto.status || PaymentStatus.PENDING,
         cashbackStatus: CashbackStatus.PENDING, // 아직 지급 안 됐으므로 
         product,

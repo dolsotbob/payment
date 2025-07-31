@@ -15,6 +15,7 @@ export class PaymentController {
   // Relayer 서버에서 결제 정보 전송 시 사용
   @Post()
   create(@Body() createPaymentDto: CreatePaymentDto) {
+    console.log('💡 수신된 결제 요청:',);  // 확인 로그
     return this.paymentService.create(createPaymentDto);
   }
 

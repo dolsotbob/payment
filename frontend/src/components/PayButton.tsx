@@ -85,7 +85,9 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
                 'SUCCESS',
                 account,
                 cashbackAmount,
-                productId
+                productId,
+                receipt.gasUsed,
+                receipt.effectiveGasPrice
             );
 
             // 8. 유저에게 완료 알림 

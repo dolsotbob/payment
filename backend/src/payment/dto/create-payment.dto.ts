@@ -24,11 +24,11 @@ export class CreatePaymentDto {
     cashbackAmount?: string;
 
     @IsOptional()
-    @IsString()
+    @Matches(/^\d+$/, { message: 'gasUsed는 숫자 문자열(wei 단위)이어야 합니다.' })
     gasUsed?: string;
 
     @IsOptional()
-    @IsString()
+    @Matches(/^\d+$/, { message: 'gasCost는 숫자 문자열(wei 단위)이어야 합니다.' })
     gasCost?: string;
 
     @IsEnum(PaymentStatus, { message: 'status는 SUCCESS 또는 FAILED 중 하나여야 합니다.' })
