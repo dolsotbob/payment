@@ -7,3 +7,13 @@
     border-radius: 6px;
     cursor: pointer;
 }
+
+.doorImage {
+    width: 50px;
+    /* 또는 80px, 100px 등 더 크게 */
+    height: auto;
+    /* 비율 유지 */
+    object-fit: contain;
+    display: inline-block;
+    margin-right: 1rem;
+}
