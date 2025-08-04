@@ -1,4 +1,5 @@
 // 최근 결제 요약 + 배송 상태 
+// 나중에 배송 상태 반영 기능 업데이트 
 import React from 'react';
 import './MyPage.css';
 

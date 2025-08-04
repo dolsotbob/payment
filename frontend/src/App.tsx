@@ -4,11 +4,10 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import { connectAndLogin } from './utils/walletLogin';
-import ProfilePage from './pages/ProfilePage';
 import PaymentHistory from './pages/PaymentHistory';
 import PaymentPage from './pages/PaymentPage';
 import Footer from './components/Footer';
-import { ethers } from 'ethers';
+import MyPage from './pages/MyPage';
 import './App.css';
 
 const App: React.FC = () => {
@@ -28,7 +27,6 @@ const App: React.FC = () => {
       <Navbar account={account} onLogout={handleLogout} />
       <div className='container'>
         <Routes>
-          <Route path="/mypage" element={<ProfilePage />} />
           <Route path="/" element={
             <PaymentPage
               account={account}
@@ -38,6 +36,7 @@ const App: React.FC = () => {
           <Route path="/payment-history" element={
             account ? <PaymentHistory account={account} /> : <p>🦊 지갑을 먼저 연결해주세요</p>
           } />
+          <Route path="/mypage" element={<MyPage />} />
         </Routes>
         <Footer />
       </div>

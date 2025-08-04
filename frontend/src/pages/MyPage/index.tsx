@@ -1,10 +1,9 @@
 // 라우팅에 의해 보여지는 하나의 "페이지" 컴포넌트 
 // src/pages/MyPage/index.tsx 
 
-import '../MyPage/MyPage.css';
-
 import UserInfo from '../../components/MyPage/UserInfo';
 import RewardInfo from '../../components/MyPage/RewardInfo';
+import ProfileInfo from '../../components/MyPage/ProfileInfo';
 import WalletManager from '../../components/MyPage/WalletManager';
 import OrderHistory from '../../components/MyPage/OrderHistory';
 import CartPreview from '../../components/MyPage/CartPreview';
@@ -21,6 +20,7 @@ const MyPage = () => {
 
             <UserInfo />
             <RewardInfo />
+            <ProfileInfo />
             <WalletManager />
             <AddressManager />
             <OrderHistory />

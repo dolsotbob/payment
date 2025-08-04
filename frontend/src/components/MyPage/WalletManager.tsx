@@ -1,3 +1,5 @@
+// 나중에 지갑연결하면 여기서 잔액 확인할 수 있도록 + 자산 송금/받기 할 수 있도록 하기 
+
 import React, { useEffect, useState } from 'react';
 import './MyPage.css';
 

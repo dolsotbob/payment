@@ -1,9 +1,10 @@
 // 로그인 후 조회 페이지 
+// 나중에 username, userId, 이메일 여기서 저장하고 표시되게 하기 
 
 import React, { useEffect, useState } from 'react';
-import { getProfile } from '../api/user';
+import { getProfile } from '../../api/user';
 
-const ProfilePage: React.FC = () => {
+const ProfileInfo: React.FC = () => {
     const [user, setUser] = useState<any>(null);
 
     useEffect(() => {
@@ -26,4 +27,4 @@ const ProfilePage: React.FC = () => {
     );
 };
 
-export default ProfilePage; 
+export default ProfileInfo; 

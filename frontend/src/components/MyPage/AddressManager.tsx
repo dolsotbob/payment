@@ -1,3 +1,6 @@
+// 나중에는 주소 저장하면 DB에도 저장되고, 
+// 결제할 때 배송지 저장하면 DB에 저장되고 여기에 자동 반영되도록 업데이트 하기 
+
 import React, { useState, useEffect } from 'react';
 import './MyPage.css';
 
