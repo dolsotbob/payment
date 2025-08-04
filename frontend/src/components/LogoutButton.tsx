@@ -1,7 +1,6 @@
 // src/components/LogoutButton.tsx
 import React from 'react';
 import './css/Logout.css'
-import doorImage from '../images/door_new.png'
 
 interface LogoutButtonProps {
     onLogout: () => void;
@@ -15,7 +14,6 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({ onLogout }) => {
 
     return (
         <button onClick={handleLogout} className="logout-button">🚪
-            {/* <img src={doorImage} alt='door image' className='doorImage'></img> */}
         </button>
     );
 };
