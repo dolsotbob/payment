@@ -8,12 +8,31 @@
     cursor: pointer;
 }
 
-.doorImage {
+/* .doorImage {
     width: 50px;
-    /* 또는 80px, 100px 등 더 크게 */
     height: auto;
-    /* 비율 유지 */
     object-fit: contain;
     display: inline-block;
     margin-right: 1rem;
+    background-color: transparent;
+} */
+
+.logout-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-right: 1rem;
+    color: #4682B4;
+    /* 기본 파란색 계열 (steelblue) */
+}
+
+.logout-button:hover {
+    color: #1E90FF;
+    /* hover 시 더 밝은 파란 계열 (dodgerblue) */
+}
+
+.logout-icon {
+    display: inline-block;
+    object-fit: contain;
 }

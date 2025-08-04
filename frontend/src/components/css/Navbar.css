@@ -30,8 +30,8 @@
     display: flex;
     align-items: center;
     font-size: 2rem;
-}
-
-.nav-right a {
-    margin-right: 1rem;
+    /* 자식 요소들 간의 간격 균일 적용 */
+    gap: 1.5rem;
+    /* 전체적으로 우측 여백 확보 */
+    padding-right: 1rem;
 }
