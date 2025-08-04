@@ -1,6 +1,7 @@
-// Vault(UUPS), Payment를 한 번에 배포하고, 필요한 주소 연동까지 자동으로 처리 
+// Vault(UUPS), Timelock, Payment를 한 번에 배포하고, 필요한 주소 연동까지 자동으로 처리 
 // 🧩 배포 스크립트 구성은 이렇게 하면 좋아요:
 // 1.	Vault.solIUUPS) → 가장 먼저 배포
+// 2.   Timelock Controller 배포  
 // 3.	Payment.sol → Vault 주소를 생성자에 넣어야 할 수도 있음
 
 import { ethers, upgrades } from 'hardhat';
@@ -44,7 +45,26 @@ async function main() {
 
     await makeAbi('Vault', vaultProxyAddress);
 
-    // ✅ 2. Payment 배포 
+    // ✅ 2. TimelockController 배포
+    console.log('🔹 Deploying TimelockController...');
+    const proposers = [deployerAddress];
+    const executors = [deployerAddress];
+
+    const TimelockFactory = await ethers.getContractFactory('TimelockController');
+    const timelock = await TimelockFactory.deploy(minDelay, proposers, executors, deployerAddress);
+    await timelock.waitForDeployment();
+    const timelockAddress = await timelock.getAddress();
+    console.log(`✅ TimelockController deployed: ${timelockAddress}`);
+    console.log(`👉 .env에 추가하세요: TIMELOCK_ADDRESS=${timelockAddress}`);
+
+    // ✅ 3. Vault 소유권 Timelock에 이전 
+    console.log('🔹 Transferring ownership to Timelock...');
+    const vault = await ethers.getContractAt('Vault', vaultProxyAddress);
+    const tx = await vault.transferOwnership(timelockAddress);
+    await tx.wait();
+    console.log(`✅ Vault 소유권이 TimelockController로 이전됨`);
+
+    // ✅ 4. Payment 배포 
     console.log('🔹 Deploying Payment...');
     const PaymentFactory = await ethers.getContractFactory('Payment');
     const payment = await PaymentFactory.deploy(tokenAddress, vaultProxyAddress);
@@ -54,17 +74,24 @@ async function main() {
     console.log(`👉 .env에 추가하세요: PAYMENT_ADDRESS=${paymentAddress}`);
     await makeAbi('Payment', paymentAddress);
 
-    // ✅ 3. Vault에 Payment 등록
-    console.log('🔹 Setting paymentContract on Vault...');
-    const tx = await vaultProxy.connect(deployer).setPaymentContract(paymentAddress);
-    await tx.wait();
-    console.log(`✅ vault.setPaymentContract(${paymentAddress}) 완료`);
+    // ❗Vault.setPaymentContract는 이제 Timelock이 owner이므로 직접 호출 불가
+    console.log('📝 이제 Timelock을 통해 Vault.setPaymentContract() 예약 실행 필요');
 
-    console.log('🎉 Vault & Payment 배포 및 연결 완료!');
+    console.log('\n🎉 Vault + Timelock + Payment 배포 완료');
+    console.log(`🔑 Timelock address: ${timelockAddress}`);
+    console.log(`🧾 Vault Proxy address: ${vaultProxyAddress}`);
+    console.log(`💸 Payment address: ${paymentAddress}`);
+
+    // // ✅ 5. Vault에 Payment 등록
+    // console.log('🔹 Setting paymentContract on Vault...');
+    // const tx = await vaultProxy.connect(deployer).setPaymentContract(paymentAddress);
+    // await tx.wait();
+    // console.log(`✅ vault.setPaymentContract(${paymentAddress}) 완료`);
+
+    // console.log('🎉 Vault & Payment 배포 및 연결 완료!');
 }
 
 main().catch((error) => {
     console.error('❌ Vault & Payment 배포 실패:', error);
     process.exitCode = 1;
 });
-
