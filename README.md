@@ -15,3 +15,6 @@ Built with React, NestJS, Solidity, and PostgreSQL.
 | Backend         | NestJS + TypeORM + PostgreSQL + Render       |
 | Smart Contracts | Solidity + Hardhat + OpenZeppelin            |
 | Blockchain      | KAIA Testnet                                 |
+
+## 개발 로그 (Dev log in Korean) 
+https://www.notion.so/RB-2-1-224a6b10af3a80eface9c474d328c058?source=copy_link
