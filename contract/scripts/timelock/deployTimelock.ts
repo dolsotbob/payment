@@ -12,7 +12,7 @@ async function main() {
     const executors = [deployer.address];  // 출금 실행 권한자 
     const admin = deployer.address; // 단일 주소로 지정 
 
-    const Timelock = await ethers.getContractFactory('TimelockController');
+    const Timelock = await ethers.getContractFactory('TimelockControllerWrapper');
     const timelock = await Timelock.deploy(minDelay, proposers, executors, admin);
     await timelock.waitForDeployment();
 

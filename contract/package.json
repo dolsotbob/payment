@@ -6,6 +6,7 @@
     "compile": "npx hardhat compile",
     "deploy:vault": "npx hardhat run scripts/deployVault.ts --network kairos",
     "deploy:vaultUpgrade": "npx hardhat run scripts/upgradeVaultToV3.ts --network kairos",
+    "deploy:timelock": "npx hardhat run scripts/timelock/deployTimelock.ts --network kairos",
     "deploy:payment": "npx hardhat run scripts/deployPayment.ts --network kairos",
     "deploy:testToken": "npx hardhat run scripts/deployTestToken.ts --network kairos",
     "deploy:transferTEST": "npx hardhat run scripts/transferTEST.ts --network kairos",
