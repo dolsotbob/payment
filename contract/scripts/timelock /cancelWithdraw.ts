@@ -3,6 +3,17 @@ import { ethers } from "hardhat";
 import 'dotenv/config';
 
 async function main() {
+    const args = process.argv.slice(2); // 인자 추출
+    console.log(process.argv);
+
+    if (args.length < 2) {
+        console.error("❗ 사용법: npx hardhat run cancelWithdraw.ts --network <network> <recipient> <amount>");
+        process.exit(1);
+    }
+
+    const [recipient, amountStr] = args;
+    const amount = ethers.parseUnits(amountStr, 18);
+
     const timelock = await ethers.getContractAt(
         "TimelockController",
         process.env.TIMELOCK_ADDRESS!
@@ -12,9 +23,6 @@ async function main() {
         "Vault", // 또는 VaultV3
         process.env.VAULT_ADDRESS!
     );
-
-    const recipient = "0x1234..."; // 💡 취소할 withdraw 대상
-    const amount = ethers.parseUnits("100", 18); // 💡 취소할 금액
 
     const encoded = vault.interface.encodeFunctionData("withdraw", [recipient, amount]);
 
@@ -26,7 +34,9 @@ async function main() {
         salt: ethers.id("withdraw-salt-01"), // ❗ 예약할 때 사용한 것과 동일해야 함
     };
 
-    const cancelTx = await timelock.cancel(
+    console.log(`🚫 예약 취소 시도 → recipient: ${recipient}, amount: ${amountStr}`);
+
+    const cancelTx = await (timelock as any).cancel(
         cancelParams.target,
         cancelParams.value,
         cancelParams.data,

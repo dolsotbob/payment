@@ -5,18 +5,24 @@ import 'dotenv/config';
 
 async function main() {
     const [deployer] = await ethers.getSigners();
-    console.log(`\u2728 Deploying TimelockController as: ${deployer.address}`);
+    console.log(`✨ Deploying TimelockController as: ${deployer.address}`);
 
     const minDelay = 3600;  // 1 hour
     const proposers = [deployer.address];  // 출금 예약 권한자 
     const executors = [deployer.address];  // 출금 실행 권한자 
+    const admin = deployer.address; // 단일 주소로 지정 
 
     const Timelock = await ethers.getContractFactory('TimelockController');
-    const timelock = await Timelock.deploy(minDelay, proposers, executors);
+    const timelock = await Timelock.deploy(minDelay, proposers, executors, admin);
     await timelock.waitForDeployment();
 
+    const CANCELLER_ROLE = await timelock.getFunction('CANCELLER_ROLE')();
+
+    // 반드시 필요: cancelWithdraw.ts를 실행할 계정에게 CANCELLER_ROLE 부여 
+    await (timelock as any).grantRole(CANCELLER_ROLE, deployer.address);
+
     const timelockAddress = await timelock.getAddress();
-    console.log(`\u2705 TimelockController deployed at: ${timelockAddress}`);
+    console.log(`✅ TimelockController deployed at: ${timelockAddress}`);
     console.log(`👉 .env에 TIMLOCK_ADDRESS=${timelockAddress} 추가하세요`);
 }
 
