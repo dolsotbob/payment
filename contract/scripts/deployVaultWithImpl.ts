@@ -4,6 +4,8 @@
 
 import { ethers, upgrades } from 'hardhat';
 import { makeAbi } from './abiGenerator';
+import fs from 'fs';
+import path from 'path';
 import 'dotenv/config'
 
 async function main() {
@@ -36,11 +38,35 @@ async function main() {
     const adminAddress = await upgrades.erc1967.getAdminAddress(vaultProxyAddress);
 
     console.log(`✅ Proxy (VAULT_ADDRESS): ${vaultProxyAddress}`);
-    console.log(`🧠 Implementation address:        ${vaultImplAddress}`);
+    console.log(`🧠 Implementation address: ${vaultImplAddress}`);
     console.log(`🛠  ProxyAdmin address (internal): ${adminAddress}`);
 
     // 4. ABI 파일 저장 
     await makeAbi('Vault', vaultProxyAddress);
+
+    // 5. .env에 VAULT_ADDRESS 업데이트 
+    // .env 파일 경로
+    const envPath = path.resolve(__dirname, '..', '.env');
+
+    // 기존 .env 파일 읽기 (없으면 빈 문자열)
+    let envContent = '';
+    try {
+        envContent = fs.readFileSync(envPath, 'utf8');
+    } catch (err) {
+        console.warn('⚠️ .env 파일이 없어서 새로 생성합니다.');
+    }
+
+    // VAULT_ADDRESS 업데이트 또는 추가
+    const newLine = `VAULT_ADDRESS=${vaultProxyAddress}`;
+    if (envContent.includes('VAULT_ADDRESS=')) {
+        envContent = envContent.replace(/VAULT_ADDRESS=.*/g, newLine);
+    } else {
+        envContent += `\n${newLine}`;
+    }
+
+    // 저장
+    fs.writeFileSync(envPath, envContent.trim() + '\n');
+    console.log(`✅ .env 파일에 VAULT_ADDRESS=${vaultProxyAddress} 저장 완료`);
 }
 
 main().catch((error) => {

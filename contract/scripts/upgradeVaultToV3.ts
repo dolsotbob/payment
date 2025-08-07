@@ -1,24 +1,30 @@
 // scripts/upgradeVaultToV3.ts
+
 import { ethers, upgrades } from 'hardhat';
 import 'dotenv/config';
 
 async function main() {
-    const VAULT_PROXY = process.env.VAULT_ADDRESS!;
-    if (!VAULT_PROXY) throw new Error("❌ .env에 VAULT_ADDRESS를 설정하세요");
+    const vaultProxyAddress = process.env.VAULT_ADDRESS!;
+    if (!vaultProxyAddress) {
+        throw new Error('❌ VAULT_ADDRESS is not set in the .env file.');
+    }
 
-    console.log(`🔧 Upgrading Vault Proxy at ${VAULT_PROXY} to VaultV3...`);
+    console.log(`🔍 existing Vault Proxy address: ${vaultProxyAddress}`);
+    console.log(`📦 Starting upgrade to new VaultV3 logic...`);
 
     const VaultV3 = await ethers.getContractFactory('VaultV3');
-    const upgraded = await upgrades.upgradeProxy(VAULT_PROXY, VaultV3);
+
+    const upgraded = await upgrades.upgradeProxy(vaultProxyAddress, VaultV3);
     await upgraded.waitForDeployment();
 
-    console.log(`✅ Vault successfully upgraded to VaultV3`);
-    const newImplAddress = await upgrades.erc1967.getImplementationAddress(upgraded.target as string);
-    console.log(`🧠 New Implementation Address: ${newImplAddress}`);
+    const newVaultImplAddress = await upgrades.erc1967.getImplementationAddress(vaultProxyAddress);
+    console.log(`✅ Upgrade completed!`);
+    console.log(`🔁 Proxy address (unchanged): ${await upgraded.getAddress()}`);
+    console.log(`🧠 New Implementation address: ${newVaultImplAddress}`);
 }
 
 main().catch((error) => {
-    console.error(error);
+    console.error('❌ Vault upgrade failed:', error);
     process.exitCode = 1;
 });
 

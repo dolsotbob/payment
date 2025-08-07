@@ -4,21 +4,26 @@ import { ethers, upgrades } from 'hardhat';
 import 'dotenv/config';
 
 async function main() {
-    const proxyAddress = process.env.VAULT_ADDRESS!;
-    if (!proxyAddress) {
+    const vaultProxyAddress = process.env.VAULT_ADDRESS!;
+    if (!vaultProxyAddress) {
         throw new Error('❌ .env에 VAULT_ADDRESS가 설정되어 있지 않습니다.');
     }
 
-    console.log(`🔍 기존 Vault Proxy 주소: ${proxyAddress}`);
+    console.log(`🔍 기존 Vault Proxy 주소: ${vaultProxyAddress}`);
     console.log(`📦 새로운 Vault 구현 로직 업그레이드 시작`);
 
     // 새로운 로직 컨트랙트 불러오기 
-    const VaultV2 = await ethers.getContractFactory('Vault'); // 이름은 동일하지만 로직 수정됨 
+    const VaultV2 = await ethers.getContractFactory('VaultV2');
 
-    const upgraded = await upgrades.upgradeProxy(proxyAddress, VaultV2);
+    // 업그레이드 진행 
+    const upgraded = await upgrades.upgradeProxy(vaultProxyAddress, VaultV2);
     await upgraded.waitForDeployment();
 
-    console.log(`✅ 업그레이드 완료! Proxy 주소: ${await upgraded.getAddress()}`);
+    // 업그레이드 결과 출력 
+    const newVaultImplAddress = await upgrades.erc1967.getImplementationAddress(vaultProxyAddress);
+    console.log(`✅ 업그레이드 완료!`);
+    console.log(`🔁 Proxy 주소 (변함 없음): ${await upgraded.getAddress()}`);
+    console.log(`🧠 새 Implementation 주소: ${newVaultImplAddress}`);
 }
 
 main().catch((error) => {

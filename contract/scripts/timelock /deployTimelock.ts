@@ -6,8 +6,8 @@ async function main() {
     console.log(`\u2728 Deploying TimelockController as: ${deployer.address}`);
 
     const minDelay = 3600;  // 1 hour
-    const proposers = [deployer.address];
-    const executors = [deployer.address];
+    const proposers = [deployer.address];  // 출금 예약 권한자 
+    const executors = [deployer.address];  // 출금 실행 권한자 
 
     const Timelock = await ethers.getContractFactory('TimelockController');
     const timelock = await Timelock.deploy(minDelay, proposers, executors);

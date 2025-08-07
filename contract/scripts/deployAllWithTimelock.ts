@@ -82,6 +82,8 @@ async function main() {
     console.log(`🧾 Vault Proxy address: ${vaultProxyAddress}`);
     console.log(`💸 Payment address: ${paymentAddress}`);
 
+    // 🚫 Timelock 도입 이후에는 직접 호출하지 않습니다.
+    // vault.setPaymentContract(paymentAddress)는 Timelock을 통해 실행하세요.
     // // ✅ 5. Vault에 Payment 등록
     // console.log('🔹 Setting paymentContract on Vault...');
     // const tx = await vaultProxy.connect(deployer).setPaymentContract(paymentAddress);
