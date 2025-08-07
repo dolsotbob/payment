@@ -23,7 +23,7 @@ async function main() {
 
     const timelockAddress = await timelock.getAddress();
     console.log(`✅ TimelockController deployed at: ${timelockAddress}`);
-    console.log(`👉 .env에 TIMLOCK_ADDRESS=${timelockAddress} 추가하세요`);
+    console.log(`👉 .env에 TIMELOCK_ADDRESS=${timelockAddress} 추가하세요`);
 }
 
 main().catch((error) => {
