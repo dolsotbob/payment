@@ -1,4 +1,6 @@
 // scripts/transferOwnership.ts
+// Vault 소유권 이전 
+
 import { ethers, upgrades } from 'hardhat';
 import 'dotenv/config';
 

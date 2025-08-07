@@ -1,6 +1,6 @@
 
 // Vault(UUPS) 배포 
-// ‼️ 배포 후 Vault address를 .env에 등록 
+// Proxy 배포 스크립트로 사용 
 
 import { ethers, upgrades } from 'hardhat';
 import { makeAbi } from './abiGenerator';

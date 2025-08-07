@@ -5,6 +5,11 @@
       "address": "0x7af2F4FdFe1c5B82eaa1DcC4cB7EA71edA1F0Db2",
       "txHash": "0xf7ef9a3e50d5ee9a5e410b2826651d9e677deece08a2dde983969c22dd6cf394",
       "kind": "uups"
+    },
+    {
+      "address": "0x649A2343cECEf1426294d3d77961305FA638d051",
+      "txHash": "0x63779c89929696f4a94e302ebdcfab5e3e6b4c66071142784a3e893768a532d3",
+      "kind": "uups"
     }
   ],
   "impls": {
@@ -97,6 +102,145 @@
           "t_contract(IERC20)1107": {
             "label": "contract IERC20",
             "numberOfBytes": "20"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "c0875fc20751b69ce95fea16c36ca25fc542c5c091cc1261316fc349c683f4f1": {
+      "address": "0x9fc93C663D72b56c411C4C7bA964FD78a6edABAc",
+      "txHash": "0x715308d048bae59ff24d1811943b4426612927594d644c5877d06cf1730801ca",
+      "layout": {
+        "solcVersion": "0.8.28",
+        "storage": [
+          {
+            "label": "token",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_contract(IERC20)1107",
+            "contract": "Vault",
+            "src": "contracts/Vault.sol:12"
+          },
+          {
+            "label": "treasury",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address",
+            "contract": "Vault",
+            "src": "contracts/Vault.sol:13"
+          },
+          {
+            "label": "paymentContract",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_address",
+            "contract": "Vault",
+            "src": "contracts/Vault.sol:16"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "Vault",
+            "src": "contracts/Vault.sol:173"
+          },
+          {
+            "label": "note",
+            "offset": 0,
+            "slot": "53",
+            "type": "t_string_storage",
+            "contract": "VaultV3",
+            "src": "contracts/VaultV3.sol:11"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_struct(InitializableStorage)73_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(OwnableStorage)13_storage": {
+            "label": "struct OwnableUpgradeable.OwnableStorage",
+            "members": [
+              {
+                "label": "_owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_contract(IERC20)1107": {
+            "label": "contract IERC20",
+            "numberOfBytes": "20"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
           },
           "t_uint256": {
             "label": "uint256",

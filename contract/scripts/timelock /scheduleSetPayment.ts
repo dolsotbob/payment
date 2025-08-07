@@ -1,5 +1,5 @@
 // timelock/scheduleSetPayment.ts
-// 트랜잭션 예약 (타임락 큐에 넣는 작업) )
+// vault.setPaymentContract(...) 트랜잭션 예약 (타임락 큐에 넣는 작업) )
 
 import { ethers } from 'hardhat';
 import 'dotenv/config';

@@ -1,3 +1,5 @@
+// TimeController 배포 (minDelay, proposers, executors 포함)
+
 import { ethers } from 'hardhat';
 import 'dotenv/config';
 

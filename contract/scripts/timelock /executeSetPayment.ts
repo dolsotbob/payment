@@ -1,5 +1,5 @@
 // timelock/executeSetPayment.ts
-// 예약된 트랜잭션을 실행해 Vault에 적용 
+// 예약된 vault.sePaymentContract 트랜잭션을 실행해 Vault에 적용 
 
 import { ethers } from 'hardhat';
 import 'dotenv/config';
