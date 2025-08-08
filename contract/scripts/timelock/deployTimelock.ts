@@ -1,6 +1,8 @@
 // TimeController 배포 (minDelay, proposers, executors 포함)
 
 import { ethers } from 'hardhat';
+import fs from 'fs';
+import path from 'path';
 import 'dotenv/config';
 
 async function main() {
@@ -24,6 +26,30 @@ async function main() {
     const timelockAddress = await timelock.getAddress();
     console.log(`✅ TimelockController deployed at: ${timelockAddress}`);
     console.log(`👉 .env에 TIMELOCK_ADDRESS=${timelockAddress} 추가하세요`);
+
+    // 5. .env에 TIMELOCK_ADDRESS 업데이트 
+    // .env 파일 경로
+    const envPath = path.resolve(__dirname, '..', '.env');
+
+    // 기존 .env 파일 읽기 (없으면 빈 문자열)
+    let envContent = '';
+    try {
+        envContent = fs.readFileSync(envPath, 'utf8');
+    } catch (err) {
+        console.warn('⚠️ .env 파일이 없어서 새로 생성합니다.');
+    }
+
+    // TIMELOCK_ADDRESS 업데이트 또는 추가
+    const newLine = `TIMELOCK_ADDRESS=${timelockAddress}`;
+    if (envContent.includes('TIMELOCK_ADDRESS=')) {
+        envContent = envContent.replace(/TIMELOCK_ADDRESS=.*/g, newLine);
+    } else {
+        envContent += `\n${newLine}`;
+    }
+
+    // 저장
+    fs.writeFileSync(envPath, envContent.trim() + '\n');
+    console.log(`✅ .env 파일에 TIMELOCK_ADDRESS=${timelockAddress} 저장 완료`);
 }
 
 main().catch((error) => {
