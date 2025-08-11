@@ -12,10 +12,20 @@ dotenv.config();
 const config: HardhatUserConfig = {
   solidity: {
     compilers: [
-      { version: "0.8.21" }, // OZ ERC1967Utils.sol ^0.8.21
-      { version: "0.8.22" }, // OZ UUPSUpgradeable.sol ^0.8.22
-      { version: "0.8.28" }, // 컨트랙트
+      { version: "0.8.21", settings: { optimizer: { enabled: true, runs: 200 } } }, // OZ ERC1967Utils.sol ^0.8.21
+      { version: "0.8.22", settings: { optimizer: { enabled: true, runs: 200 } } }, // OZ UUPSUpgradeable.sol ^0.8.22
+      { version: "0.8.28", settings: { optimizer: { enabled: true, runs: 200 } } }, // 컨트랙트
     ],
+    overrides: {
+      // Payment.sol만 viaIR 활성화 
+      "contracts/Payment.sol": {
+        version: "0.8.28",
+        settings: {
+          optimizer: { enabled: true, runs: 200 },
+          viaIR: true,
+        }
+      }
+    }
   },
   typechain: {
     outDir: "typechain-types",
