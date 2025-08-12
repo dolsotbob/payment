@@ -37,9 +37,9 @@ async function main() {
     const vaultImplAddress = await upgrades.erc1967.getImplementationAddress(vaultProxyAddress);
     const adminAddress = await upgrades.erc1967.getAdminAddress(vaultProxyAddress);
 
-    console.log(`✅ Proxy (VAULT_ADDRESS): ${vaultProxyAddress}`);
-    console.log(`🧠 Implementation address: ${vaultImplAddress}`);
-    console.log(`🛠  ProxyAdmin address (internal): ${adminAddress}`);
+    console.log(`✅ Vault proxy address: ${vaultProxyAddress}`);
+    console.log(`🧠 Vault implementation address: ${vaultImplAddress}`);
+    console.log(`🛠 Vault proxyAdmin address (internal): ${adminAddress}`);
 
     // 4. ABI 파일 저장 
     await makeAbi('Vault', vaultProxyAddress);
