@@ -249,7 +249,7 @@ contract Payment is
         if (r.consumable && used[buyer][nft][id])
             return (price, 0, 0, false, "consumed");
 
-        // 할인융 상한
+        // 할인율 상한
         uint16 cap = (maxDiscountBps == 0)
             ? DEFAULT_MAX_DISCOUNT_BPS
             : maxDiscountBps;
@@ -263,6 +263,8 @@ contract Payment is
     }
 
     // 할인 적용 + 필요 시 쿠폰 소모 처리 - 결제 단계에서 사용
+    // _quoteDiscountCore와의 차이점: 상태 변경(쿠폰 소모 처리)가 포함됨;
+    // consume이 false면 소모 처리 없이 미리보기처럼 동작
     function _discountCore(
         uint256 price,
         address owner,
@@ -300,6 +302,7 @@ contract Payment is
     }
 
     // 프리뷰 (permit 전에 조회용)
+    // 프론트에서 “쿠폰 유효/얼마 할인되는지”를 결제 전에 알 수 있도록
     function _previewDiscount(
         uint256 price,
         address owner,
@@ -307,12 +310,14 @@ contract Payment is
         uint256 couponId
     ) internal view returns (DiscountQuote memory q) {
         (
-            uint256 afterP,
+            uint256 afterP, // 할인 적용 후 예상 결제액
             ,
-            uint16 bps,
-            bool willConsume,
-            string memory reason
+            // 내부에서 계산된 discount 값(여기서는 안 씀)
+            uint16 bps, // 적용될 할인율 (BPS)
+            bool willConsume, // 이 쿠폰이 소모형인지(결제였다면 소모될지) )
+            string memory reason // 실패 사유(빈 문자열이면 정상)
         ) = _quoteDiscountCore(price, owner, couponNft, couponId);
+        // 받은 값을 DiscountQuote 구조체 q에 담아 반환
         q.quotedAfter = afterP;
         q.quotedBps = bps;
         q.willConsume = willConsume;
@@ -340,21 +345,25 @@ contract Payment is
         require(!useCoupon || couponNft != address(0), "couponNft=0");
 
         // 0) 프리뷰: permit 전에 조기 실패 가능
+        // _previewDiscount()를 호출해 할인 가능 여부와 결과 조회
         DiscountQuote memory q = _previewDiscount(
             price,
             owner,
             couponNft,
             couponId
         );
+        // 쿠폰 사용 시 실패 사유 확인
         if (useCoupon) {
-            // 문자열 비교 대신 "빈 문자열이면 정상"만 체크 권장
+            // 빈 문자열이면 정상
             require(bytes(q.reason).length == 0, q.reason);
         }
 
+        // 할인 후 결제 금액, 할인율 확정
         uint256 afterPrice = useCoupon ? q.quotedAfter : price;
         uint16 appliedBps = useCoupon ? q.quotedBps : 0;
 
         // permit allowance 부족 시 조기 실패
+        // value는 permit 서명으로 부여할 allowance(토큰 전송 한도)
         require(value >= afterPrice, "permit value < price");
 
         // 1) permit 실행: 오프체인 서명으로 allowance를 부여
