@@ -34,8 +34,15 @@ contract Payment is
         uint256 id;
         uint16 discountBps; // 0~10000
         uint64 expiresAt; // 0이면 무기한
-        bool enabled;
+        bool enabled; // 사용 가능 여부
         bool consumable; // 1회성 사용 여부
+    }
+
+    struct DiscountQuote {
+        uint256 quotedAfter; // 할인 후 금액
+        uint16 quotedBps; // 적용 Bps
+        bool willConsume; // 소모형 쿠폰인지
+        string reason; //실패 사유("")면 정상
     }
 
     // key: keccak256(nft, id) - 특정 NFT와 토큰 ID 조합에 대한 할인 쿠폰 규칙을 저장
@@ -112,7 +119,7 @@ contract Payment is
             "bps"
         );
 
-        // 업그레이더블 모듈 초기화. (v5 기준: 오너를 msg.sender로 설정)
+        // 업그레이더블 모듈 초기화
         __Ownable_init(_initialOwner);
         __UUPSUpgradeable_init();
         __ReentrancyGuard_init();
@@ -163,7 +170,10 @@ contract Payment is
     function setCouponRule(CouponRule calldata rule) external onlyOwner {
         // 1) 주소/컨트랙트 유효성
         require(rule.nft != address(0), "invalid nft");
-        require(rule.nft.code.length > 0, "nft not a contract"); // OZ Address 안 쓰고도 체크 가능(≥0.8.10)
+        // rule.nft: CouponRule 구조체의 nft (address 타입)
+        // address.code: 해당 주소에 배포된 바이트코드(bytes)를 반환.
+        // 이 bytes 값이 빈 배열이면 해당 주소에 스마트 컨트랙트가 없다는 뜻 (일반 주소이거나 아직 컨트랙트 미배포 상태)
+        require(rule.nft.code.length > 0, "nft not a contract");
 
         // 2) 할인율 범위 (BPS: 100% = 10_000)
         require(rule.discountBps <= BPS_DENOMINATOR, "bps > 100%");
@@ -178,6 +188,8 @@ contract Payment is
         // CouponRule memory prev = rules[key];  // 추후 변경 이력 로그에 사용
 
         // 5) 저장(동일 키 존재 시 업데이트)
+        // rules: bytes32키에 대응하는 CouponRule 구조체를 저장하는 매핑
+        // rule: CouponRule 구조체 값
         rules[key] = rule;
 
         // 6) 이벤트: 인덱싱 용이하게 필드로 펼쳐서 기록
@@ -201,8 +213,115 @@ contract Payment is
         emit CouponRuleDisabled(key);
     }
 
+    // 할인 시뮬레이션(조회) - 프리뷰에서만 사용, 상태 변경 없음
+    function _quoteDiscountCore(
+        uint256 price,
+        address buyer,
+        address nft,
+        uint256 id
+    )
+        internal
+        view
+        returns (
+            uint256 afterPrice,
+            uint256 discount,
+            uint16 bps,
+            bool willConsume,
+            string memory reason
+        )
+    {
+        // 쿠폰 안 쓰는 경우(0주소) 바로 반환
+        if (price == 0 || nft == address(0)) {
+            return (price, 0, 0, false, "noop");
+        }
+
+        // 룰 조회
+        bytes32 key = _ruleKey(nft, id);
+        CouponRule memory r = rules[key];
+
+        if (!r.enabled) return (price, 0, 0, false, "disabled");
+        if (r.expiresAt != 0 && block.timestamp > r.expiresAt)
+            // 만료 체크
+            return (price, 0, 0, false, "expired");
+        if (IERC1155(nft).balanceOf(buyer, id) == 0)
+            // 보유 체크 (ERC1155 가정)
+            return (price, 0, 0, false, "no-balance");
+        if (r.consumable && used[buyer][nft][id])
+            return (price, 0, 0, false, "consumed");
+
+        // 할인융 상한
+        uint16 cap = (maxDiscountBps == 0)
+            ? DEFAULT_MAX_DISCOUNT_BPS
+            : maxDiscountBps;
+        uint16 appliedBps = r.discountBps > cap ? cap : r.discountBps;
+
+        // 할인 계산
+        discount = (price * appliedBps) / BPS_DENOMINATOR;
+        afterPrice = price - discount;
+
+        return (afterPrice, discount, appliedBps, r.consumable, "");
+    }
+
+    // 할인 적용 + 필요 시 쿠폰 소모 처리 - 결제 단계에서 사용
+    function _discountCore(
+        uint256 price,
+        address owner,
+        address couponNft,
+        uint256 couponId,
+        bool consume
+    )
+        internal
+        returns (
+            uint256 afterPrice,
+            uint256 discount,
+            uint16 bps,
+            bool consumed,
+            string memory reason
+        )
+    {
+        (afterPrice, discount, bps, consumed, reason) = _quoteDiscountCore(
+            price,
+            owner,
+            couponNft,
+            couponId
+        );
+
+        if (bytes(reason).length != 0) {
+            consumed = false;
+            return (afterPrice, discount, bps, consumed, reason);
+        }
+
+        // 실제 결제 단계에서만 소모 처리 (결제 실패 시 revert로 원복됨)
+        if (consume && consumed) {
+            used[owner][couponNft][couponId] = true;
+        } else {
+            consumed = false;
+        }
+    }
+
+    // 프리뷰 (permit 전에 조회용)
+    function _previewDiscount(
+        uint256 price,
+        address owner,
+        address couponNft,
+        uint256 couponId
+    ) internal view returns (DiscountQuote memory q) {
+        (
+            uint256 afterP,
+            ,
+            uint16 bps,
+            bool willConsume,
+            string memory reason
+        ) = _quoteDiscountCore(price, owner, couponNft, couponId);
+        q.quotedAfter = afterP;
+        q.quotedBps = bps;
+        q.willConsume = willConsume;
+        q.reason = reason;
+    }
+
     // ===== Payment: permit + 할인 + 캐시백 + 정산 =====
     // EIP-2612 permit + 할인 + 캐시백 + Vault 정산을 한 번에 처리. 재진입 보호
+    // nonReentrant: OZ ReentrancyGuard에서 제공하는 modifier
     function permitAndPayWithCashback(
         address owner,
         uint256 value, // permit allowance (보통 결제 금액 이상 )
@@ -220,28 +339,20 @@ contract Payment is
         require(deadline >= block.timestamp, "permit expired");
         require(!useCoupon || couponNft != address(0), "couponNft=0");
 
-        // 0) 미리 할인 견적(permit 전에 조기 실패 가능)
-        uint256 quotedAfter;
-        uint16 quotedBps;
-        string memory reason;
-        (
-            quotedAfter,
-            quotedBps /* skip willConsume */,
-            ,
-            reason
-        ) = _previewDiscount(price, owner, couponNft, couponId);
-
-        uint256 afterPrice = price;
-        uint16 appliedBps = 0;
+        // 0) 프리뷰: permit 전에 조기 실패 가능
+        DiscountQuote memory q = _previewDiscount(
+            price,
+            owner,
+            couponNft,
+            couponId
+        );
         if (useCoupon) {
-            require(
-                bytes(reason).length == 0 ||
-                    keccak256(bytes(reason)) == keccak256(bytes("noop")),
-                reason
-            );
-            afterPrice = quotedAfter;
-            appliedBps = quotedBps;
+            // 문자열 비교 대신 "빈 문자열이면 정상"만 체크 권장
+            require(bytes(q.reason).length == 0, q.reason);
         }
+
+        uint256 afterPrice = useCoupon ? q.quotedAfter : price;
+        uint16 appliedBps = useCoupon ? q.quotedBps : 0;
 
         // permit allowance 부족 시 조기 실패
         require(value >= afterPrice, "permit value < price");
@@ -262,23 +373,37 @@ contract Payment is
         uint256 discount;
         bool consumed;
         if (useCoupon && (couponNft != address(0))) {
-            (afterPrice, discount, appliedBps, consumed) = _discount(
+            uint256 after2;
+            uint16 bps2;
+            string memory reason2;
+            (after2, discount, bps2, consumed, reason2) = _discountCore(
                 price,
                 owner,
                 couponNft,
                 couponId,
-                true
+                true // consume
             );
+            require(bytes(reason2).length == 0, reason2);
+            require(
+                after2 == afterPrice && bps2 == appliedBps,
+                "quote mismatch"
+            );
+            afterPrice = after2;
+            appliedBps = bps2;
         }
 
         // 3) 수금: 할인 후 금액만큼 Payment로 전송(표준/비표준 토큰 모두 안전 처리)
+        // fee-on-transfer 대비 — 실제 수령액 기준 처리
+        uint256 balBefore = token.balanceOf(address(this));
         token.safeTransferFrom(owner, address(this), afterPrice);
+        uint256 received = token.balanceOf(address(this)) - balBefore;
+        require(received > 0, "transfer failed");
 
-        // 4) 정산(잔액 vault로 전송) (SafeERC20)
-        token.safeTransfer(vaultAddress, afterPrice);
+        // 4) 정산(잔액 vault로 전송) (SafeERC20) - 반드시 received 기준
+        token.safeTransfer(vaultAddress, received);
 
-        // 5) 캐시백 (기본: 할인 후 금액 기준)
-        uint256 cashback = (afterPrice * cashbackBps) / BPS_DENOMINATOR;
+        // 5) 캐시백 (기본: 실제 수령액 기준)
+        uint256 cashback = (received * cashbackBps) / BPS_DENOMINATOR;
         if (cashback > 0) {
             IVault(vaultAddress).provideCashback(owner, cashback);
         }
@@ -301,7 +426,7 @@ contract Payment is
             owner,
             vaultAddress,
             price,
-            afterPrice,
+            received, // 실수령액 기록
             appliedBps, // 0일 수 있음
             discount, // 0일 수 있음
             cashbackBps,
@@ -337,11 +462,12 @@ contract Payment is
         returns (
             uint256 discounted, // 할인 적용 후 결제 금액
             uint16 appliedBps, // 적용된 할인율
-            bool willConsume, // 이 호출이 실제 결제였다면 쿠폰을 소모했을지 여부
+            bool willConsume, // 실제 결제였다면 소모될지
             string memory reason
         )
     {
-        return _previewDiscount(price, buyer, nft, id);
+        DiscountQuote memory q = _previewDiscount(price, buyer, nft, id);
+        return (q.quotedAfter, q.quotedBps, q.willConsume, q.reason);
     }
 
     // ===== Internals =====
@@ -349,99 +475,6 @@ contract Payment is
     // internal pure: 내부에서만 쓰이고, 상태를 읽지 않아서 pure
     function _ruleKey(address nft, uint256 id) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(nft, id));
-    }
-
-    // (내부, view) 룰 검증·적용 시뮬레이션, 사유 문자열 제공
-    function _previewDiscount(
-        uint256 price,
-        address buyer,
-        address nft,
-        uint256 id
-    )
-        internal
-        view
-        returns (
-            uint256 discounted,
-            uint16 appliedBps,
-            bool willConsume,
-            string memory reason
-        )
-    {
-        // 조기 중료
-        // 가격 0원이거나, 쿠폰 미사용(= nft 0주소)이면 계산할 게 없음
-        // 할인 전 금액 그대로, 할인율 0, 소모 없음, 사유 "noop"
-        if (price == 0 || nft == address(0)) {
-            return (price, 0, false, "noop");
-        }
-
-        // 	위의 _ruleKey로 룰 키 생성 후, 저장된 룰 구조체를 읽어옴.
-        bytes32 key = _ruleKey(nft, id);
-        CouponRule memory r = rules[key];
-
-        // 룰이 비활성화면 할인 불가
-        if (!r.enabled) return (price, 0, false, "disabled");
-        // 만료 검사: expiresAt가 0이면 무기한, 아니면 현재 시간이 지나면 만료
-        if (r.expiresAt != 0 && block.timestamp > r.expiresAt)
-            return (price, 0, false, "expired");
-        // 소유 검사: 구매자가 해당 id의 쿠폰 NFT를 1개 이상 보유해야 함. 없으면 "no-balance"
-        if (IERC1155(nft).balanceOf(buyer, id) == 0)
-            return (price, 0, false, "no-balance");
-        // 소모형 쿠폰이고 이미 이 구매자/쿠폰 조합이 사용 처리됨이면 재사용 불가 → "consumed"
-        if (r.consumable && used[buyer][nft][id])
-            return (price, 0, false, "consumed");
-
-        // 상한선(cap): 관리자가 maxDiscountBps를 지정했으면 그 값을, 아니면 기본 상한 사용
-        // 과도한 할인으로 0원 결제되지 않도록 보호
-        uint16 cap = (maxDiscountBps == 0)
-            ? DEFAULT_MAX_DISCOUNT_BPS
-            : maxDiscountBps; // 기본 90%
-        // 룰에 명시된 할인율과 cap 중 더 작은 값을 실제 적용률로 선택
-        uint16 bps = r.discountBps > cap ? cap : r.discountBps;
-        // 할인액 계산. 정수 나눗셈이라 버림이 일어나며, 이는 과소 청구 방지 효과
-        uint256 discount = (price * bps) / BPS_DENOMINATOR; // 바닥 내림(과소 청구 방지)
-
-        return (price - discount, bps, r.consumable, "");
-    }
-
-    // (내부, state) 실제 할인 적용 및 1회성 쿠폰 “사용 체크”
-    function _discount(
-        uint256 price,
-        address buyer,
-        address nft,
-        uint256 id,
-        bool useCoupon
-    )
-        private
-        returns (
-            uint256 afterPrice,
-            uint256 discount,
-            uint16 bps,
-            bool consumed
-        )
-    {
-        if (!useCoupon || nft == address(0)) return (price, 0, 0, false);
-
-        bytes32 key = _ruleKey(nft, id);
-        CouponRule memory r = rules[key];
-
-        if (!r.enabled) return (price, 0, 0, false);
-        if (r.expiresAt != 0 && block.timestamp > r.expiresAt)
-            return (price, 0, 0, false);
-        if (IERC1155(nft).balanceOf(buyer, id) == 0)
-            return (price, 0, 0, false);
-        if (r.consumable && used[buyer][nft][id]) return (price, 0, 0, false);
-
-        uint16 cap = (maxDiscountBps == 0)
-            ? DEFAULT_MAX_DISCOUNT_BPS
-            : maxDiscountBps;
-        bps = r.discountBps > cap ? cap : r.discountBps;
-        discount = (price * bps) / BPS_DENOMINATOR;
-        afterPrice = price - discount;
-
-        if (r.consumable) {
-            used[buyer][nft][id] = true; // 결제 실패 시 전체 revert되어 원복됨
-            consumed = true;
-        }
     }
 
     // 업그레이드 여유 슬롯
