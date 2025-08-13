@@ -1,8 +1,10 @@
 // timelock/executeSetPayment.ts
 // 예약된 vault.setPaymentContract 트랜잭션을 실행해 Vault에 적용 
+import path from "path";
+import dotenv from "dotenv";
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 import { ethers, network } from 'hardhat';
-import 'dotenv/config';
 
 async function main() {
     const timelock = await ethers.getContractAt('TimelockController', process.env.TIMELOCK_ADDRESS!);

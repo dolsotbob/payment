@@ -1,15 +1,18 @@
 // TimeController 배포 (minDelay, proposers, executors 포함)
 
-import { ethers } from 'hardhat';
+import path from "path";
+import dotenv from "dotenv";
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });  // contract/.env만 사용 
+
+import { ethers } from "hardhat";
+
 import fs from 'fs';
-import path from 'path';
-import 'dotenv/config';
 
 async function main() {
     const [deployer] = await ethers.getSigners();
     console.log(`✨ Deploying TimelockController as: ${deployer.address}`);
 
-    const minDelay = 3600;  // 1 hour
+    const minDelay = 60;  // 1 min (나중에 3600으로 바꾸기; 시렞 배포시에는 충분히 길게 1~2일로
     const proposers = [deployer.address];  // 출금 예약 권한자 
     const executors = [deployer.address];  // 출금 실행 권한자 
     const admin = deployer.address; // 단일 주소로 지정 
@@ -29,7 +32,7 @@ async function main() {
 
     // 5. .env에 TIMELOCK_ADDRESS 업데이트 
     // .env 파일 경로
-    const envPath = path.resolve(__dirname, '..', '.env');
+    const envPath = path.resolve(__dirname, '../../.env');
 
     // 기존 .env 파일 읽기 (없으면 빈 문자열)
     let envContent = '';
@@ -56,4 +59,3 @@ main().catch((error) => {
     console.error('❌ Timelock 배포 실패:', error);
     process.exitCode = 1;
 });
-

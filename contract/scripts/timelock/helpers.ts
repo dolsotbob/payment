@@ -3,7 +3,6 @@
 //  각 스크립트에서 반복되는 보일러플레이트(컨트랙트 핸들 얻기, 함수 인코딩, salt/operationId 계산 등)를 한 곳에 모아 짧고 안전하게 쓰게 해준다 
 import { ethers } from "hardhat";
 import {
-  Contract,
   Interface,
   keccak256,
   toUtf8Bytes,
@@ -13,7 +12,6 @@ import {
   type BigNumberish,
   type BaseContract, // Contract 대신 BaseContract로 
 } from "ethers";
-import 'dotenv/config';
 
 // TimelockController 인스턴스 가져오기 
 export async function timelock(): Promise<BaseContract> {
@@ -27,7 +25,7 @@ export async function timelock(): Promise<BaseContract> {
 export function selector(
   iface: Interface,
   fn: string,
-  args: readonly unknown[]
+  args: readonly unknown[] = []
 ): string {
   return iface.encodeFunctionData(fn, args as any[]);
 }

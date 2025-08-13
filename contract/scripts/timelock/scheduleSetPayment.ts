@@ -1,8 +1,10 @@
 // timelock/scheduleSetPayment.ts
 // vault.setPaymentContract(...) 트랜잭션 예약 (타임락 큐에 넣는 작업) )
+import path from "path";
+import dotenv from "dotenv";
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 import { ethers, network } from 'hardhat';
-import 'dotenv/config';
 
 async function main() {
     const VAULT = process.env.VAULT_ADDRESS!;

@@ -1,6 +1,9 @@
 // scripts/timelock/cancelWithdraw.ts
+import path from "path";
+import dotenv from "dotenv";
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+
 import { ethers } from "hardhat";
-import 'dotenv/config';
 
 async function main() {
     const args = process.argv.slice(2); // 인자 추출

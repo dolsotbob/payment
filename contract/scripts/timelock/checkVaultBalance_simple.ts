@@ -1,6 +1,9 @@
 // scripts/timelock/checkVaultBalance_simple.ts
+import path from "path";
+import dotenv from "dotenv";
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+
 import { ethers } from "hardhat";
-import "dotenv/config";
 
 async function main() {
     const VAULT = process.env.VAULT_ADDRESS!;

@@ -1,6 +1,6 @@
 // 지갑 연결 및 라우팅 담당 
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import { connectAndLogin } from './utils/walletLogin';
@@ -9,9 +9,11 @@ import PaymentPage from './pages/PaymentPage';
 import Footer from './components/Footer';
 import MyPage from './pages/MyPage';
 import './App.css';
+import { fetchUserCoupons } from './utils/coupon';
 
 const App: React.FC = () => {
   const [account, setAccount] = useState<string | null>(null);
+  const [coupons, setCoupons] = useState<any[]>([]);
 
   const handleLoginWithWallet = async () => {
     await connectAndLogin(setAccount);
@@ -22,6 +24,11 @@ const App: React.FC = () => {
     setAccount(null); // 상태 초기화
   };
 
+  useEffect(() => {
+    if (!account) { setCoupons([]); return; }
+    fetchUserCoupons(account).then(setCoupons).catch(() => setCoupons([]));
+  }, [account]);
+
   return (
     <Router>
       <Navbar account={account} onLogout={handleLogout} />
@@ -30,6 +37,7 @@ const App: React.FC = () => {
           <Route path="/" element={
             <PaymentPage
               account={account}
+              // coupons={coupons}
               onLogin={handleLoginWithWallet}
             />}
           />
