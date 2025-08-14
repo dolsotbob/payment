@@ -183,3 +183,11 @@ export const uploadMetaData = async () => {
     return results;
 };
 
+uploadMetaData()
+    .then(() => {
+        console.log("✅ Metadata upload complete");
+    })
+    .catch((err) => {
+        console.error("❌ Metadata upload failed:", err);
+        process.exit(1);
+    });
