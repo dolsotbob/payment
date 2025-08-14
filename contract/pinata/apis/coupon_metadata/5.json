@@ -1,0 +1,39 @@
+{
+    "name": "Wheat",
+    "description": "5% discount coupon (permanent). No expiration.",
+    "image": "https://gateway.pinata.cloud/ipfs/bafybeifup5qzp6nhmw6l3to2ewljxckxsuqrdctflvzjbbfitxcrwvi3na",
+    "attributes": [
+        {
+            "trait_type": "ID",
+            "value": "5"
+        },
+        {
+            "trait_type": "Season",
+            "value": "Any"
+        },
+        {
+            "trait_type": "Crop",
+            "value": "Wheat"
+        },
+        {
+            "trait_type": "Discount Rate",
+            "value": "500"
+        },
+        {
+            "trait_type": "Consumable",
+            "value": false
+        },
+        {
+            "trait_type": "Uses",
+            "value": "unlimited"
+        },
+        {
+            "trait_type": "ExpiresMode",
+            "value": "NONE"
+        },
+        {
+            "trait_type": "PriceCapTORI",
+            "value": 50
+        }
+    ]
+}
