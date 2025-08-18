@@ -85,7 +85,10 @@ contract Coupon1155 is
     // custom은 _tokenURIs[id]에 저장된 값
     function uri(uint256 id) public view override returns (string memory) {
         string memory custom = _tokenURIs[id]; // id에 해당하는 custom URI 가져오기
-        return bytes(custom).length > 0 ? custom : super.uri(id);
+        return
+            bytes(custom).length > 0
+                ? custom // 있으면 개별 URI 반환
+                : super.uri(id); // 없으면 BaseURI + {id}.json 반환
     }
 
     // 특정 id의 개별 URI를 삭제(이후 uri(id)는 baseURI 폴백
