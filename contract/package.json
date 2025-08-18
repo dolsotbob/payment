@@ -15,7 +15,7 @@
     "deploy:executeSetPayment": "npx hardhat run scripts/timelock/executeSetPayment.ts --network kairos",
     "deploy:scheduleWithdraw": "npx hardhat run scripts/timelock/scheduleWithdraw.ts --network kairos",
     "deploy:executeWithdraw": "npx hardhat run scripts/timelock/executeWithdraw.ts --network kairos",
-    "deploy:mocks": "npx hardhat run scripts/deploy/deploy-mocks.ts --network hardhat",
+    "deploy:mocks": "npx hardhat run scripts/deploy-mocks.ts --network hardhat",
     "verify:contract": "npx hardhat run --network kairos scripts/verifyAny.ts",
     "verify:impl": "npx hardhat run --network kairos scripts/verifyAny.ts",
     "test": "hardhat test",

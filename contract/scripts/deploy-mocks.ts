@@ -4,6 +4,8 @@ import path from "path";
 import "dotenv/config";
 
 async function main() {
+    console.log("[deploy-mocks] start");
+
     const [deployer] = await ethers.getSigners();
     console.log(`⛓  Network: ${network.name}`);
     console.log(`👤 Deployer: ${deployer.address}`);

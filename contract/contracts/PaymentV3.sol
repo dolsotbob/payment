@@ -19,7 +19,7 @@ import "./interfaces/IVault.sol";
  * @dev V3-minimal: 스토리지 변경 없음. 편의 뷰(getCouponRules, canUseCoupon, ruleKey)만 추가.
  *      기존 프록시에서 upgradeTo(newImpl)만으로 교체 가능.
  */
-contract Payment is
+contract PaymentV3 is
     UUPSUpgradeable,
     OwnableUpgradeable,
     ReentrancyGuardUpgradeable
