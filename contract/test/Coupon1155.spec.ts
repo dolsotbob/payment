@@ -12,7 +12,7 @@ describe("Coupon1155", () => {
             "https://gateway.pinata.cloud/ipfs/{id}.json",
             owner.address
         )) as Coupon1155;
-        await coupon1155.deployed();
+        await coupon1155.waitForDeployment();
     });
 
     describe("Deployment", () => {
