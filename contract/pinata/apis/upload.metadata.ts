@@ -66,7 +66,7 @@ export const uploadExistingMetadataFolder = async () => {
     console.log("📦 Using existing folder:", LOCAL_METADATA_DIR);
     const data = await uploadFolderToPinata(LOCAL_METADATA_DIR, "coupon_metadata");
     const folderCID = data.IpfsHash;
-    const baseURI = `https://gateway.pinata.cloud/ipfs/${folderCID}/{id}.json`;
+    const baseURI = `https://gateway.pinata.cloud/ipfs/${folderCID}/coupon_metadata/{id}.json`;
 
     console.log("\n=== Folder Upload Result ===");
     console.log("📁 Folder CID:", folderCID);
