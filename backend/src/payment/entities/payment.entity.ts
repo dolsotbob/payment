@@ -77,11 +77,10 @@ export class Payment {
     retryCount!: number;
 
     @Index()
-    @Column({ type: 'int', nullable: true })
-    productId!: number | null;
+    @Column({ type: 'uuid', nullable: true })
+    productId!: string | null;
 
     @ManyToOne(() => Product, (product) => product.payments, {
-        eager: false, // 필요시 true로 설정 
         nullable: true, // 결제 시 상품이 없는 경우를 대비 (선택)
         onDelete: 'SET NULL',
     })

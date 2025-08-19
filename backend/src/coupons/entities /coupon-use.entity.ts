@@ -1,4 +1,5 @@
 // src/coupon/entities/coupon-use.entity.ts
+// 1회용/소모 추적의 근거 
 import {
     Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index,
     ManyToOne, JoinColumn,

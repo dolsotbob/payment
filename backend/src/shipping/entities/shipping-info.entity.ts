@@ -1,31 +1,40 @@
-// DB 모델 설계 
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
+// src/shipping-info/entities/shipping-info.entity.ts
+import {
+    Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Index, BeforeInsert, BeforeUpdate
+} from 'typeorm';
 import { DeliveryStatus } from 'src/common/enums/delivery-status.enum';
 
-@Entity()
+@Entity('shipping_info')
 export class ShippingInfo {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn() // serial int
     id: number;
 
-    @Column()
+    @Column({ name: 'user_address', type: 'varchar', length: 64 })
     @Index()
-    userAddress: string; // 지갑 주소
+    userAddress: string;
 
-    @Column()
+    @Column({ name: 'recipient_name', type: 'text' })
     recipientName: string;
 
-    @Column()
+    @Column({ name: 'phone_number', type: 'text' })
     phoneNumber: string;
 
-    @Column()
+    @Column({ name: 'address', type: 'text' })
     address: string;
 
-    @Column({ type: 'enum', enum: DeliveryStatus, default: DeliveryStatus.Ready })
+    // DB는 varchar(32)로 저장, 앱 레벨에서 enum 사용
+    @Column({ name: 'delivery_status', type: 'varchar', length: 32, default: DeliveryStatus.Ready })
     deliveryStatus: DeliveryStatus;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({ name: 'updated_at' })
     updatedAt: Date;
+
+    @BeforeInsert()
+    @BeforeUpdate()
+    normalize() {
+        if (this.userAddress) this.userAddress = this.userAddress.toLowerCase();
+    }
 }

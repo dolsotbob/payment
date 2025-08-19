@@ -6,23 +6,29 @@ CREATE TABLE IF NOT EXISTS products (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   sku varchar(64) UNIQUE,
   name text NOT NULL,
-  price_wei numeric(78,0) NOT NULL,       -- 온체인과 일치하는 단위(wei)
+  price_wei numeric(78,0) NOT NULL,
   image_url text,
-  hover_image_url text, 
+  hover_image_url text,
   is_active boolean NOT NULL DEFAULT true,
-  created_at timestamptz NOT NULL DEFAULT now()
+  created_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT chk_products_price_nonneg CHECK (price_wei >= 0)
 );
 CREATE INDEX IF NOT EXISTS idx_products_active ON products(is_active);
 
 -- 2) 유저 (지갑 기반)
 CREATE TABLE IF NOT EXISTS users (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  uid varchar(64),                         -- 외부 인증/앱 내부 uid (선택)
-  wallet_address varchar(64) UNIQUE NOT NULL, -- 소문자 통일 권장
-  email text,                              -- 선택
-  phone text,                              -- 선택
-  created_at timestamptz NOT NULL DEFAULT now()
+  uid varchar(64),
+  wallet_address varchar(64) UNIQUE NOT NULL,
+  email text,
+  phone text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  -- 항상 소문자로만 저장되도록 강제
+  CONSTRAINT chk_users_wallet_lower CHECK (wallet_address = lower(wallet_address))
 );
+
+-- 조회 최적화 (선택)
+CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at);
 
 -- 3) 로그인 이력 (분리)
 CREATE TABLE IF NOT EXISTS user_login_history (
@@ -51,18 +57,15 @@ CREATE INDEX IF NOT EXISTS idx_shipping_user_address ON shipping_info(user_addre
 
 -- (옵션) 쿠폰 카탈로그 캐시 (표시용/검색용)
 CREATE TABLE IF NOT EXISTS coupon_catalog (
-  token_id int PRIMARY KEY,                -- ERC1155 tokenId
-  ipfs_cid text,                           -- 메타데이터 CID (표시용 캐시)
-  name text,                               -- 표시용 캐시 (권위는 IPFS)
-  image_url text,                          -- 표시용 캐시
-  is_active boolean NOT NULL DEFAULT true,
-  created_at timestamptz NOT NULL DEFAULT now()
+  "tokenId" int PRIMARY KEY,   -- ERC1155 tokenId
+  "ipfsCid" text,              -- 메타데이터 CID (표시용 캐시)
+  "name" text,                 -- 표시용 캐시 (권위는 IPFS)
+  "imageUrl" text,             -- 표시용 캐시 
+  "isActive" boolean NOT NULL DEFAULT true,
+  "createdAt" timestamptz NOT NULL DEFAULT now()
 );
 
 -- 5) 결제 원장
--- Enable extension for gen_random_uuid()
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-
 -- payments table: matches payment.entity.ts exactly (camelCase, types)
 CREATE TABLE IF NOT EXISTS payments (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -88,7 +91,8 @@ CREATE TABLE IF NOT EXISTS payments (
 
   "retryCount" int NOT NULL DEFAULT 0,
 
-  "productId" int NULL,
+  -- FK: Product.id (uuid)
+  "productId" uuid REFERENCES products(id) ON DELETE SET NULL,
 
   -- non-negative money guards (mirror of @Check in entity)
   CONSTRAINT chk_pay_original_price_nonneg   CHECK ("originalPrice"   >= 0),
@@ -107,38 +111,49 @@ CREATE INDEX IF NOT EXISTS idx_pay_cashback_txhash  ON payments("cashbackTxHash"
 -- 6) 쿠폰 사용 이력 (1회용/소모 추적)
 CREATE TABLE IF NOT EXISTS coupon_uses (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES users(id) ON DELETE SET NULL,
-  wallet_address varchar(64) NOT NULL,
-  coupon_id int NOT NULL,                  -- ERC1155 tokenId
-  payment_id uuid REFERENCES payments(id) ON DELETE CASCADE,
-  quote_id varchar(100),                   -- 원자적 consume 연계용
-  tx_hash varchar(100) UNIQUE NOT NULL,    -- 쿠폰이 사용된 tx
-  used_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT uniq_wallet_coupon_tx UNIQUE(wallet_address, coupon_id, tx_hash)
+  "walletAddress" varchar(64) NOT NULL,
+  "couponId" int NOT NULL,
+  "paymentId" uuid NULL REFERENCES payments(id) ON DELETE CASCADE,
+  "quoteId" varchar(100),
+  "txHash" varchar(66) NOT NULL,
+  "usedAt" timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT uniq_wallet_coupon_tx UNIQUE ("walletAddress","couponId","txHash")
 );
-CREATE INDEX IF NOT EXISTS idx_coupon_uses_wallet ON coupon_uses(wallet_address);
-CREATE INDEX IF NOT EXISTS idx_coupon_uses_coupon ON coupon_uses(coupon_id);
+CREATE INDEX IF NOT EXISTS idx_coupon_uses_wallet ON coupon_uses("walletAddress");
+CREATE INDEX IF NOT EXISTS idx_coupon_uses_coupon ON coupon_uses("couponId");
+CREATE INDEX IF NOT EXISTS idx_coupon_uses_payment ON coupon_uses("paymentId");
 
 -- 7) 캐시백 원장 (적립/지급 등 이벤트 단위)
 CREATE TABLE IF NOT EXISTS cashback_entries (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES users(id) ON DELETE SET NULL,
-  wallet_address varchar(64) NOT NULL,
-  payment_id uuid REFERENCES payments(id) ON DELETE SET NULL,
-  rate_bps int,                             -- 적용률(표시/감사용)
-  amount_wei numeric(78,0) NOT NULL,        -- +적립 / -차감
-  status varchar(16) NOT NULL DEFAULT 'PENDING', -- PENDING/SENT/FAILED 등
-  tx_hash varchar(100),                     -- 지급 tx (있다면)
-  created_at timestamptz NOT NULL DEFAULT now()
+
+  "walletAddress" varchar(64) NOT NULL,
+  "paymentId" uuid NULL REFERENCES payments(id) ON DELETE SET NULL,
+
+  "rateBps" int,
+  "amountWei" numeric(78,0) NOT NULL,
+
+  "status" varchar(16) NOT NULL DEFAULT 'PENDING', -- CashbackStatus와 호환
+  "txHash" varchar(66),
+  "memo" text,
+
+  "createdAt" timestamptz NOT NULL DEFAULT now(),
+  "updatedAt" timestamptz NOT NULL DEFAULT now(),
+
+  -- 금액 음수/양수 허용(차감 이벤트 지원). 필요 시 하한/상한 정책 추가 가능
+  CONSTRAINT chk_cashback_amount_not_nan CHECK ("amountWei" IS NOT NULL)
 );
-CREATE INDEX IF NOT EXISTS idx_cashback_wallet ON cashback_entries(wallet_address);
-CREATE INDEX IF NOT EXISTS idx_cashback_user ON cashback_entries(user_id);
-CREATE INDEX IF NOT EXISTS idx_cashback_status ON cashback_entries(status);
+
+-- 조회 최적화 인덱스
+CREATE INDEX IF NOT EXISTS idx_cashback_wallet   ON cashback_entries("walletAddress");
+CREATE INDEX IF NOT EXISTS idx_cashback_status   ON cashback_entries("status");
+CREATE INDEX IF NOT EXISTS idx_cashback_payment  ON cashback_entries("paymentId");
+CREATE INDEX IF NOT EXISTS idx_cashback_txhash   ON cashback_entries("txHash");
 
 -- (선택) 누적 캐시백 잔액 캐시 (집계 성능용)
 CREATE TABLE IF NOT EXISTS user_cashback_balances (
   user_id uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-  wallet_address varchar(64) UNIQUE NOT NULL,
+  "walletAddress" varchar(64) UNIQUE NOT NULL,
   balance_wei numeric(78,0) NOT NULL DEFAULT 0,
-  updated_at timestamptz NOT NULL DEFAULT now()
+  "updatedAt" timestamptz NOT NULL DEFAULT now()
 );
