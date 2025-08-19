@@ -10,6 +10,14 @@ import { AppController } from './app.controller';
 import { UserModule } from './user/user.module';
 import { ProductModule } from './product/product.module';
 import { PaymentModule } from './payment/payment.module';
+//////
+import { CouponsController } from './coupons/coupons.controller';
+import { CouponsService } from './coupons/coupons.service';
+import { ProductService } from './product/product.service';
+import { Payment } from './payment/entities/payment.entity';
+import { CouponUse } from './payments/entities/coupon-use.entity';
+import { Cashback } from './payments/entities/cashback.entity';
+//////
 import { ScheduleModule } from '@nestjs/schedule';
 import { CashbackModule } from './cashback/cashback.module';
 import { ScheduleFeatureModule } from './schedule/schedule_feature.module';
