@@ -1,14 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, Index } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 
-@Entity()
+@Entity('user_login_history')
 export class LoginHistory {
-    @PrimaryGeneratedColumn()
-    id: number;
-
-    // 로그인 시점의 지갑 주소를 별도로 기록 (user.walletAddress와 중복되더라도 히스토리 관리용)
-    @Column({ length: 66 })
-    walletAddress: string;
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
 
     @Column({ length: 45 })
     ipAddress: string;
