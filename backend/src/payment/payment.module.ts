@@ -6,20 +6,24 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PaymentService } from './payment.service';
 import { PaymentController } from './payment.controller';
 import { Payment } from './entities/payment.entity';
+import { CouponUse } from './entities/coupon-use.entity';
+import { Cashback } from './entities/cashback.entity';
+import { Erc1155Service } from 'src/common/blockchain/erc1155.service';
+import { PaymentContractService } from 'src/common/blockchain/payment-contract.service';
 import { ProductModule } from 'src/product/product.module';
 
 // 이 파일이 Nest 모듈임을 선언 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Payment]), // 외부 모듈을 가져옴 → TypeOrmModule을 사용해 Payment 엔티티를 DB에 연결
+    TypeOrmModule.forFeature([Payment, CouponUse, Cashback]), // 외부 모듈을 가져옴 → TypeOrmModule을 사용해 Payment 엔티티를 DB에 연결
     ProductModule, // ProductRepository를 여기서 가져옴 
   ],
 
   // 사용자의 요청을 처리하는 라우터 클래스 
   controllers: [PaymentController],
   // 비즈니스 로직을 담당하는 서비스 등록 
-  providers: [PaymentService],
+  providers: [PaymentService, Erc1155Service, PaymentContractService],
   // 다른 모듈에서 사용할 수 있도록 
-  // exports: [PaymentService],
+  exports: [PaymentService],
 })
 export class PaymentModule { }

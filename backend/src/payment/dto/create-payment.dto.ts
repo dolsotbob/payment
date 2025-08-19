@@ -1,5 +1,7 @@
-import { IsString, IsNumber, IsNotEmpty, Matches, IsOptional, IsISO8601, IsEnum } from 'class-validator';
+import { IsString, IsNumber, IsNotEmpty, Matches, IsOptional, IsEnum } from 'class-validator';
 import { PaymentStatus } from 'src/common/enums/payment-status.enum';
+
+const WEI_MSG = '값은 숫자 문자열(wei 단위 정수)이어야 합니다.';
 
 export class CreatePaymentDto {
     @IsString()
@@ -12,25 +14,36 @@ export class CreatePaymentDto {
 
     @IsString()
     @IsNotEmpty()
-    from: string;
+    from!: string;  // 지갑 주소 
+
+    // ===== 금액(프론트 기준 명명) =====
+    @IsString()
+    @Matches(/^\d+$/, { message: `originalPrice ${WEI_MSG}` })
+    originalPrice!: string;      // 원래 상품 가격(wei)
 
     @IsString()
-    @IsNotEmpty()
-    @Matches(/^\d+$/, { message: 'amount는 숫자 문자열(정수 wei 단위)이어야 합니다.' })
-    amount: string; // decimal은 문자열로 처리; 결제 금액 (wei 단위)
+    @Matches(/^\d+$/, { message: `discountAmount ${WEI_MSG}` })
+    discountAmount!: string;     // 할인 금액(wei)
+
+    @IsString()
+    @Matches(/^\d+$/, { message: `discountedPrice ${WEI_MSG}` })
+    discountedPrice!: string;    // 최종 지불 금액(wei)
 
     @IsOptional()
-    @Matches(/^\d+$/, { message: 'cashbackAmount는 숫자 문자열(wei 단위)이어야 합니다.' })
-    cashbackAmount?: string;
+    @Matches(/^\d+$/, { message: `cashbackAmount ${WEI_MSG}` })
+    cashbackAmount?: string;     // 캐시백 예정 금액(wei). 없으면 0으로 저장
 
+    // ===== 가스 정보 =====
     @IsOptional()
-    @Matches(/^\d+$/, { message: 'gasUsed는 숫자 문자열(wei 단위)이어야 합니다.' })
+    @Matches(/^\d+$/, { message: `gasUsed ${WEI_MSG}` })
     gasUsed?: string;
 
     @IsOptional()
-    @Matches(/^\d+$/, { message: 'gasCost는 숫자 문자열(wei 단위)이어야 합니다.' })
+    @Matches(/^\d+$/, { message: `gasCost ${WEI_MSG}` })
     gasCost?: string;
 
-    @IsEnum(PaymentStatus, { message: 'status는 SUCCESS 또는 FAILED 중 하나여야 합니다.' })
-    status: PaymentStatus;
+    // ===== 상태(선택) =====
+    @IsOptional()
+    @IsEnum(PaymentStatus, { message: 'status는 SUCCESS | FAILED | PENDING 중 하나여야 합니다.' })
+    status?: PaymentStatus;
 }

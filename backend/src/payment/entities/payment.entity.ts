@@ -31,16 +31,16 @@ export class Payment {
 
     // 금액 (wei, 문자열 매핑)
     @Column({ type: 'numeric', precision: 78, scale: 0 })
-    originalWei!: string;
+    originalPrice!: string;
 
     @Column({ type: 'numeric', precision: 78, scale: 0 })
-    discountWei!: string;
+    discountAmount!: string;
 
     @Column({ type: 'numeric', precision: 78, scale: 0 })
-    paidWei!: string;
+    discountedPrice!: string;
 
     @Column({ type: 'numeric', precision: 78, scale: 0 })
-    cashbackWei!: string;
+    cashbackAmount!: string;
 
     @Column({ type: 'numeric', precision: 78, scale: 0, nullable: true })
     gasUsed?: string;
