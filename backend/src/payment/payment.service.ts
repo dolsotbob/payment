@@ -6,8 +6,8 @@ import { Repository } from 'typeorm';
 
 import { Product } from 'src/product/entities/product.entity';
 import { Payment } from './entities/payment.entity';
-import { CouponUse } from './entities/coupon-use.entity';
-import { Cashback } from './entities/cashback.entity';
+import { CouponUse } from 'src/coupons/entities /coupon-use.entity';
+import { Cashback } from 'src/cashback/entities/cashback.entity';
 
 import { QuoteRequestDto, QuoteResponseDto } from './dto/quote.dto';
 import { CheckoutRequestDto, CheckoutResponseDto } from './dto/checkout.dto';

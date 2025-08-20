@@ -61,13 +61,13 @@ export class AuthService {
         const user = await this.userService.findOrCreate(address);
 
         // 로그인 기록 저장 
-        await this.loginHistoryService.createWithUser(
+        this.loginHistoryService.createWithUser(
             {
                 walletAddress: address,
                 ipAddress: ip,
                 userAgent: req.headers['user-agent'] ?? '',
             },
-            user,  // 별도 인자로 전달 
+            user
         );
 
         return this.login(address);

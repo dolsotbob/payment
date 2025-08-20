@@ -20,7 +20,7 @@ export class ProductService {
         return this.productRepository.find();
     }
 
-    async findOne(id: number): Promise<Product> {
+    async findOne(id: string): Promise<Product> {
         const product = await this.productRepository.findOne({ where: { id } });
         if (!product) {
             throw new NotFoundException(`ID ${id} 상품을 찾을 수 없습니다.`);
@@ -28,7 +28,7 @@ export class ProductService {
         return product;
     }
 
-    async update(id: number, updateData: UpdateProductDto): Promise<Product> {
+    async update(id: string, updateData: UpdateProductDto): Promise<Product> {
         const product = await this.productRepository.findOne({ where: { id } });
         if (!product) {
             throw new NotFoundException(`ID ${id} 상품을 찾을 수 없습니다.`);

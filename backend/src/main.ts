@@ -28,7 +28,7 @@ async function bootstrap() {
     credentials: true, // 쿠키 등 자격 정보 포함 여부 (필요 없으면 false)
   });
 
-  //////////
+  // ------ add rounter dump to debug mising API routes ---------
   const http = app.getHttpAdapter().getInstance();
 
   await app.init(); // <<< 중요: 라우트가 다 등록된 후 덤프해야 정확
@@ -50,7 +50,7 @@ async function bootstrap() {
     console.log('No express router stack found.');
   }
   console.log('--- ROUTES END ---');
-  //////////
+  // ------------------------------------------------ //
 
   // Render는 자체 포트를 process.env.PORT로 전달함; .env의 PORT는 주석처리 되어 있음 
   await app.listen(process.env.PORT ?? 4000);

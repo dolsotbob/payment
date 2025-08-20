@@ -1,5 +1,6 @@
 // JWT 토큰 검증 로직 
-
+// PassportStrategy(Strategy)를 상속해서 JWT 토큰을 검증하고, validate(payload)를 정의함
+// 여기서 req.user에 들어갈 객체가 만들어짐 
 import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";  // passport-jwt 전략을 NestJS 스타일로 래핑(wrap)해주는 헬퍼
 import { ExtractJwt, Strategy } from 'passport-jwt';  // JWT를 추출하고 검증하는 데 필요한 Passport JWT 전략 구성 도구

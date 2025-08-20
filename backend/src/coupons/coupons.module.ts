@@ -5,7 +5,7 @@ import { CouponsController } from './coupons.controller';
 import { CouponsService } from './coupons.service';
 
 // 쿠폰 사용 기록이 결제 도메인에 있다면 필요 엔티티만 이 모듈에서 등록
-import { CouponUse } from '../payment/entities/coupon-use.entity';
+import { CouponUse } from './entities /coupon-use.entity';
 // 다른 엔티티가 필요하면 여기 추가
 
 @Module({

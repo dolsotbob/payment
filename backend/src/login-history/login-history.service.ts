@@ -1,9 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LoginHistory } from './entities/login-history.entity';
 import { CreateLoginHistoryDto } from './dto/create-login-history.dto';
-import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
@@ -11,22 +10,27 @@ export class LoginHistoryService {
     constructor(
         @InjectRepository(LoginHistory)
         private readonly loginHistoryRepo: Repository<LoginHistory>,
-        private readonly userService: UserService,
+        @InjectRepository(User)
+        private readonly userRepo: Repository<User>,
     ) { }
 
-    async create(dto: CreateLoginHistoryDto): Promise<LoginHistory> {
-        const user = await this.userService.findOrCreate(dto.walletAddress);
-        return this.createWithUser(dto, user); // 내부 재사용
-    }
+    async writeLogin(
+        dto: CreateLoginHistoryDto,
+        authUser: { id: string },
+    ) {
+        // 1) 유저 찾기 (id 기반)
+        const user = await this.userRepo.findOne({ where: { id: authUser.id } });
+        if (!user) throw new NotFoundException('User not found');
 
-    async createWithUser(dto: CreateLoginHistoryDto, user: User): Promise<LoginHistory> {
+        // 2) 단일 객체로 create (배열 x)
         const record = this.loginHistoryRepo.create({
-            walletAddress: dto.walletAddress,
+            user,  // 관계로 연결 
             ipAddress: dto.ipAddress,
             userAgent: dto.userAgent,
-            user
-        });
+            loginAt: new Date(),
+        })
 
+        // 3) save는 단일 엔티티 
         return this.loginHistoryRepo.save(record);
     }
 
@@ -35,7 +39,7 @@ export class LoginHistoryService {
         return this.loginHistoryRepo.find({
             where: {
                 user: {
-                    walletAddress,
+                    walletAddress: walletAddress.toLowerCase(),
                 },
             },
             relations: ['user'],
