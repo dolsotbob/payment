@@ -29,28 +29,44 @@ async function bootstrap() {
   });
 
   // ------ add rounter dump to debug mising API routes ---------
-  const http = app.getHttpAdapter().getInstance();
+  // const http = app.getHttpAdapter().getInstance();
 
-  await app.init(); // <<< 중요: 라우트가 다 등록된 후 덤프해야 정확
+  // await app.init(); // <<< 중요: 라우트가 다 등록된 후 덤프해야 정확
 
-  const router = http._router;
-  console.log('--- ROUTES START ---');
-  if (router?.stack) {
-    router.stack
-      .filter((layer: any) => layer.route)
-      .forEach((layer: any) => {
-        const path = layer.route?.path;
-        const methods = Object.keys(layer.route.methods)
-          .filter((m) => layer.route.methods[m])
-          .map((m) => m.toUpperCase())
-          .join(',');
-        console.log(`${methods} ${path}`);
-      });
-  } else {
-    console.log('No express router stack found.');
-  }
-  console.log('--- ROUTES END ---');
+  // const router = http._router;
+  // console.log('--- ROUTES START ---');
+  // if (router?.stack) {
+  //   router.stack
+  //     .filter((layer: any) => layer.route)
+  //     .forEach((layer: any) => {
+  //       const path = layer.route?.path;
+  //       const methods = Object.keys(layer.route.methods)
+  //         .filter((m) => layer.route.methods[m])
+  //         .map((m) => m.toUpperCase())
+  //         .join(',');
+  //       console.log(`${methods} ${path}`);
+  //     });
+  // } else {
+  //   console.log('No express router stack found.');
+  // }
+  // console.log('--- ROUTES END ---');
   // ------------------------------------------------ //
+
+  await app.init();
+
+  const server: any = app.getHttpServer();
+  const router = server?._events?.request?._router;
+  if (router?.stack) {
+    console.log('=== Route map ===');
+    router.stack
+      .filter((l: any) => l.route)
+      .forEach((l: any) => {
+        const methods = Object.keys(l.route.methods).join(',').toUpperCase();
+        console.log(`${methods} ${l.route.path}`);
+      });
+  }
+
+  await app.listen(process.env.PORT || 3000);
 
   // Render는 자체 포트를 process.env.PORT로 전달함; .env의 PORT는 주석처리 되어 있음 
   await app.listen(process.env.PORT ?? 4000);

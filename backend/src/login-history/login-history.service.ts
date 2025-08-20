@@ -7,6 +7,9 @@ import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class LoginHistoryService {
+    createWithUser(arg0: { walletAddress: string; ipAddress: any; userAgent: string; }, user: User) {
+        throw new Error('Method not implemented.');
+    }
     constructor(
         @InjectRepository(LoginHistory)
         private readonly loginHistoryRepo: Repository<LoginHistory>,
