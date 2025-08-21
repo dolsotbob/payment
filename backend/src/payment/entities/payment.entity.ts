@@ -10,10 +10,10 @@ import { Product } from '../../product/entities/product.entity';
 
 @Entity('payments')
 // 금액 음수 방지 (마이그레이션에서 생성되는 CHECK 제약)
-@Check(`"originalWei" >= 0`)
-@Check(`"discountWei" >= 0`)
-@Check(`"paidWei" >= 0`)
-@Check(`"cashbackWei" >= 0`)
+@Check(`"originalPrice" >= 0`)
+@Check(`"discountAmount" >= 0`)
+@Check(`"discountedPrice" >= 0`)
+@Check(`"cashbackAmount" >= 0`)
 @Index(['from', 'createdAt']) // 지갑별 최근 결제 조회 최적화
 @Index(['status'])
 @Index(['cashbackStatus'])
