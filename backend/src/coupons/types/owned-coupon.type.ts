@@ -1,10 +1,12 @@
+// backend/src/coupons/types/owned-coupon.type.ts 
+
 export type OwnedCoupon = {
     id: number;
     balance: number; // ERC1155 balance
     status: 'ACTIVE' | 'EXPIRED' | 'DISABLED' | 'USED_UP';
     rule: {
         discountBps?: number;
-        cosumable: boolean;
+        consumable: boolean;
         priceCapUsd?: number;
         expiresAt?: string; // ISO
     };
