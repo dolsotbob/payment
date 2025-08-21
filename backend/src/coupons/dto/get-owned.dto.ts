@@ -1,13 +1,9 @@
-import { IsEthereumAddress, IsNotEmpty } from 'class-validator';
-
-export class GetOwnedQueryDto {
-    @IsNotEmpty()
-    @IsEthereumAddress()
-    wallet!: string;
-}
+// 지갑 소유 쿠폰 조회 
+// src/coupons/dto/get-owned.dto.ts
+import { OwnedCoupon } from '../types/owned-coupon.type';
 
 export class GetOwnedResponseDto {
     wallet!: string;
-    items!: import('../types/owned-coupon.type').OwnedCoupon[];
-    fetchedAt!: string; // ISO
+    items!: OwnedCoupon[];
+    fetchedAt!: string; // ISO string
 }

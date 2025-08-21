@@ -6,7 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PaymentService } from './payment.service';
 import { PaymentController } from './payment.controller';
 import { Payment } from './entities/payment.entity';
-import { CouponUse } from 'src/coupons/entities /coupon-use.entity';
+import { CouponUse } from 'src/coupons/entities/coupon-use.entity';
 import { Cashback } from 'src/cashback/entities/cashback.entity';
 import { Erc1155Service } from 'src/common/blockchain/erc1155.service';
 import { PaymentContractService } from 'src/common/blockchain/payment-contract.service';

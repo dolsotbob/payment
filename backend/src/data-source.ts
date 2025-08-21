@@ -6,8 +6,8 @@ import { User } from './user/entities/user.entity';
 import dotenv from 'dotenv'
 import { LoginHistory } from './login-history/entities/login-history.entity';
 import { ShippingInfo } from './shipping/entities/shipping-info.entity';
-import { CouponUse } from './coupons/entities /coupon-use.entity';
-import { CouponCatalog } from './coupons/entities /coupon-catalog.entity';
+import { CouponUse } from './coupons/entities/coupon-use.entity';
+import { CouponCatalog } from './coupons/entities/coupon-catalog.entity';
 import { Cashback } from './cashback/entities/cashback.entity';
 
 dotenv.config();

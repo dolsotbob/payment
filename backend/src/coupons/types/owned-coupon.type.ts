@@ -4,9 +4,13 @@ export type OwnedCoupon = {
     status: 'ACTIVE' | 'EXPIRED' | 'DISABLED' | 'USED_UP';
     rule: {
         discountBps?: number;
+        cosumable: boolean;
         priceCapUsd?: number;
-        consumable?: boolean;
         expiresAt?: string; // ISO
     };
-    metadata?: { name?: string; image?: string; description?: string };
+    meta?: {
+        name: string | null;
+        imageUrl: string | null;
+        ipfsCid: string | null;
+    };
 };

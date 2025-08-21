@@ -1,3 +1,5 @@
+// 결제 컨트랙트 연동 
+
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
