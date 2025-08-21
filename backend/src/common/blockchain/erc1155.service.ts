@@ -18,10 +18,10 @@ export class Erc1155Service implements OnModuleInit {
 
     onModuleInit() {
         const rpcUrl = process.env.RPC_URL;
-        const contractAddress = process.env.COUPON_ERC1155_ADDRESS;
+        const contractAddress = process.env.COUPON1155_ADDRESS;
 
         if (!rpcUrl) throw new Error('Chain RPC_URL is not set');
-        if (!contractAddress) throw new Error('COUPON_ERC1155_ADDRESS is not set');
+        if (!contractAddress) throw new Error('COUPON1155_ADDRESS is not set');
 
         this.provider = new ethers.JsonRpcProvider(rpcUrl);
         this.contract = new ethers.Contract(contractAddress, ERC1155_ABI, this.provider);
