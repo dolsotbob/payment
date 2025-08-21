@@ -1,6 +1,9 @@
 // 체인 어댑터 
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ethers } from 'ethers';
+import dotenv from 'dotenv'
+
+dotenv.config();
 
 const ERC1155_ABI = [
     // balanceOf(address account, uint256 id) → uint256
