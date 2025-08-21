@@ -28,13 +28,13 @@ export class ProductService {
         return product;
     }
 
-    async update(id: string, updateData: UpdateProductDto): Promise<Product> {
+    async update(id: string, dto: UpdateProductDto): Promise<Product> {
         const product = await this.productRepository.findOne({ where: { id } });
         if (!product) {
             throw new NotFoundException(`ID ${id} 상품을 찾을 수 없습니다.`);
         }
 
-        Object.assign(product, updateData);
+        Object.assign(product, dto);
         return this.productRepository.save(product);
     }
 }

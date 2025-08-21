@@ -63,7 +63,6 @@ export class AuthService {
         // 로그인 기록 저장 
         this.loginHistoryService.createWithUser(
             {
-                walletAddress: address,
                 ipAddress: ip,
                 userAgent: req.headers['user-agent'] ?? '',
             },

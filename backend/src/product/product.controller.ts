@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Patch, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Body, Get, Patch, Param, ParseUUIDPipe } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -19,15 +19,17 @@ export class ProductController {
     }
 
     @Get(':id')
-    findOne(@Param('id', ParseIntPipe) id: number): Promise<Product> {
+    findOne(
+        @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    ): Promise<Product> {
         return this.productService.findOne(id);
     }
 
     @Patch(':id')
     update(
-        @Param('id', ParseIntPipe) id: number,
-        @Body() UpdateProductDto: UpdateProductDto,
-    ): Promise<Product> {
-        return this.productService.update(id, UpdateProductDto);
+        @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+        @Body() dto: UpdateProductDto,
+    ) {
+        return this.productService.update(id, dto);
     }
 }
