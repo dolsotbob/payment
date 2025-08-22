@@ -56,7 +56,7 @@ export class CouponsService {
                 },
                 rule: {
                     discountBps: 0,
-                    cosumable: false,
+                    consumable: false,
                     priceCapUsd: 0,
                     expiresAt: ''
                 }
@@ -88,7 +88,7 @@ export class CouponsService {
      */
     async apply(dto: UseCouponDto, authUser: { address: string }) {
         const wallet = (authUser.address ?? '').toLowerCase();
-        const tokenId = Number(dto.tokenId);
+        const tokenId = Number(dto.couponId);
         const amount = Number(dto.amount ?? 1);
 
         // 보유량 체크 (카탈로그 isActive + balance >= amount)
@@ -96,13 +96,13 @@ export class CouponsService {
         if (!check.ok) throw new BadRequestException(check.reason ?? 'COUPON_NOT_APPLICABLE');
 
         // offchain tx 식별자 규칙
-        const txHash = `offchain:${dto.orderId}`;
+        const txHash = `offchain:${dto.paymentId}`;
 
         const use = this.useRepo.create({
             walletAddress: wallet,
             couponId: tokenId,
             txHash,                 // 필수 컬럼이므로 offchain 규칙으로 저장
-            quoteId: dto.orderId,   // 선택: quoteId에 orderId를 복제 저장(원자적 연계용)
+            quoteId: dto.paymentId,   // 선택: quoteId에 orderId를 복제 저장(원자적 연계용)
             usedAt: new Date(),
             // payment: null,        // 결제 엔티티 연계가 생기면 여기에 연결
         });

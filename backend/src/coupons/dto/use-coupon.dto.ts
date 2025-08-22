@@ -1,21 +1,25 @@
 // src/coupons/dto/use-coupon.dto.ts
 import { IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class UseCouponDto {
     @IsNumber()
     @Min(0)
-    tokenId!: number;        // ERC1155 tokenId
+    @Transform(({ value }) => Number(value))
+    couponId!: number;          // ← tokenId → couponId
 
     @IsString()
     @IsNotEmpty()
-    orderId!: string;        // 중복 방지 키 (offchain txHash 구성에도 사용)
+    paymentId!: string;         // ← orderId → paymentId (Payment와 일치)
 
     @IsOptional()
     @IsNumber()
     @Min(1)
-    amount?: number;         // 기본 1
+    @Transform(({ value }) => (value === undefined ? undefined : Number(value)))
+    amount?: number;            // 기본 1
 
     @IsOptional()
     @IsNumber()
-    orderUsdTotal?: number;  // (정책 필요 시 사용)
+    @Transform(({ value }) => (value === undefined ? undefined : Number(value)))
+    orderUsdTotal?: number;     // 정책 필요 시
 }
