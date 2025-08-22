@@ -5,9 +5,9 @@ import { requestLoginChallenge, requestLoginToken } from "../api/auth";
 // requestLoginChallenge(address) -> { message, nonce, expiresAt, domain?, chainId? }
 // requestLoginToken(address, message, signature) -> { token }
 
-type OnAccountConnected = (address: string) => void;
-
-export const connectAndLogin = async (onAccountConnected: OnAccountConnected) => {
+export const connectAndLogin = async (
+    onAccountConnected: (address: string) => void
+) => {
     if (!window.ethereum) {
         alert("🦊 MetaMask를 설치해주세요!");
         return;
@@ -28,25 +28,22 @@ export const connectAndLogin = async (onAccountConnected: OnAccountConnected) =>
         const challenge = await requestLoginChallenge(address, Number(chainId));
         // challenge.message 는 서버가 생성한 고유 문자열이어야 함 (nonce/만료/도메인 포함 권장)
 
-        // 4) 사용자가 메시지에 서명
-        //    (서명 거절하면 예외 발생)
+        // 4) 사용자가 메시지에 서명  
         const signature = await (signer as any).signMessage(challenge.message);
 
-        // 5) 서버로 서명 검증 -> JWT 발급
-        const { token } = await requestLoginToken(address, challenge.message, signature);
+        // 5) 서버로 서명 검증 -> access token (문자열) 수령 
+        const accessToken = await requestLoginToken(address, challenge.message, signature);
 
         // 6) JWT 저장 (키: 'jwt'로 통일)
-        localStorage.setItem("jwt", token);
+        localStorage.setItem("jwt", accessToken);
 
         // 7) 상위 상태 업데이트
         onAccountConnected(address);
-
-        return { address, jwt: token }; // 호출자가 필요하면 활용
+        return { address, jwt: accessToken }; // 호출자가 필요하면 활용
     } catch (err: any) {
         // EIP-1193 사용자 거절 코드 예: 4001
         const code = err?.code ?? err?.error?.code;
         if (code === 4001) {
-            console.warn("사용자가 서명을 거절했습니다.");
             alert("서명이 취소되었습니다.");
             return;
         }
