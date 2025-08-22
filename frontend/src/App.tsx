@@ -1,5 +1,4 @@
 // 지갑 연결 및 라우팅 담당 
-
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
@@ -10,24 +9,31 @@ import Footer from './components/Footer';
 import MyPage from './pages/MyPage';
 import './App.css';
 import { fetchUserCoupons } from './utils/coupon';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-const App: React.FC = () => {
+// 1) QueryClient는 컴포넌트 밖에서 생성(리렌더마다 재생성 방지)
+const queryClient = new QueryClient();
+
+// 2) 최상위 Provider 래퍼를 default export로
+export default function AppRoot() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
+  )
+}
+
+// 3) 실제 앱 내용은 named export (default 아님)
+export function App() {
   const [account, setAccount] = useState<string | null>(null);
-  const [coupons, setCoupons] = useState<any[]>([]);
-
   const handleLoginWithWallet = async () => {
     await connectAndLogin(setAccount);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token'); // JWT 제거
+    localStorage.removeItem('jwt'); // <-- token을 jwt로 교체    
     setAccount(null); // 상태 초기화
   };
-
-  useEffect(() => {
-    if (!account) { setCoupons([]); return; }
-    fetchUserCoupons(account).then(setCoupons).catch(() => setCoupons([]));
-  }, [account]);
 
   return (
     <Router>
@@ -52,4 +58,3 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
