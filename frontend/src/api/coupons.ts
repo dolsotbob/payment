@@ -32,7 +32,7 @@ export async function fetchOwnedCoupons(jwt: string): Promise<OwnedCoupon[]> {
 /** 2) (선택) 사전 검증: 사용 가능 여부만 체크 */
 export type ValidateCouponParams = {
     couponId: number;   // ← tokenId → couponId로 통일
-    amount?: number;    // 결제 금액이 검증에 필요하다면
+    amount?: number;    // 결제 금액이 검증에 필요하다
 };
 export type ValidateCouponRes = {
     ok: boolean;
@@ -41,8 +41,11 @@ export type ValidateCouponRes = {
     priceCapUsd?: number;
 };
 
-export async function validateCoupon(params: ValidateCouponParams): Promise<ValidateCouponRes> {
-    const res = await http.get<ValidateCouponRes>("/coupons/validate", { params });
+export async function validateCoupon(jwt: string, params: ValidateCouponParams): Promise<ValidateCouponRes> {
+    const res = await http.get<ValidateCouponRes>("/coupons/validate", {
+        headers: { Authorization: `Bearer ${jwt}` },
+        params,
+    });
     return res.data;
 }
 
@@ -55,7 +58,7 @@ export type ApplyCouponBody = {
 };
 export type ApplyCouponRes = { ok: true; useId: string };
 
-export async function applyCoupon(body: ApplyCouponBody): Promise<ApplyCouponRes> {
+export async function applyCoupon(jwt: string, body: ApplyCouponBody): Promise<ApplyCouponRes> {
     const res = await http.post<ApplyCouponRes>("/coupons/apply", body);
     return res.data;
 }
