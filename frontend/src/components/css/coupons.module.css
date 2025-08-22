@@ -1,0 +1,130 @@
+/* 카드 공통 */
+.card {
+    border: 1px solid #e5e7eb;
+    /* gray-200 정도 */
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    background: #fff;
+}
+
+.titleRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.title {
+    font-size: 1.125rem;
+    line-height: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.desc {
+    margin-top: 4px;
+    color: #4b5563;
+    /* gray-600 */
+    font-size: 0.95rem;
+}
+
+.meta {
+    margin-top: 8px;
+    display: flex;
+    gap: 16px;
+    color: #6b7280;
+    /* gray-500 */
+    font-size: 0.8rem;
+}
+
+/* 뱃지 */
+.badge {
+    font-size: 0.75rem;
+    border-radius: 999px;
+    padding: 2px 8px;
+    border: 1px solid transparent;
+    line-height: 1.2;
+}
+
+.badgeActive {
+    background: #ecfdf5;
+    /* emerald-50 */
+    color: #065f46;
+    /* emerald-800 */
+    border-color: #a7f3d0;
+}
+
+.badgeExpired,
+.badgeUsedUp,
+.badgeDisabled {
+    background: #f3f4f6;
+    /* gray-100 */
+    color: #6b7280;
+    /* gray-500 */
+    border-color: #e5e7eb;
+}
+
+/* 버튼 */
+.button {
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: 1px solid #111827;
+    /* near black */
+    background: #111827;
+    color: #fff;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.button:hover {
+    opacity: 0.9;
+}
+
+.buttonDisabled {
+    background: #f3f4f6;
+    /* gray-100 */
+    border-color: #e5e7eb;
+    color: #9ca3af;
+    /* gray-400 */
+    cursor: not-allowed;
+}
+
+/* 리스트 */
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.listItem {
+    border-radius: 12px;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.listItemSelected {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+    /* emerald ring */
+}
+
+/* 상태 박스 */
+.box {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    background: #fff;
+    font-size: 0.95rem;
+}
+
+.boxError {
+    background: #fef2f2;
+    /* red-50 */
+    border-color: #fecaca;
+    /* red-200 */
+    color: #b91c1c;
+    /* red-700 */
+}

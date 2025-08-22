@@ -25,7 +25,7 @@ export async function fetchOwnedCoupons(jwt: string): Promise<OwnedCoupon[]> {
         },
     });
 
-    // 🔎 balance 같은 값이 string으로 내려올 경우 변환
+    // balance 같은 값이 string으로 내려올 경우 변환
     // res.data.map(...): 가져온 쿠폰 배열을 순회.
     // balance: DB/백엔드에서 string으로 내려올 수 있어서, 타입 안정성을 위해 parseInt로 변환.
     // 최종적으로 모든 쿠폰 객체를 OwnedCoupon 타입으로 맞춰 리턴.
@@ -67,6 +67,7 @@ export type CouponUseItem = {
     quoteId?: string | null;
     usedAt: string; // ISO
 };
+
 export async function fetchMyCouponUses(jwt: string, limit = 50): Promise<CouponUseItem[]> {
     const res = await axios.get<CouponUseItem[]>(`${API_BASE}/coupons/uses`, {
         headers: { Authorization: `Bearer ${jwt}` },
