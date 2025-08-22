@@ -18,9 +18,12 @@ export const CouponList: React.FC<Props> = ({
     onSelectCoupon,
     autoPickFirstUsable = false,
 }) => {
+    // 훅으로 data, isPending, isError, error를 한 번에 제공
     const { data: coupons = [], isPending, isError, error } = useCouponsQuery(jwt);
     const [selectedId, setSelectedId] = useState<string | number | null>(null);
 
+    // 사용 가능 쿠폰 계산 (메모화)
+    // 만료일과 잔여 수량으로 필터링 
     const usableCoupons = useMemo(() => {
         // if (!coupons) return [];
         const now = Date.now();
@@ -32,6 +35,7 @@ export const CouponList: React.FC<Props> = ({
     }, [coupons]);
 
     // 옵션: 첫 사용가능 쿠폰 자동 선택
+    // autoPickFirstUsable가 true면 첫 사용가능 쿠폰을 자동으로 선택하여 결제 플로우로 전달
     useEffect(() => {
         if (autoPickFirstUsable && usableCoupons.length > 0 && selectedId == null) {
             const first = usableCoupons[0];
