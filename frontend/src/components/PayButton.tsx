@@ -139,7 +139,6 @@ const PayButton: React.FC<PayButtonProps> = ({
             }
 
             // 4) 백엔드 전송 (결제 레코드 생성)
-            // 4) 백엔드 전송 (결제 레코드 생성)
             const paymentRes = await sendPaymentToBackend({
                 txHash: receipt.hash,
                 amountWei: priceBN.toString(),     // ← BN을 그대로 문자열로

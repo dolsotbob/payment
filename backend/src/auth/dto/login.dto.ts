@@ -1,12 +1,15 @@
-import { IsString, IsEthereumAddress } from 'class-validator';
+// src/auth/dto/login.dto.ts
+import { IsEthereumAddress, IsNotEmpty, IsString } from 'class-validator';
 
-export class LoginDto {
+export class LoginRequestDto {
     @IsEthereumAddress()
-    address: string;
+    address!: string;
 
     @IsString()
-    message: string;
+    @IsNotEmpty()
+    message!: string;
 
     @IsString()
-    signature: string;
+    @IsNotEmpty()
+    signature!: string;
 }
