@@ -138,20 +138,21 @@ const PayButton: React.FC<PayButtonProps> = ({
                 console.warn('⚠️ 캐시백 비율 조회 실패:', err);
             }
 
-            // 4) 백엔드 전송 
-            await sendPaymentToBackend(
-                receipt.hash,
-                amount,
-                'SUCCESS',
-                account,
-                cashbackAmount,
+            // 4) 백엔드 전송 (결제 레코드 생성)
+            // 4) 백엔드 전송 (결제 레코드 생성)
+            const paymentRes = await sendPaymentToBackend({
+                txHash: receipt.hash,
+                amountWei: priceBN.toString(),     // ← BN을 그대로 문자열로
+                status: "SUCCESS",
+                userAddress: account,
+                cashbackAmountWei: ethers.parseUnits(cashbackAmount, 18).toString(), // 이미 BN이면 .toString()
                 productId,
-                receipt.gasUsed,
-                receipt.effectiveGasPrice
-            );
+                gasUsed: receipt.gasUsed,
+                gasPrice: receipt.effectiveGasPrice,
+            });
 
             // paymentId 확보 (id가 없으면 txHash로 대체)
-            const paymentId = String(payment?.id ?? receipt.hash);
+            const paymentId = String(paymentRes?.id ?? receipt.hash);
 
             // 5) (선택) 쿠폰 사용 기록 생성
             if (selectedCoupon) {
