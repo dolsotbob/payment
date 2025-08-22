@@ -1,39 +1,79 @@
-// 결제 로직 집중 
+// 결제 로직 + 쿠폰 연동 
+import React, { useState } from 'react';
+import { ethers } from 'ethers';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import { buildPermitCallData } from '../utils/permit';
 import { sendPaymentToBackend } from '../utils/payment';
 import PaymentJson from '../abis/Payment.json';
 import TestTokenJson from '../abis/TestToken.json';
-import React from 'react';
-import { ethers } from 'ethers';
 import './css/PayButton.css';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+
+import type { OwnedCoupon } from '../types/coupons';
+import { useValidateCouponMutation } from '../hooks/mutations/useValidateCouponMutation';
+import { useApplyCouponMutation } from '../hooks/mutations/useApplyCouponMutations';
 
 interface PayButtonProps {
     account: string; // 유저 주소
     amount: string;  // 예: '0.01'
     productId: number;
+    selectedCoupon?: OwnedCoupon | null;
     onSuccess: () => void;
     onCancel: () => void;
 }
 
-const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuccess, onCancel }) => {
+const PayButton: React.FC<PayButtonProps> = ({
+    account,
+    amount,
+    productId,
+    selectedCoupon,
+    onSuccess,
+    onCancel,
+}) => {
+    const [paying, setPaying] = useState(false);
+
+    // jwt 기반 로그인 
+    const jwt = localStorage.getItem('jwt');
+
+    // 쿠폰 검증/적용 훅 
+    const { mutateAsync: validateCoupon, isPending: validating } = useValidateCouponMutation(jwt);
+    const { mutateAsync: applyCouponUse, isPending: applying } = useApplyCouponMutation(jwt);
+
+    const disabled = paying || validating || applying;
+
     const handlePay = async () => {
         try {
-            // 1. 메마 설치 되어 있는지 확인 
             if (!window.ethereum) {
                 toast.error('🦊 MetaMask가 설치되어 있지 않습니다.');
                 return;
             }
-
-            // !amount가 비어있거나 존재하지 않을 때 
             if (!amount || Number(amount) <= 0) {
-                alert('💸 유효한 결제 금액이 없습니다.');
+                toast.error('💸 유효한 결제 금액이 없습니다.');
+                return;
+            }
+            if (!jwt) {
+                toast.error('🔐 로그인이 필요합니다.');
                 return;
             }
 
-            // 2. provider, signer 준비 
+            setPaying(true);
+
+            // 1) (선택) 쿠폰 사전 검증 
+            if (selectedCoupon) {
+                const res = await validateCoupon({
+                    couponId: Number(selectedCoupon.id),
+                    amount: parseFloat(amount), // 금액 검증이 정책에 필요하다면 전달 
+                });
+                if (!res.ok) {
+                    toast.error(`쿠폰 사용 불가: ${res.reason ?? '알 수 없는 사유'}`);
+                    setPaying(false);
+                    return;
+                }
+            }
+
+            // 2) 결제 트랜잭션 실행 
+            // provider, signer 준비 
             const provider = new ethers.BrowserProvider(window.ethereum);
             const signer = await provider.getSigner();
             const chainId = (await provider.getNetwork()).chainId;
@@ -46,7 +86,7 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
             const payment = new ethers.Contract(paymentAddress, PaymentJson.abi, signer);
             const value = ethers.parseUnits(amount, 18);
 
-            // 3. Permit 서명 데이터 생성 
+            // Permit 서명 데이터 생성 
             // 이 때 메타마스크 창이 뜬다. 
             const { v, r, s, deadline } = await buildPermitCallData(
                 token,
@@ -57,7 +97,7 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
                 Number(chainId)
             );
 
-            // 5. 결제 트랜잭션 실행 
+            // 결제 트랜잭션 실행 
             const tx = await payment.permitAndPayWithCashback(
                 account,
                 value,
@@ -69,7 +109,7 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
             );
             const receipt = await tx.wait();
 
-            // 6. 캐시백 금액 계산
+            // 3) 캐시백 금액 계산
             let cashbackAmount = '0';
             try {
                 const cashbackRate = await payment.cashbackRate();
@@ -78,7 +118,7 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
                 console.warn('⚠️ 캐시백 비율 조회 실패:', err);
             }
 
-            // 7. 백엔드 전송 
+            // 4) 백엔드 전송 
             await sendPaymentToBackend(
                 receipt.hash,
                 amount,
@@ -90,7 +130,20 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
                 receipt.effectiveGasPrice
             );
 
-            // 8. 유저에게 완료 알림 
+            // paymentId 확보 (id가 없으면 txHash로 대체)
+            const paymentId = String(payment?.id ?? receipt.hash);
+
+            // 5) (선택) 쿠폰 사용 기록 생성
+            if (selectedCoupon) {
+                await applyCouponUse({
+                    couponId: Number(selectedCoupon.id),
+                    paymentId, // 문자열로 전달
+                    // amount나 orderUsdTotal을 정책에 맞게 추가 가능
+                });
+                // onSuccess 내부에서 쿠폰 목록은 invalidate되어 최신화됩니다.
+            }
+
+            // 유저에게 완료 알림 
             toast.success('🎉 결제 완료!', {
                 position: 'top-center',
                 autoClose: 3000,
@@ -111,10 +164,13 @@ const PayButton: React.FC<PayButtonProps> = ({ account, amount, productId, onSuc
 
     return (
         <div className='pay-popup'>
-            <button onClick={onCancel} className='close-button'>x</button>
-            <button onClick={handlePay} className='pay-button'>결제하기</button>
+            <button onClick={onCancel} className="close-button">x</button>
+            <button onClick={handlePay} className="pay-button" disabled={disabled}>
+                {disabled ? '처리 중…' : '결제하기'}
+            </button>
         </div>
     )
 };
 
 export default PayButton;
+
