@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import type { OwnedCoupon } from "../../types/coupons";
-import { fetchOwnedCoupons } from "../../api/coupons";
+// import { fetchOwnedCoupons } from "../../api/coupons";
 import { CouponCard } from "./CouponCard";
 import styles from "../css/coupons.module.css";
+import { useCouponsQuery } from "../../hooks/queries/useCouponsQuery";
 
 type Props = {
     jwt: string;
@@ -17,42 +18,16 @@ export const CouponList: React.FC<Props> = ({
     onSelectCoupon,
     autoPickFirstUsable = false,
 }) => {
-    const [coupons, setCoupons] = useState<OwnedCoupon[] | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
-    const [applyingId, setApplyingId] = useState<string | number | null>(null);
+    const { data: coupons = [], isPending, isError, error } = useCouponsQuery(jwt);
     const [selectedId, setSelectedId] = useState<string | number | null>(null);
 
-    useEffect(() => {
-        let alive = true;
-        (async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const data = await fetchOwnedCoupons(jwt);
-                if (!alive) return;
-                setCoupons(data ?? []);
-            } catch (e: any) {
-                if (!alive) return;
-                setError(e?.message ?? "쿠폰을 불러오지 못했습니다.");
-            } finally {
-                if (alive) setLoading(false);
-            }
-        })();
-        return () => {
-            alive = false;
-        };
-    }, [jwt]);
-
     const usableCoupons = useMemo(() => {
-        if (!coupons) return [];
+        // if (!coupons) return [];
         const now = Date.now();
-        return coupons.filter((c: any) => {
-            const expiresAt = c.expiresAt ?? c.expiry ?? c.expires_on;
-            const isExpired = expiresAt ? new Date(expiresAt).getTime() < now : false;
-            const usedCount = c.usedCount ?? c.uses ?? 0;
-            const maxUses = c.maxUses ?? c.limit ?? 1;
-            return !isExpired && Math.max((maxUses ?? 1) - (usedCount ?? 0), 0) > 0;
+        return coupons.filter((c) => {
+            const exp = c.rule?.expiresAt;
+            const isExpired = exp ? new Date(exp).getTime() < now : false;
+            return c.status === "ACTIVE" && !isExpired && c.balance > 0;
         });
     }, [coupons]);
 
@@ -60,33 +35,20 @@ export const CouponList: React.FC<Props> = ({
     useEffect(() => {
         if (autoPickFirstUsable && usableCoupons.length > 0 && selectedId == null) {
             const first = usableCoupons[0];
-            setSelectedId(first.id as any);
+            setSelectedId(first.id);
             onSelectCoupon?.(first);
         }
     }, [autoPickFirstUsable, usableCoupons, selectedId, onSelectCoupon]);
 
-    const handleApply = async (coupon: OwnedCoupon) => {
-        try {
-            setApplyingId(coupon.id as any);
-            setSelectedId(coupon.id as any);
-            onSelectCoupon?.(coupon);
-            // 여기서는 선택만 담당합니다.
-            // 실제 결제 API와 연동해 쿠폰 적용/검증을 하려면:
-            // 1) validateCoupon(coupon.id)로 사전검증
-            // 2) 결제 버튼에서 couponId를 포함해 결제 요청 보내기
-        } catch (e) {
-            // 화면상에서 별도 처리 필요시 여기에 로직 추가
-        } finally {
-            setApplyingId(null);
-        }
-    };
+    if (isPending) return <div className={styles.box}>쿠폰을 불러오는 중...</div>;
+    if (isError) {
+        const message =
+            (error as any)?.response?.status === 401
+                ? "세션이 만료되었습니다. 다시 로그인 해주세요."
+                : ((error as any)?.message ?? "쿠폰을 불러오지 못했습니다.");
+        return <div className={`${styles.box} ${styles.boxError}`}>오류: {message}</div>;
+    }
 
-    if (loading) {
-        return <div className={styles.box}>쿠폰을 불러오는 중...</div>;
-    }
-    if (error) {
-        return <div className={`${styles.box} ${styles.boxError}`}>오류: {error}</div>;
-    }
     if (!coupons || coupons.length === 0) {
         return <div className={styles.box}>보유한 쿠폰이 없습니다.</div>;
     }
@@ -101,8 +63,10 @@ export const CouponList: React.FC<Props> = ({
                 >
                     <CouponCard
                         coupon={coupon}
-                        applying={applyingId === coupon.id}
-                        onApply={() => handleApply(coupon)}
+                        onApply={() => {
+                            setSelectedId(coupon.id);
+                            onSelectCoupon?.(coupon);
+                        }}
                     />
                 </div>
             ))}
