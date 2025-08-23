@@ -1,4 +1,4 @@
-// utils/coupon.ts
+// utils/couponUtils.ts
 import api from "../api/axios";
 import { ethers } from "ethers";
 import Coupon1155Artifact from "../abis/Coupon1155.json";
@@ -15,11 +15,13 @@ export async function fetchUserCoupons(wallet: string): Promise<SimpleCoupon[]> 
 
     // 1) 백엔드 API 조회 (api 인스턴스는 Authorization 자동 첨부)
     try {
-        const { data } = await api.get<SimpleCoupon[]>(`/coupons`, {
-            params: { owner: wallet },
+        const { data } = await api.get<Array<{ id: number; balance: string }>>('/coupons/owned', {
             timeout: 15_000,
         });
-        if (Array.isArray(data)) return data;
+        if (Array.isArray(data)) {
+            // 문자열 balance → bigint로 정규화
+            return data.map(d => ({ id: d.id, balance: BigInt(d.balance) })) as SimpleCoupon[];
+        }
     } catch (err) {
         console.warn("API 조회 실패, 체인 폴백으로 진행:", err);
     }
