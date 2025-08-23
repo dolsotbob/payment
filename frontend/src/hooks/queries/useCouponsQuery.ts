@@ -1,3 +1,4 @@
+// src/hooks/queries/useCouponsQuery.ts
 // React Query 훅을 통해 JWT 기반 쿠폰 목록을 가져오는 전용 커스텀 훅 
 /*
  역할: 
@@ -8,17 +9,20 @@
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import type { OwnedCoupon } from "../../types/coupons";
 import { fetchOwnedCoupons } from "../../api/coupons";
+import { useAuth } from "../../context/AuthContext"; // 전역 토큰/유저
 
-export function useCouponsQuery(jwt: string | null): UseQueryResult<OwnedCoupon[]> {
-    return useQuery({
+export function useCouponsQuery(): UseQueryResult<OwnedCoupon[], Error> {
+    const { access_token, user } = useAuth();
+
+    return useQuery<OwnedCoupon[], Error>({
         // queryKey: 캐시를 구분하는 키. 사용자별로 캐시가 분리됨 
-        queryKey: ["coupons", { jwt }],
+        queryKey: ["coupons", user?.id ?? (user as any)?.address ?? access_token ?? "anon"],
         // 실제 데이터를 가져오는 비동기 함수 
         queryFn: async () => {
-            if (!jwt) throw new Error("로그인이 필요합니다.");
-            return await fetchOwnedCoupons(jwt);
+            if (!access_token) throw new Error("로그인이 필요합니다.");
+            return await fetchOwnedCoupons();  // 인터셉터가 Authorization 자동 첨부 
         },
-        enabled: !!jwt,           // jwt 없으면 자동 비활성
+        enabled: !!access_token,           // 토큰 없으면 자동 비활성
         staleTime: 1000 * 30,     // 30초 동안 신선
         gcTime: 1000 * 60 * 5,    // 5분 후 캐시 회수
         retry: (failureCount, err: any) => {

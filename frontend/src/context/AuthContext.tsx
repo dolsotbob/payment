@@ -13,12 +13,13 @@ import React, {
     useState,
 } from 'react';
 import { fetchMe, Me } from '../api/auth';
-import { setAuthToken, setOnUnauthorized } from '../api/axios';
+import { setAuthToken, setOnUnauthorized, TOKEN_KEY } from '../api/axios';
 import { walletLogin } from '../utils/walletLogin'; // 로그인 절차(챌린지→서명→JWT 발급)를 캡슐화
 
 type AuthContextValue = {
     user: Me | null;
-    token: string | null;
+    access_token: string | null;
+    token: string | null;  // <-- 하위 호환용 별칭 
     loading: boolean;
     loginWithWallet: () => Promise<void>;
     logout: () => void;
@@ -29,13 +30,13 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<Me | null>(null);
-    const [token, setToken] = useState<string | null>(null);
+    const [access_token, setAccessToken] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
 
     // 전역 로그아웃
     const logout = useCallback(() => {
         setAuthToken(null);         // axios 기본 헤더 + localStorage('token') 제거
-        setToken(null);
+        setAccessToken(null);
         setUser(null);
     }, []);
 
@@ -54,8 +55,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const { access_token } = await walletLogin();
 
             // 2) axios 기본 헤더/로컬스토리지에 반영
-            setAuthToken(token);
-            setToken(token);
+            setAuthToken(access_token);
+            setAccessToken(access_token);
 
             // 3) 유저 정보 로드
             await refreshMe();
@@ -68,10 +69,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         const boot = async () => {
             try {
-                const saved = localStorage.getItem('access_token');
+                const saved = localStorage.getItem(TOKEN_KEY);
                 if (saved) {
                     setAuthToken(saved);   // axios 기본 헤더에 즉시 반영
-                    setToken(saved);
+                    setAccessToken(saved);
                     await refreshMe();
                 }
             } catch {
@@ -87,15 +88,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // 401 전역 처리: 토큰 만료 시 자동 로그아웃
     useEffect(() => {
         setOnUnauthorized(() => logout);
-        return () => setOnUnauthorized(null); // 언마운트 시 해제
+        return () => setOnUnauthorized(null);
     }, [logout]);
 
     const value = useMemo<AuthContextValue>(() => ({
-        user, token, loading,
+        user,
+        access_token,
+        token: access_token,    // 별칭으로 함께 넣음 
+        loading,
         loginWithWallet,
         logout,
         refreshMe,
-    }), [user, token, loading, loginWithWallet, logout, refreshMe]);
+    }), [user, access_token, loading, loginWithWallet, logout, refreshMe]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

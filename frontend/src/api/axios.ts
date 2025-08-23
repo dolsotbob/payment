@@ -1,58 +1,52 @@
 // src/api/axios.ts
-// Axios 인터셉터
-// 자동으로 토큰 붙이기 
-import axios from 'axios';
+import axios from "axios";
 
-// axios 인스턴스 생성 
 const api = axios.create({
-    baseURL: process.env.REACT_APP_BACKEND_URL || 'https://your-backend.example.com',
-    withCredentials: true, // 쿠키 포함 요청 여부 
+    baseURL: process.env.REACT_APP_BACKEND_URL || "https://your-backend.example.com",
+    withCredentials: true,
 });
 
-// 요청 인터셉터: 토큰 자동 첨부 (모든 요청 전에 실행됨)
-api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token');  // 로컬스토리지에서 토큰 꺼냄 
+// 로컬스토리지 키 통일
+const TOKEN_KEY = "access_token";
 
-    // (선택) auth 엔드포인트엔 굳이 붙이지 않기
-    const url = config.url || '';
-    const isAuthPath = url.includes('/auth/login') || url.includes('/auth/challenge') || url.includes('/auth/nonce');
-
-    // Axios v1: AxiosHeaders면 set 사용
-    const headers = config.headers as any;
-    if (!isAuthPath && token) {
-        headers?.set ? headers.set('Authorization', `Bearer ${token}`) : (headers.Authorization = `Bearer ${token}`); // 헤더에 추가 
+// 토큰 수동 주입/제거 (AuthContext에서 사용)
+export function setAuthToken(token: string | null) {
+    if (token) {
+        localStorage.setItem(TOKEN_KEY, token);
+        // 기본 헤더에도 반영
+        (api.defaults.headers as any).Authorization = `Bearer ${token}`;
     } else {
-        if (headers?.delete) headers.delete('Authorization');
-        else if (headers && 'Authorization' in headers) delete headers.Authorization;
+        localStorage.removeItem(TOKEN_KEY);
+        delete (api.defaults.headers as any).Authorization;
+    }
+}
+
+// 요청 인터셉터: 토큰 자동 첨부 (기본 헤더 미설정 시 대비)
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem(TOKEN_KEY);
+    const headers = config.headers as any;
+    if (token) {
+        headers?.set ? headers.set("Authorization", `Bearer ${token}`) : (headers.Authorization = `Bearer ${token}`);
+    } else {
+        if (headers?.delete) headers.delete("Authorization");
+        else if (headers && "Authorization" in headers) delete headers.Authorization;
     }
     return config;
 });
 
-// 401 콜백 주입용
+// 401 전역 처리 콜백 주입
 let onUnauthorized: (() => void) | null = null;
 export function setOnUnauthorized(cb: (() => void) | null) {
     onUnauthorized = cb;
 }
 
-// ❗ 반드시 api 인스턴스에 등록
-// 응답 인터셉터 
 api.interceptors.response.use(
-    (res) => res,  // 정상 응답이면 그대로 반환 
+    (res) => res,
     (err) => {
         if (err?.response?.status === 401 && onUnauthorized) onUnauthorized();
         return Promise.reject(err);
     }
 );
 
-// 토큰 수동 주입/삭제
-export function setAuthToken(access_token: string | null) {
-    if (access_token) {
-        localStorage.setItem('access_token', access_token);
-        api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
-    } else {
-        localStorage.removeItem('access_token');
-        delete api.defaults.headers.common['Authorization'];
-    }
-}
-
 export default api;
+export { TOKEN_KEY };
