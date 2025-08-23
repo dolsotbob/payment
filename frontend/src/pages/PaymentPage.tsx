@@ -11,7 +11,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import './paymentPage.css';
 import HeroSection from '../components/HeroSection';
 import { CouponList } from '../components/coupons/CouponList';
-import type { OwnedCoupon } from '../types/coupons';
+import type { OwnedCoupon } from '../types/couponTypes';
 import { useValidateCouponMutation } from '../hooks/mutations/useValidateCouponMutation';
 
 interface Props {

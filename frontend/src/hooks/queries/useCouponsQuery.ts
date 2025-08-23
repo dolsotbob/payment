@@ -7,8 +7,8 @@
  - 컴포넌트에서는 단순히 const { data, isLoading, isError } = useCouponsQuery(jwt) 형태로 호출만 하면 된다  
  */
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
-import type { OwnedCoupon } from "../../types/coupons";
-import { fetchOwnedCoupons } from "../../api/coupons";
+import type { OwnedCoupon } from "../../types/couponTypes";
+import { fetchOwnedCoupons } from "../../api/couponApi";
 import { useAuth } from "../../context/AuthContext"; // 전역 토큰/유저
 
 export function useCouponsQuery(accessToken: string): UseQueryResult<OwnedCoupon[], Error> {

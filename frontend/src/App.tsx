@@ -2,13 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
-import { connectAndLogin } from './utils/walletLogin';
+import { walletLogin } from './utils/walletLogin';
 import PaymentHistory from './pages/PaymentHistory';
 import PaymentPage from './pages/PaymentPage';
 import Footer from './components/Footer';
 import MyPage from './pages/MyPage';
 import './App.css';
-import { fetchUserCoupons } from './utils/coupon';
+import { fetchUserCoupons } from './utils/couponUtils';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // 1) QueryClient는 컴포넌트 밖에서 생성(리렌더마다 재생성 방지)
@@ -27,7 +27,7 @@ export default function AppRoot() {
 export function App() {
   const [account, setAccount] = useState<string | null>(null);
   const handleLoginWithWallet = async () => {
-    await connectAndLogin(setAccount);
+    await walletLogin();
   };
 
   const handleLogout = () => {

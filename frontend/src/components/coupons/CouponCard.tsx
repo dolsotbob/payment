@@ -1,5 +1,5 @@
 import React from "react";
-import type { OwnedCoupon } from "../../types/coupons";
+import type { OwnedCoupon } from "../../types/couponTypes";
 import { CouponApplyButton } from "./CouponApplyButton";
 import styles from "../css/coupons.module.css";
 

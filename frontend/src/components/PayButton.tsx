@@ -10,7 +10,7 @@ import PaymentJson from '../abis/Payment.json';
 import TestTokenJson from '../abis/TestToken.json';
 import './css/PayButton.css';
 
-import type { OwnedCoupon } from '../types/coupons';
+import type { OwnedCoupon } from '../types/couponTypes';
 import { useValidateCouponMutation } from '../hooks/mutations/useValidateCouponMutation';
 import { useApplyCouponMutation } from '../hooks/mutations/useApplyCouponMutations';
 
@@ -39,8 +39,8 @@ const PayButton: React.FC<PayButtonProps> = ({
     const jwt = localStorage.getItem('jwt');
 
     // 쿠폰 검증/적용 훅 
-    const { mutateAsync: validateCoupon, isPending: validating } = useValidateCouponMutation(jwt);
-    const { mutateAsync: applyCouponUse, isPending: applying } = useApplyCouponMutation(jwt);
+    const { mutateAsync: validateCoupon, isPending: validating } = useValidateCouponMutation();
+    const { mutateAsync: applyCouponUse, isPending: applying } = useApplyCouponMutation();
 
     const disabled = paying || validating || applying;
 
@@ -74,7 +74,8 @@ const PayButton: React.FC<PayButtonProps> = ({
             if (selectedCoupon) {
                 const res = await validateCoupon({
                     couponId: Number(selectedCoupon.id),
-                    amount: parseFloat(amount), // 금액 검증이 정책에 필요하다면 전달 
+                    amount: parseFloat(amount),
+                    productId: ''
                 });
                 if (!res.ok) {
                     toast.error(`쿠폰 사용 불가: ${res.reason ?? '알 수 없는 사유'}`);

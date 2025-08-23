@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
-import type { OwnedCoupon } from "../../types/coupons";
+import type { OwnedCoupon } from "../../types/couponTypes";
 // import { fetchOwnedCoupons } from "../../api/coupons";
 import { CouponCard } from "./CouponCard";
 import styles from "../css/coupons.module.css";

@@ -30,19 +30,12 @@ body {
 .carousel {
     list-style: none;
     display: flex;
-    gap: 2rem;
-    animation: scroll-left 10s linear infinite;
-    will-change: transform;
-}
-
-@keyframes scroll-left {
-    0% {
-        transform: translateX(0);
-    }
-
-    100% {
-        transform: translateX(-50%);
-    }
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 12px;
+    padding: 0 8px;
+    scroll-snap-stop: always;
 }
 
 /* 상품 카드 (캐러셀 아이템) */
@@ -57,6 +50,7 @@ body {
     border: 1px solid #ddd;
     text-align: center;
     transition: transform 0.3s ease;
+    scroll-snap-align: start;
 }
 
 .carousel-item:hover {

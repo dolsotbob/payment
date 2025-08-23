@@ -4,7 +4,7 @@
 // 역할 2: 데이터 후처리 - DB/백앤드에서 숫자 필드(balance)를 문자열로 내려줄 수 있으므로 이를 프론트에서 바로 쓸 수 있게 number 타입으로 변환 
 
 import api from "./axios";
-import { OwnedCoupon } from "../types/coupons";
+import { OwnedCoupon } from "../types/couponTypes";
 
 /** Nest 오류에서 reason/message 뽑기(배열 메시지도 평탄화) */
 export function extractCouponReason(err: any): string | undefined {

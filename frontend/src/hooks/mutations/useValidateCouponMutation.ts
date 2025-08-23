@@ -7,7 +7,7 @@ import {
     validateCoupon,
     type ValidateCouponParams,
     type ValidateCouponRes,
-} from "../../api/coupons";
+} from "../../api/couponApi";
 import { useAuth } from "../../context/AuthContext";
 
 export function useValidateCouponMutation() {

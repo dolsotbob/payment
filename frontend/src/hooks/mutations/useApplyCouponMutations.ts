@@ -2,7 +2,7 @@
 // 결제 성공 후 쿠폰 사용 사실을 오프체인에 기록 
 // 성공 시 내 보츄 쿠폰 목록이 바뀌므로 React Query 캐시를 무효화하여 화면 상태를 최신 상태로 동기화함 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { applyCoupon, type ApplyCouponBody, type ApplyCouponRes } from "../../api/coupons";
+import { applyCoupon, type ApplyCouponBody, type ApplyCouponRes } from "../../api/couponApi";
 import { useAuth } from "../../context/AuthContext";
 
 export function useApplyCouponMutation() {
