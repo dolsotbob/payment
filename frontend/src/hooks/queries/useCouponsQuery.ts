@@ -11,7 +11,7 @@ import type { OwnedCoupon } from "../../types/coupons";
 import { fetchOwnedCoupons } from "../../api/coupons";
 import { useAuth } from "../../context/AuthContext"; // 전역 토큰/유저
 
-export function useCouponsQuery(): UseQueryResult<OwnedCoupon[], Error> {
+export function useCouponsQuery(accessToken: string): UseQueryResult<OwnedCoupon[], Error> {
     const { access_token, user } = useAuth();
 
     return useQuery<OwnedCoupon[], Error>({

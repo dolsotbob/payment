@@ -2,7 +2,7 @@
 // 결제를 직접 실행하지 않고 어떤 상품이 선택됐는지 알려주는 역할 
 import React, { useState } from 'react';
 import './css/ProductList.css';
-import { Product } from '../types';
+import { Product } from '../types/types';
 
 interface ProductListProps {
     products: Product[]; // ✅ 상위에서 상품 목록 (이름, 가격 등 포함) 전달받음

@@ -12,9 +12,10 @@ type Props = {
 
 function formatDate(input?: string) {
     if (!input) return "";
-    const d = new Date(input);
-    if (Number.isNaN(d.getTime())) return "";
-    return d.toLocaleDateString();
+    const ts = Date.parse(input);
+    if (!Number.isFinite(ts)) return "";
+    const d = new Date(ts);
+    return d.toLocaleDateString(undefined, { year: "numeric", month: "2-digit", day: "2-digit" });
 }
 
 export const CouponCard: React.FC<Props> = ({

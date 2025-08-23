@@ -1,11 +1,11 @@
 // utils/payment.ts
-// 공동 결제 함수 
-import { http } from "../api/http";  // axios 인스턴스 (Authorization/401 인터셉터 포함)
+// 결제 결과를 백엔드에 기록하는 공통 함수
+import api from "../api/axios";
 import { ethers } from 'ethers';
 
 interface PaymentResponse {
     message: string;
-    id?: number;   // 백앤드가 생성한 payment id 
+    id?: string;   // 백앤드가 생성한 payment id 
 }
 
 // 선택적으로 enum-like 객체를 선언해 안전성 향상
@@ -26,7 +26,7 @@ type SendPaymentArgs = {
     userAddress: string;
     cashbackAmountWei?: string;  // 권장: 이미 wei로 변환해 전달
     cashbackAmount?: string;     // 문자열 토큰 수량 (decimals 전달 시에만 사용)
-    productId: number;
+    productId: string | number;
     gasUsed?: bigint;
     gasPrice?: bigint;
 };
@@ -48,12 +48,6 @@ export async function sendPaymentToBackend({
 }: SendPaymentArgs): Promise<PaymentResponse> {
     if (!productId) {
         throw new Error("productId는 필수입니다.");
-    }
-
-    // BACKEND URL 방어
-    const BASE_URL = process.env.REACT_APP_BACKEND_URL;
-    if (!BASE_URL) {
-        throw new Error("REACT_APP_BACKEND_URL이 설정되어 있지 않습니다.");
     }
 
     // 프론트에선 ether → wei 변환 후 string으로 전송
@@ -85,7 +79,7 @@ export async function sendPaymentToBackend({
     };
 
     // axios 인스턴스 사용: Authorization/timeout/에러 처리 일원화
-    const { data } = await http.post<PaymentResponse>("/payment", payload, {
+    const { data } = await api.post<PaymentResponse>("/payment", payload, {
         timeout: 20_000,
     });
 

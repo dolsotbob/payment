@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShippingInfo } from "../types";
+import { ShippingInfo } from "../types/types";
 import './css/ShippingForm.css';
 import './css/Modal.css'
 

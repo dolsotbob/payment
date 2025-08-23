@@ -17,7 +17,7 @@ import { useApplyCouponMutation } from '../hooks/mutations/useApplyCouponMutatio
 interface PayButtonProps {
     account: string; // 유저 주소
     amount: string;  // 예: '0.01'
-    productId: number;
+    productId: number | string;
     selectedCoupon?: OwnedCoupon | null;
     onSuccess: () => void;
     onCancel: () => void;

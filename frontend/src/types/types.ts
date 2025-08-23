@@ -1,7 +1,7 @@
 export interface Product {
-    id: number;
+    id: string;
     name: string;
-    price: string;  // 예: "0.01 ETH" 
+    price: number;
     imageUrl: string;
     hoverImageUrl?: string;
 }

@@ -1,32 +1,49 @@
 // utils/coupon.ts
-import { getCouponsFromAPI } from './request';
-import { ethers } from 'ethers';
-import Coupon1155ABI from '../abi/Coupon1155.json';
+import api from "../api/axios";
+import { ethers } from "ethers";
+import Coupon1155Artifact from "../abis/Coupon1155.json";
 
-export async function fetchUserCoupons(wallet: string) {
-    // 1) 백엔드 API 조회
+export type SimpleCoupon = { id: number; balance: bigint };
+
+/**
+ * 지갑 보유 쿠폰을 가져옵니다.
+ * 1) 백엔드 API 우선
+ * 2) 실패 시 체인에서 ERC1155 balanceOf로 폴백 조회
+ */
+export async function fetchUserCoupons(wallet: string): Promise<SimpleCoupon[]> {
+    if (!wallet) throw new Error("wallet 주소가 필요합니다.");
+
+    // 1) 백엔드 API 조회 (api 인스턴스는 Authorization 자동 첨부)
     try {
-        const res = await fetch(`/api/coupons?owner=${wallet}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
-        if (res.ok) {
-            const data = await res.json();
-            if (Array.isArray(data) && data.length) return data; // ex: [{id:1, balance:2}, ...]
-        }
+        const { data } = await api.get<SimpleCoupon[]>(`/coupons`, {
+            params: { owner: wallet },
+            timeout: 15_000,
+        });
+        if (Array.isArray(data)) return data;
     } catch (err) {
-        console.warn("API 조회 실패, fallback 실행:", err);
+        console.warn("API 조회 실패, 체인 폴백으로 진행:", err);
     }
 
-    // 22) fallback: 체인 직접 조회
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const contract = new ethers.Contract(
-        process.env.REACT_APP_COUPON1155_ADDRESS!,
-        Coupon1155ABI,
-        provider
-    );
+    // 2) 체인 폴백 조회
+    const contractAddr = process.env.REACT_APP_COUPON1155_ADDRESS;
+    if (!contractAddr) throw new Error("REACT_APP_COUPON1155_ADDRESS가 설정되어 있지 않습니다.");
+    if (typeof window === "undefined" || !(window as any).ethereum) {
+        throw new Error("지갑(provider)을 찾을 수 없습니다. 브라우저 지갑을 연결해 주세요.");
+    }
 
-    const couponIds = [1, 2, 3]; // 체크할 쿠폰 ID 목록
+    const provider = new ethers.BrowserProvider((window as any).ethereum);
+    const contract = new ethers.Contract(contractAddr, Coupon1155Artifact.abi, provider);
+
+    // 실제 프로젝트에서는 서버/메타데이터에서 ID 목록을 내려받기 
+    const couponIds = [1, 2, 3];
+
     const balances = await Promise.all(
-        couponIds.map(id => contract.balanceOf(walletAddress, id))
+        couponIds.map(async (id) => {
+            const bal = (await contract.balanceOf(wallet, id)) as bigint; // ethers v6: bigint
+            return { id, balance: bal };
+        })
     );
 
-    return couponIds.filter((_, idx) => balances[idx] > 0);
+    // balance > 0n 인 것만 반환
+    return balances.filter((c) => c.balance > 0n);
 }

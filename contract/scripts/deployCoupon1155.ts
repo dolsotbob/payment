@@ -1,4 +1,7 @@
 import { ethers, network, run } from "hardhat";
+import { makeAbi } from './abiGenerator';
+import fs from 'fs';
+import path from 'path';
 import "dotenv/config";
 
 function requireEnv(name: string): string {
@@ -107,24 +110,29 @@ async function main() {
     const LOCK_TOKEN_URIS = parseIdList("COUPON1155_LOCK_TOKEN_URIS", true); // "1,2,3"
 
     // 배포
-    const factory = await ethers.getContractFactory("Coupon1155");
+    const Coupon1155Factory = await ethers.getContractFactory("Coupon1155");
     console.log("🚀 Deploying Coupon1155...");
-    const contract = await factory.deploy(BASE_URI, INITIAL_OWNER);
-    await contract.waitForDeployment();
-    const address = await contract.getAddress();
-    console.log(`✅ Deployed Coupon1155 at: ${address}`);
+    const Coupon1155Contract = await Coupon1155Factory.deploy(BASE_URI, INITIAL_OWNER);
+    await Coupon1155Contract.waitForDeployment();
+    const coupon1155Address = await Coupon1155Contract.getAddress();
+    console.log(`✅ Deployed Coupon1155 at: ${coupon1155Address}`);
 
-    // 기본 점검 로그
+
+    // 기본 점검
     try {
-        const owner = await contract.owner();
-        console.log(`🔑 owner(): ${owner}`);
+        // 있을 때만
+        // @ts-ignore
+        if (typeof Coupon1155Contract.owner === "function") {
+            // @ts-ignore
+            const owner = await Coupon1155Contract.owner();
+            console.log(`🔑 owner(): ${owner}`);
+        }
     } catch {
-        console.warn("⚠️  owner() check skipped (Ownable not present?)");
+        console.warn("⚠️  owner() check skipped");
     }
 
     try {
-        // 샘플 1번 URI 확인(오류 무시)
-        const sampleUri = await contract.uri(1);
+        const sampleUri = await Coupon1155Contract.uri(1);
         console.log(`🔎 uri(1): ${sampleUri}`);
     } catch {
         console.warn("⚠️  uri(1) check skipped");
@@ -134,7 +142,7 @@ async function main() {
     if (DO_INITIAL_MINT) {
         console.log(`🪙 Minting batch to ${MINT_TO} ...`);
         // 컨트랙트에 외부 mintBatch가 반드시 있어야 함
-        const tx = await contract.mintBatch(MINT_TO, ids, amounts, "0x");
+        const tx = await Coupon1155Contract.mintBatch(MINT_TO, ids, amounts, "0x");
         const rcpt = await tx.wait(1);
         console.log(`✅ Minted. tx: ${rcpt?.hash}`);
     }
@@ -143,7 +151,7 @@ async function main() {
     if (SET_TOKEN_URIS.length > 0) {
         console.log("📝 Setting per-token URIs...");
         for (const { id, uri } of SET_TOKEN_URIS) {
-            const tx = await contract.setTokenURI(id, uri);
+            const tx = await Coupon1155Contract.setTokenURI(id, uri);
             await tx.wait(1);
             console.log(`  • setTokenURI(${id}) → ${uri}`);
         }
@@ -152,28 +160,26 @@ async function main() {
     // 개별 URI 잠금(있을 때만)
     if (LOCK_TOKEN_URIS.length > 0) {
         console.log("🔐 Locking per-token URIs...");
-        for (const id of LOCK_TOKEN_URIS) {
-            // lockTokenURI가 있는 경우에만
-            if ("lockTokenURI" in contract) {
+        // @ts-ignore: 조건부 존재
+        if (typeof Coupon1155Contract.lockTokenURI === "function") {
+            for (const id of LOCK_TOKEN_URIS) {
                 // @ts-ignore
-                const tx = await contract.lockTokenURI(id);
+                const tx = await Coupon1155Contract.lockTokenURI(id);
                 await tx.wait(1);
                 console.log(`  • lockTokenURI(${id})`);
-            } else {
-                console.warn("⚠️  lockTokenURI not found on contract; skipped");
-                break;
             }
+        } else {
+            console.warn("⚠️  lockTokenURI not found on contract; skipped");
         }
     }
 
     // (옵션) 자동 검증
-    const DO_VERIFY =
-        (process.env.DO_VERIFY || "false").toLowerCase() === "true";
+    const DO_VERIFY = (process.env.DO_VERIFY || "false").toLowerCase() === "true";
     if (DO_VERIFY) {
         console.log("🧾 Verifying on explorer...");
         try {
             await run("verify:verify", {
-                address,
+                address: coupon1155Address,
                 constructorArguments: [BASE_URI, INITIAL_OWNER],
             });
             console.log("✅ Verified");
@@ -181,6 +187,26 @@ async function main() {
             console.warn("⚠️  Verify failed or not supported:", (e as Error).message);
         }
     }
+
+    // ABI 저장
+    await makeAbi("Coupon1155", coupon1155Address);
+
+    // .env에 COUPON1155_ADDRESS 업데이트
+    const envPath = path.resolve(__dirname, "..", ".env");
+    let envContent = "";
+    try {
+        envContent = fs.readFileSync(envPath, "utf8");
+    } catch {
+        console.warn("⚠️ .env 파일이 없어서 새로 생성합니다.");
+    }
+    const newLine = `COUPON1155_ADDRESS=${coupon1155Address}`;
+    if (envContent.includes("COUPON1155_ADDRESS=")) {
+        envContent = envContent.replace(/COUPON1155_ADDRESS=.*/g, newLine);
+    } else {
+        envContent = (envContent ? envContent.trim() + "\n" : "") + newLine;
+    }
+    fs.writeFileSync(envPath, envContent.trim() + "\n");
+    console.log(`✅ .env 파일에 COUPON1155_ADDRESS=${coupon1155Address} 저장 완료`);
 }
 
 main().catch((e) => {
