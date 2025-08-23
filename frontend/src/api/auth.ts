@@ -9,26 +9,26 @@ export type ChallengeResponse = {
     expiresAt: string;  // ISO 형식 만료 시각
 };
 
-// ✅ 추가: 챌린지 발급
+// 챌린지 발급
 export const requestLoginChallenge = async (
     address: string,
     chainId?: number
 ): Promise<ChallengeResponse> => {
-    const res = await api.post('/auth/challenge', { address, chainId });
-    return res.data as ChallengeResponse;
+    const res = await api.post<ChallengeResponse>('/auth/challenge', { address, chainId });
+    return res.data;
 };
 
-// 기존: 로그인 토큰 요청
+// 기존: 로그인 토큰 요청 (서명 검증 -> JWT 발급)
 export const requestLoginToken = async (
     address: string,
     message: string,
     signature: string
-) => {
-    const response = await api.post('/auth/login', {
+): Promise<string> => {
+    const response = await api.post<{ access_token: string }>('/auth/login', {
         address,
         message,
         signature,
     });
     // 백엔드가 { access_token } 반환하므로 그대로 전달
-    return response.data.access_token as string;
+    return response.data.access_token;
 };

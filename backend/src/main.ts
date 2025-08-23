@@ -24,17 +24,19 @@ async function bootstrap() {
     }),
   );
 
-  // CORS: 화이트리스트 + *.vercel.app 프리뷰 허용
-  const allowList = new Set<string>([
-    'http://localhost:3000',
-    'https://payment-git-main-dolsotbobs-projects.vercel.app',
-    'https://payment-git-feature-payment-expansion-dolsotbobs-projects.vercel.app',
-  ]);
-
   app.enableCors({
     origin: (origin, cb) => {
       // 서버-서버 호출 또는 Postman 등 Origin 없는 경우 허용
       if (!origin) return cb(null, true);
+
+      // CORS: 화이트리스트 + *.vercel.app 프리뷰 허용
+      const allowList = new Set<string>([
+        'http://localhost:3000',
+        'https://payment-git-main-dolsotbobs-projects.vercel.app',
+        'https://payment-git-feature-payment-expansion-dolsotbobs-projects.vercel.app',
+        'https://payment-git-feature-payment-expansion-dolsotbobs-projects.vercel.app',
+        'https://payment-git-feature-payment-coupon-rule-dolsotbobs-projects.vercel.app',
+      ]);
 
       const isAllowed =
         allowList.has(origin) || /\.vercel\.app$/i.test(origin);
@@ -42,7 +44,12 @@ async function bootstrap() {
         ? cb(null, true)
         : cb(new Error(`Not allowed by CORS: ${origin}`));
     },
-    credentials: true,
+    credentials: true,  // 쿠키/Authorization 등 인증 정보 포함 허용 
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    // 응답 헤더를 프론트에서 읽어야 하면 추가 (필요 없으면 생략 가능)
+    // exposedHeaders: ['Content-Length','Content-Type'],
+    optionsSuccessStatus: 204,
   });
 
   // 그레이스풀 셧다운
