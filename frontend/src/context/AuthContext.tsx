@@ -38,6 +38,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setAuthToken(null);         // axios 기본 헤더 + localStorage('token') 제거
         setAccessToken(null);
         setUser(null);
+        try {
+            localStorage.removeItem(TOKEN_KEY);
+        } catch { }
     }, []);
 
     // /me 재조회
@@ -101,7 +104,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         refreshMe,
     }), [user, access_token, loading, loginWithWallet, logout, refreshMe]);
 
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+    return (
+        <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+    );
 };
 
 export const useAuth = (): AuthContextValue => {
