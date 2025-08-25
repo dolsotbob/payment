@@ -45,6 +45,6 @@ export type Me = {
 
 // 현재 로그인한 유저 정보 가져오기
 export async function fetchMe(): Promise<Me> {
-    const res = await api.get<Me>('/me');
+    const res = await api.get<Me>('/auth/me');
     return res.data;
 }
