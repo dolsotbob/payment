@@ -1,8 +1,8 @@
 export interface Product {
     id: string;
-    sku: string;               // DB에 있는 필드 → 추가해 두는 게 좋아요
+    sku: string;
     name: string;
-    priceWei: string;          // ✅ 서버 응답에 맞춤 (wei, string)
+    priceWei: string;          // 서버 응답에 맞춤 (wei, string)
     imageUrl: string;
     hoverImageUrl?: string;
     isActive: boolean;         // 서버 응답에 있는 필드
