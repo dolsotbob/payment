@@ -21,7 +21,9 @@ export interface AuthContextValue {
     user: Me | null;
     account: string | null;
     access_token: string | null;
-    token: string | null;  // alias 
+    accessToken: string | null;   // ✅ camelCase 별칭
+    token: string | null;         // 기존 별칭 유지
+    isLoggedIn: boolean;          // ✅ 편의 boolean
     loading: boolean;
     loginWithWallet: () => Promise<void>;
     logout: () => void;
@@ -111,7 +113,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         account,
         access_token,
-        token: access_token,    // 별칭으로 함께 넣음 
+        accessToken: access_token,
+        token: access_token,    // 별칭으로 함께 넣음 , 
+        isLoggedIn: !!access_token,
         loading,
         loginWithWallet,
         logout,
