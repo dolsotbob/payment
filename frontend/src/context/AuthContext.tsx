@@ -76,6 +76,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setAuthToken(access_token);
             setAccessToken(access_token);
 
+            console.log("[auth] login ok", { address, access_token_len: access_token?.length });
+
             // 3) 유저 정보 로드
             await refreshMe();
         } finally {
