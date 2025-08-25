@@ -48,3 +48,4 @@ export async function fetchMe(): Promise<Me> {
     const res = await api.get<Me>('/auth/me');
     return res.data;
 }
+
