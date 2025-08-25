@@ -3,7 +3,7 @@ import {
     Entity, Column, PrimaryGeneratedColumn, OneToMany,
     CreateDateColumn, BeforeInsert, BeforeUpdate,
 } from 'typeorm';
-import { LoginHistory } from 'src/login-history/entities/login-history.entity';
+import { LoginHistory } from '../../login-history/entities/login-history.entity';
 
 @Entity('users') // ← 테이블명 명시
 export class User {
