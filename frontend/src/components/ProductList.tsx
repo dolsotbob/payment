@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import './css/ProductList.css';
 import { Product } from '../types/types';
+import { formatUnits } from "ethers";
 
 interface ProductListProps {
-    products: Product[]; // ✅ 상위에서 상품 목록 (이름, 가격 등 포함) 전달받음
+    products: Product[]; // 상위에서 상품 목록 (이름, 가격 등 포함) 전달받음
     onPurchase: (product: Product) => void; // 상위 컴포넌트 구매 요청 콜백 
 }
 
@@ -31,12 +32,16 @@ const ProductList: React.FC<ProductListProps> = ({ products, onPurchase }) => {
         };
     }, [selectedProduct]);
 
-    const displayPrice = (p: Product) =>
-        typeof p.price === 'number' ? p.price.toLocaleString() : p.price;
+    // wei → TORI 문자열 변환 헬퍼
+    const toTori = (wei?: string | bigint) =>
+        wei == null ? "0" : formatUnits(wei, 18);
+
+    const displayPrice = (p: Product) => {
+        return `${toTori(p.priceWei)} TORI`;
+    };
 
     // 무한 스크롤 느낌을 위해 1회 복제 (key 충돌 방지용 dup 플래그 사용)
     const carouselItems = [...products, ...products];
-
 
     return (
         <div className="product-list">

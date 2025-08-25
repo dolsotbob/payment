@@ -13,6 +13,7 @@ import HeroSection from '../components/HeroSection';
 import { CouponList } from '../components/coupons/CouponList';
 import type { OwnedCoupon } from '../types/couponTypes';
 import { useValidateCouponMutation } from '../hooks/mutations/useValidateCouponMutation';
+import { formatUnits } from 'ethers';
 
 interface Props {
     account: string | null;  // 유저 주소 
@@ -23,7 +24,7 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
     const [products, setProducts] = useState<Product[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [selectedCoupon, setSelectedCoupon] = useState<OwnedCoupon | null>(null);
-    const [finalAmount, setFinalAmount] = useState<number | null>(null); // 토큰/법정 통화 중 현재 amount 타입에 맞춰 사용
+    const [finalAmountWei, setFinalAmountWei] = useState<string | null>(null);
     const [shippingInfo, setShippingInfo] = useState<ShippingInfo | null>(null);
     const [showShippingForm, setShowShippingForm] = useState(false);
     const [paymentSuccess, setPaymentSuccess] = useState(false);
@@ -32,18 +33,28 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
     // (1) access_token 가드: CouponList 렌더링/전달 전에 존재 확인
     const accessToken = localStorage.getItem('access_token');
 
+    const toTori = (wei?: string | bigint) =>
+        wei == null ? '0' : formatUnits(wei, 18); // "0.01" 같은 문자열 반환
+
     useEffect(() => {
         // 1. 상품 목록 로드 
         const fetchProducts = async () => {
             try {
-                const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/product`);
-                // const res = await fetch('http://localhost:4000/product');
-                if (!res.ok) throw new Error('서버 응답 오류');
+                const BASE =
+                    process.env.REACT_APP_BACKEND_URL ??
+                    'https://payment-backend-feature.onrender.com';
+
+                const res = await fetch(`${BASE}/product`, { method: 'GET' });
+                if (!res.ok) throw new Error(`서버 응답 오류': ${res.status}`);
+
                 const data = await res.json();
-                // (2) 변환: price를 string → number
+                // (2) 변환:
+                // 서버 응답의 키는 priceWei(문자열, wei)
+                // 표시용으로 priceTori(문자열, TORI) 필드를 만들기 
                 const parsedData = data.map((p: any) => ({
                     ...p,
-                    price: Number(p.price),  // 문자열로 오면 number로 통일 
+                    priceWei: p.priceWei ?? p.price_wei,     // 혹시 백엔드가 raw로 보낼 때 대비
+                    priceTori: toTori(p.priceWei ?? p.price_wei),
                 }));
                 setProducts(parsedData);
             } catch (err) {
@@ -82,7 +93,7 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
         setSelectedProduct(product);
         setShowShippingForm(true);
         setSelectedCoupon(null);
-        setFinalAmount(product.price); // 기본 금액으로 초기화
+        setFinalAmountWei(product.priceWei); // 기본 금액으로 초기화
     };
 
     // 4. 배송지 제출 
@@ -137,7 +148,7 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
                         onSelectCoupon={async (coupon) => {
                             setSelectedCoupon(coupon);
                             if (!coupon) {
-                                setFinalAmount(selectedProduct.price);
+                                setFinalAmountWei(selectedProduct.priceWei);
                                 return;
                             }
                             try {
@@ -148,10 +159,10 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
                                 // 서버가 최종가를 내려주는 경우 사용
                                 const priceAfter = (res as any)?.priceAfter;
                                 if (priceAfter != null) {
-                                    setFinalAmount(typeof priceAfter === 'string' ? Number(priceAfter) : priceAfter);
+                                    setFinalAmountWei(typeof priceAfter === 'string' ? Number(priceAfter) : priceAfter);
                                 } else {
                                     // 응답 필드명이 다르면 여기서 계산/매핑. 시간이 없으면 기본가 유지.
-                                    setFinalAmount(selectedProduct.price);
+                                    setFinalAmountWei(selectedProduct.priceWei);
                                 }
                             } catch (e: any) {
                                 alert(
@@ -160,14 +171,14 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
                                         : '쿠폰을 적용할 수 없습니다.'
                                 );
                                 setSelectedCoupon(null);
-                                setFinalAmount(selectedProduct.price);
+                                setFinalAmountWei(selectedProduct.priceWei);
                             }
                         }}
                     />
                     {/* 검증 상태/최종 금액 간단 표시 */}
                     <div style={{ marginTop: 8 }}>
                         {validateMut.isPending ? '쿠폰 검증 중...' : (
-                            <>최종 결제 금액: <b>{finalAmount ?? selectedProduct.price}</b></>
+                            <>최종 결제 금액: <b>{finalAmountWei ?? selectedProduct.priceWei}</b></>
                         )}
                     </div>
                 </div>
@@ -189,11 +200,11 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
                     setSelectedProduct(null);
                     setShippingInfo(null);
                     setSelectedCoupon(null);
-                    setFinalAmount(null);
+                    setFinalAmountWei(null);
                 }}>
                     <PayButton
                         account={account}
-                        amount={String(finalAmount ?? selectedProduct.price)}
+                        amount={String(finalAmountWei ?? selectedProduct.priceWei)}
                         productId={selectedProduct.id}
                         onSuccess={() => {
                             setPaymentSuccess(true);
