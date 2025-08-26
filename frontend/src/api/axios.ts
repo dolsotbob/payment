@@ -1,5 +1,5 @@
 // src/api/axios.ts
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 // 환경변수 우선순위 
 let BASE_URL: string =
@@ -9,6 +9,10 @@ let BASE_URL: string =
 const api = axios.create({
     baseURL: BASE_URL,
     withCredentials: true,
+    timeout: 15000, // 선택: 네트워크 타임아웃
+    headers: {
+        "Content-Type": "application/json",
+    },
 });
 
 // 로컬스토리지 키 통일
@@ -59,11 +63,26 @@ export function setOnUnauthorized(cb: (() => void) | null) {
 // 응답 인터셉터: 401 전역 처리 
 api.interceptors.response.use(
     (res) => res,
-    (err) => {
-        if (err?.response?.status === 401 && onUnauthorized) onUnauthorized();
+    (err: AxiosError<any>) => {
+        // 공통 에러 로깅 (개발자 콘솔 확인용)
+        const url = err.config?.url;
+        const method = err.config?.method?.toUpperCase();
+        const status = err.response?.status;
+        const data = err.response?.data;
+        console.warn("[API ERR]", method, url, status, data);
+
+        // 401 한 번만 처리되도록 가드
+        if (status === 401 && onUnauthorized) {
+            try {
+                onUnauthorized();
+            } catch {
+                /* no-op */
+            }
+        }
         return Promise.reject(err);
     }
 );
+
 
 export default api;
 export { TOKEN_KEY };

@@ -75,7 +75,11 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
 
     // 2. 배송지 조회 (GET /shipping-info/:userAddress)
     const fetchShippingInfo = useCallback(async () => {
-        if (!account) return;
+        if (!account) {
+            // 로그아웃/계정 해제 시 상태 정리
+            setShippingInfo(null);
+            return;
+        }
 
         try {
             const userAddr = account.toLowerCase();

@@ -124,3 +124,13 @@ export async function fetchMyCouponUses(
     });
     return res.data;
 }
+
+api.interceptors.response.use(
+    r => r,
+    (err) => {
+        const s = err?.response?.status;
+        const data = err?.response?.data;
+        console.warn('[API ERR]', err.config?.url, s, data);
+        return Promise.reject(err);
+    }
+);
