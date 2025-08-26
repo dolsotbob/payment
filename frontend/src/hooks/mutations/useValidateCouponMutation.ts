@@ -10,16 +10,22 @@ import {
 } from "../../api/couponApi";
 import { useAuth } from "../../context/AuthContext";
 
-export function useValidateCouponMutation() {
+/**
+ * 쿠폰 사전 검증 뮤테이션 훅
+ * - accessToken 인자를 넘기면 그 토큰을 우선 사용
+ * - 인자가 없으면 Context의 access_token 사용
+ */
+export function useValidateCouponMutation(accessToken?: string) {
     const { access_token } = useAuth();
+    const token = accessToken ?? access_token ?? "";
 
     return useMutation<ValidateCouponRes, unknown, ValidateCouponParams>({
         mutationFn: async (vars) => {
-            if (!access_token) throw new Error("로그인이 필요합니다.");
-            return validateCoupon(access_token, vars); // ✅ 토큰 전달
+            if (!token) throw new Error("로그인이 필요합니다.");
+            return validateCoupon(token, vars);
         },
         retry: (failureCount, err: any) => {
-            if (err?.response?.status === 401) return false; // 401은 재시도 X
+            if (err?.response?.status === 401) return false; // 인증 에러는 재시도 X
             return failureCount < 2;
         },
     });
