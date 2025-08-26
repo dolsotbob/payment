@@ -13,6 +13,7 @@ import './css/PayButton.css';
 import type { OwnedCoupon } from '../types/couponTypes';
 import { useValidateCouponMutation } from '../hooks/mutations/useValidateCouponMutation';
 import { useApplyCouponMutation } from '../hooks/mutations/useApplyCouponMutations';
+import { useAuth } from "../context/AuthContext";
 
 interface PayButtonProps {
     account: string; // 유저 주소
@@ -35,12 +36,13 @@ const PayButton: React.FC<PayButtonProps> = ({
 }) => {
     const [paying, setPaying] = useState(false);
 
-    // jwt 기반 로그인 
-    const jwt = localStorage.getItem('jwt');
+    // jwt 대신 access_token 사용
+    const { access_token } = useAuth();
+    const accessToken = access_token ?? null;
 
-    // 쿠폰 검증/적용 훅 
-    const { mutateAsync: validateCoupon, isPending: validating } = useValidateCouponMutation();
-    const { mutateAsync: applyCouponUse, isPending: applying } = useApplyCouponMutation();
+    // 쿠폰 검증/적용 훅에 accessToken 인자 전달
+    const { mutateAsync: validateCoupon, isPending: validating } = useValidateCouponMutation(accessToken || '');
+    const { mutateAsync: applyCouponUse, isPending: applying } = useApplyCouponMutation(accessToken || '');
 
     const disabled = paying || validating || applying;
 
@@ -54,14 +56,13 @@ const PayButton: React.FC<PayButtonProps> = ({
                 toast.error('💸 유효한 결제 금액이 없습니다.');
                 return;
             }
-            if (!jwt) {
+            if (!accessToken) {
                 toast.error('🔐 로그인이 필요합니다.');
                 return;
             }
 
             const tokenAddress = process.env.REACT_APP_TOKEN_ADDRESS;
             const paymentAddress = process.env.REACT_APP_PAYMENT_ADDRESS;
-            const couponNftEnv = process.env.REACT_APP_COUPON1155_ADDRESS;
 
             if (!tokenAddress || !paymentAddress) {
                 toast.error('환경변수(REACT_APP_TOKEN_ADDRESS / REACT_APP_PAYMENT_ADDRESS)가 설정되지 않았습니다.');
@@ -75,7 +76,7 @@ const PayButton: React.FC<PayButtonProps> = ({
                 const res = await validateCoupon({
                     couponId: Number(selectedCoupon.id),
                     amount: parseFloat(amount),
-                    productId: ''
+                    productId: String(productId ?? ''),
                 });
                 if (!res.ok) {
                     toast.error(`쿠폰 사용 불가: ${res.reason ?? '알 수 없는 사유'}`);
@@ -100,7 +101,9 @@ const PayButton: React.FC<PayButtonProps> = ({
             const valueBN = priceBN;
 
             // 쿠폰 파라미터 구성
-            const couponNftAddress = selectedCoupon ? (process.env.REACT_APP_COUPON1155_ADDRESS as string) : ZERO_ADDRESS;
+            const couponNftAddress = selectedCoupon
+                ? (process.env.REACT_APP_COUPON1155_ADDRESS as string)
+                : ZERO_ADDRESS;
             const couponId = selectedCoupon ? BigInt(Number(selectedCoupon.id)) : 0n;
             const useCoupon = Boolean(selectedCoupon);
 
