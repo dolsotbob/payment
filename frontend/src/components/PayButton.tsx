@@ -94,8 +94,8 @@ const PayButton: React.FC<PayButtonProps> = ({
             const token = new ethers.Contract(tokenAddress, TestTokenJson.abi, provider);
             const payment = new ethers.Contract(paymentAddress, PaymentJson.abi, signer);
 
-            // 금액: 토큰 소수 자릿수(예: 18)로 변환
-            const priceBN = ethers.parseUnits(amount, 18);
+            // amount는 이미 wei 문자열이므로 그대로 BigInt로 
+            const priceBN = ethers.toBigInt(amount);
 
             // permit allowance(value): afterPrice 이상이어야 하므로 price 이상으로 설정하면 안전
             const valueBN = priceBN;

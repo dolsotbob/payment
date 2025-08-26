@@ -6,7 +6,7 @@ export const buildPermitCallData = async (
     payment: ethers.Contract,
     signer: ethers.Signer,  // 사용자 지갑 객체 
     owner: string,      // 서명할 사용자 지갑 주소 
-    amount: string,     // 승인할 토큰 금액 
+    amountWei: string,     // 승인할 토큰 금액 
     valueOverride?: string  // 선택: permit allowance 를 별도로 저장하고 싶을 때 
 ): Promise<{
     v: number;
@@ -24,9 +24,9 @@ export const buildPermitCallData = async (
 
     // 2) permit allowance (value) 계산
     // V3: require(value >= afterPrice). 보통 price(=amount)로 충분.
-    const priceBN = ethers.parseUnits(amount, Number(decimals));
-    const valueBN = valueOverride
-        ? ethers.parseUnits(valueOverride, Number(decimals))
+    const priceBN = ethers.toBigInt(amountWei);
+    const valueBN = valueOverride != null
+        ? ethers.toBigInt(valueOverride)
         : priceBN;
 
     // 3) nonce & deadline 
@@ -45,8 +45,8 @@ export const buildPermitCallData = async (
         valueBN: valueBN.toString(),        // value ≥ priceBN ?
         nonce,
         deadline,
-        chainId: (await signer.provider!.getNetwork()).chainId.toString(),
-        tokenAddr: await token.getAddress(),
+        chainId: chainId.toString(),
+        tokenAddr: tokenAddress,
     });
 
     // 5) EIP-712 Domain/Types/Message
