@@ -115,7 +115,6 @@ const PayButton: React.FC<PayButtonProps> = ({
                 signer,
                 account,
                 amount,   // 문자열 금액 
-                Number(chainId)
             );
 
             // 결제 트랜잭션 실행 
