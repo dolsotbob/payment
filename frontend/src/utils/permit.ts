@@ -34,15 +34,27 @@ export const buildPermitCallData = async (
     const nonce = BigInt(nonceRaw).toString(); // 문자열 정규화
     const deadline = Math.floor(Date.now() / 1000) + 300;  // 5분 후 만료 
 
-    // chainId 확보 (signer 기존 네트워크)
+    // 4) chainId 확보 (signer 기존 네트워크)
     const { chainId } = await signer.provider!.getNetwork();
 
-    // 4) EIP-712 Domain/Types/Message
+    // 디버그 로그 
+    console.log("[permit-debug]", {
+        owner,
+        spender: await payment.getAddress(),
+        priceBN: priceBN.toString(),
+        valueBN: valueBN.toString(),        // value ≥ priceBN ?
+        nonce,
+        deadline,
+        chainId: (await signer.provider!.getNetwork()).chainId.toString(),
+        tokenAddr: await token.getAddress(),
+    });
+
+    // 5) EIP-712 Domain/Types/Message
     const domain = {
-        name: await token.name(),
+        name: tokenName,
         version: "1",
         chainId,
-        verifyingContract: await token.getAddress(),  // TestToken.sol의 주소 
+        verifyingContract: tokenAddress,  // TestToken.sol의 주소 
     };
 
     // EIP-712 Typed Data 구조 정의 
