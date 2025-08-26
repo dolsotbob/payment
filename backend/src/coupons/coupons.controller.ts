@@ -24,7 +24,14 @@ export class CouponsController {
     // ─────────────────────────────────────────────────────────────
     // 유틸: 현재 사용자 주소 추출
     private userAddr(req: Request): string {
-        const addr = (req.user as any)?.sub;
+        const u = (req as any).user || {};
+        const addr =
+            u.sub ??
+            u.address ??
+            u.walletAddress ??
+            u.userAddress ??
+            null;
+
         if (!addr) throw new UnauthorizedException('JWT payload에 address가 없습니다.');
         return addr.toLowerCase();
     }
