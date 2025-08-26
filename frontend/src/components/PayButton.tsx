@@ -1,6 +1,6 @@
 // 결제 로직 + 쿠폰 연동 
 import React, { useState } from 'react';
-import { ethers } from 'ethers';
+import { ethers, Interface } from 'ethers';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -14,6 +14,7 @@ import type { OwnedCoupon } from '../types/couponTypes';
 import { useValidateCouponMutation } from '../hooks/mutations/useValidateCouponMutation';
 import { useApplyCouponMutation } from '../hooks/mutations/useApplyCouponMutations';
 import { useAuth } from "../context/AuthContext";
+import { decodePaymentError } from '../utils/decodeError';
 
 interface PayButtonProps {
     account: string; // 유저 주소
@@ -88,7 +89,6 @@ const PayButton: React.FC<PayButtonProps> = ({
             // provider, signer 준비 
             const provider = new ethers.BrowserProvider(window.ethereum);
             const signer = await provider.getSigner();
-            const chainId = (await provider.getNetwork()).chainId;
 
             // 컨트랙트 객체 생성  
             const token = new ethers.Contract(tokenAddress, TestTokenJson.abi, provider);
@@ -107,8 +107,7 @@ const PayButton: React.FC<PayButtonProps> = ({
             const couponId = selectedCoupon ? BigInt(Number(selectedCoupon.id)) : 0n;
             const useCoupon = Boolean(selectedCoupon);
 
-            // Permit 서명 데이터 생성 
-            // 이 때 메타마스크 창이 뜬다. 
+            // Permit 서명 데이터 생성 (메타마스크 서명 팝업)
             const { v, r, s, deadline } = await buildPermitCallData(
                 token,
                 payment,
@@ -133,12 +132,14 @@ const PayButton: React.FC<PayButtonProps> = ({
                     useCoupon
                 );
             } catch (e: any) {
-                console.error('[simulate] revert details:', e);
-                toast.error('시뮬 단계에서 리버트: ' + (e?.errorName ?? e?.reason ?? 'unknown'));
-                return;  // 실패했으면 실 트랜잭션 보내지 않음 
+                // 커스텀 에러까지 파싱해서 메시지 표면화
+                const msg = decodePaymentError(e);
+                console.error("[simulate] revert details:", e);
+                toast.error(msg);
+                return; // 실패했으면 실 트랜잭션 보내지 않음
             }
 
-            // 실제 트랜잭션 전송 (시뮬 성공했을 때만)
+            // 2) 시뮬 성공 시 실제 전송
             const tx = await payment.permitAndPayWithCashback(
                 account,
                 valueBN,
