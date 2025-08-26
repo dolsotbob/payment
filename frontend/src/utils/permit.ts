@@ -7,7 +7,6 @@ export const buildPermitCallData = async (
     signer: ethers.Signer,  // 사용자 지갑 객체 
     owner: string,      // 서명할 사용자 지갑 주소 
     amount: string,     // 승인할 토큰 금액 
-    chainId: number,
     valueOverride?: string  // 선택: permit allowance 를 별도로 저장하고 싶을 때 
 ): Promise<{
     v: number;
@@ -17,9 +16,9 @@ export const buildPermitCallData = async (
 }> => {
     // 1) 토큰 메타 (decimals, name)
     const [decimals, tokenName, tokenAddress, paymentAddress] = await Promise.all([
-        token.decimals?.() ?? 18,               // 일부 토큰은 decimals() 없을 수 있어 방어
-        token.name?.() ?? 'Token',
-        token.getAddress?.() ?? token.target,   // ethers v6 호환
+        token.decimals().catch(() => 18), // 없는 경우 18로 fallback
+        token.name().catch(() => "Token"),
+        token.getAddress?.() ?? token.target,
         payment.getAddress?.() ?? payment.target,
     ]);
 
@@ -31,8 +30,12 @@ export const buildPermitCallData = async (
         : priceBN;
 
     // 3) nonce & deadline 
-    const nonce = await token.nonces(owner);  // 중복 서명 방지를 위한 고유값 
+    const nonceRaw = await token.nonces(owner); // 중복 서명 방지를 위한 고유값 
+    const nonce = BigInt(nonceRaw).toString(); // 문자열 정규화
     const deadline = Math.floor(Date.now() / 1000) + 300;  // 5분 후 만료 
+
+    // chainId 확보 (signer 기존 네트워크)
+    const { chainId } = await signer.provider!.getNetwork();
 
     // 4) EIP-712 Domain/Types/Message
     const domain = {

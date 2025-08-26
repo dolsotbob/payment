@@ -119,13 +119,32 @@ const PayButton: React.FC<PayButtonProps> = ({
             );
 
             // 결제 트랜잭션 실행 
+            try {
+                // 1) callStatic으로 시뮬레이션 
+                await payment.permitAndPayWithCashback.staticCall(
+                    account,
+                    valueBN,
+                    deadline,
+                    v,
+                    r,
+                    s,
+                    priceBN,
+                    couponNftAddress,
+                    couponId,
+                    useCoupon
+                );
+            } catch (e: any) {
+                console.error('[simulate] revert details:', e);
+                toast.error('시뮬 단계에서 리버트: ' + (e?.errorName ?? e?.reason ?? 'unknown'));
+                return;  // 실패했으면 실 트랜잭션 보내지 않음 
+            }
+
+            // 실제 트랜잭션 전송 (시뮬 성공했을 때만)
             const tx = await payment.permitAndPayWithCashback(
                 account,
                 valueBN,
                 deadline,
-                v,
-                r,
-                s,
+                v, r, s,
                 priceBN,
                 couponNftAddress,
                 couponId,
