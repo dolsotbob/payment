@@ -36,7 +36,7 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
     const accessToken = access_token ?? null;
 
     // 훅에 토큰 전달 (미전달 시 401 가능)
-    const validateMut = useValidateCouponMutation(accessToken);
+    const validateMut = useValidateCouponMutation(accessToken ?? undefined);
 
     const BASE =
         process.env.REACT_APP_BACKEND_URL ??
