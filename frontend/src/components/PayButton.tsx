@@ -203,11 +203,26 @@ const PayButton: React.FC<PayButtonProps> = ({
             toast.success('🎉 결제 완료!', { position: 'top-center', autoClose: 3000 });
             onSuccess();
         } catch (err: any) {
-            console.error('❌ 결제 실패:', err);
-            toast.error(`❌ 결제 실패: ${err?.reason || err?.message || '알 수 없는 오류'}`, {
-                position: 'top-center',
-                autoClose: 5000,
-            });
+            console.error("❌ 결제 실패:", err);
+
+            // 서버에서 내려준 메시지(JSON) 있으면 우선 보여주기
+            toast.error(
+                `❌ 결제 실패: ${err?.response?.data?.message ||
+                err?.response?.data ||
+                err?.reason ||
+                err?.message ||
+                "알 수 없는 오류"
+                }`,
+                {
+                    position: "top-center",
+                    autoClose: 5000,
+                }
+            );
+
+            // 상세 JSON 팝업 (개발 중 디버깅용)
+            if (err?.response?.data) {
+                alert(JSON.stringify(err.response.data, null, 2));
+            }
         } finally {
             // ← 빠져있던 로딩 해제 보강
             setPaying(false);
