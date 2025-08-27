@@ -4,7 +4,6 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentStatusDto } from './dto/update-payment-status.dto';
 import { QuoteRequestDto, QuoteResponseDto } from './dto/quote.dto';
 import { CheckoutRequestDto, CheckoutResponseDto } from './dto/checkout.dto';
-import { CashbackStatus } from 'src/common/enums/cashback-status.enum';
 
 // 이 클래스는 /payment 경로의 API 요청을 처리하는 컨트롤러임을 나타낸다 
 @Controller('payment')
@@ -25,14 +24,14 @@ export class PaymentController {
   // 결제 상태 업데이트 
   // HTTP PATCH 요청이 /payment/:id/status 경로로 들어올 때 실행된다 
   @Patch(':id/status')
-  // URL의 id 값을 문자열로 받아오고,
-  // 요청 본문에서 status 값을 받아옵니다. 상태는 'SUCCESS' 또는 'FAILED' 중 하나여야 한다 
+  // URL의 id 값을 문자열(UUID)로 받아오고,
+  // 요청 본문에서 status 값을 받아옵니다. 
   updateStatus(
     @Param('id') id: string,
     @Body() updateStatusDto: UpdatePaymentStatusDto,
   ) {
     // 해당 결제의 상태를 업데이트한다 
-    return this.paymentService.updateStatus(+id, updateStatusDto.status);
+    return this.paymentService.updateStatus(id, updateStatusDto.status);
   }
 
   // 결제 내역 조회 (지갑 주소 기준)

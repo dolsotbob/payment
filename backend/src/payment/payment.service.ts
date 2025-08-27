@@ -261,7 +261,7 @@ export class PaymentService {
 
   // ------- 상태 변경/조회 --------
   // 결제 상태 수정 (성공/실패 )
-  async updateStatus(id: string, status: 'SUCCESS' | 'FAILED') {
+  async updateStatus(id: string, status: PaymentStatus) {
     // 해당 ID의 결제 레코드를 찾아 status 값을 변경한다 
     await this.paymentRepository.update(id, {
       status: status as PaymentStatus,
