@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsNotEmpty, Matches, IsOptional, IsEnum } from 'class-validator';
+import { IsString, IsUUID, IsNumber, IsNotEmpty, Matches, IsOptional, IsEnum } from 'class-validator';
 import { PaymentStatus } from 'src/common/enums/payment-status.enum';
 
 const WEI_MSG = '값은 숫자 문자열(wei 단위 정수)이어야 합니다.';
@@ -8,9 +8,12 @@ export class CreatePaymentDto {
     @IsNotEmpty()
     txHash: string;  // 트랜잭션 해시 (블록체인에 결제한 기록)
 
-    @IsNotEmpty()
-    @IsNumber()
-    productId: number;
+    // @IsNotEmpty()
+    // @IsNumber()
+    // productId: number;
+
+    @IsUUID('4', { message: 'productId는 UUIDv4 문자열이어야 합니다.' })
+    productId!: string;
 
     @IsString()
     @IsNotEmpty()

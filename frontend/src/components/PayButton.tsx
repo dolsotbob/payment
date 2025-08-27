@@ -163,8 +163,13 @@ const PayButton: React.FC<PayButtonProps> = ({
             // 3) 캐시백 금액 계산
             let cashbackAmount = '0';
             try {
-                const cashbackRate = await payment.cashbackRate();
-                cashbackAmount = ethers.formatUnits((priceBN * cashbackRate) / 100n, 18);
+                // 컨트랙트 함수가 cashbackBps()
+                const cashbackBps: bigint = await payment.cashbackBps();
+
+                // bps(200 = 2%) → 정수 나눗셈
+                const cashbackWei = (priceBN * cashbackBps) / 10_000n;
+
+                cashbackAmount = ethers.formatUnits(cashbackWei, 18);
             } catch (err) {
                 console.warn('⚠️ 캐시백 비율 조회 실패:', err);
             }

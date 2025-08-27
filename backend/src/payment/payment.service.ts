@@ -77,14 +77,14 @@ export class PaymentService {
 
     const wallet = toLower(dto.wallet);
     const product = await this.productRepository.findOne({
-      where: { id: dto.productId as any }, // id 타입이 string/number 무엇이든 호환
+      where: { id: String(dto.productId) }, // id 타입이 string/number 무엇이든 호환
     });
     if (!product) {
       throw new NotFoundException(`상품(${dto.productId})을 찾을 수 없습니다.`);
     }
 
     // 필수: 상품 가격(wei)
-    const originalWei = parseWei((product as any).priceWei);
+    const originalWei = parseWei(product.priceWei);
     if (originalWei <= 0n) {
       throw new BadRequestException('상품 가격이 올바르지 않습니다.');
     }
@@ -167,18 +167,18 @@ export class PaymentService {
 
     // 3) 상품 확인 (관계 저장용)
     const product = await this.productRepository.findOne({
-      where: { id: dto.productId as any },
+      where: { id: String(dto.productId) },
     });
 
     // 4) DB 저장 (엔티티 필드명에 정확히 맞춰 매핑)
     const payment = this.paymentRepository.create({
-      txHash: dto.txHash.toLowerCase(),      // 프론트/백엔드가 확보한 온체인 tx
-      from: dto.wallet.toLowerCase(),
+      txHash: dto.txHash ? dto.txHash.toLowerCase() : undefined,      // 프론트/백엔드가 확보한 온체인 tx
+      from: dto.wallet ? dto.wallet.toLowerCase() : undefined,
 
       // 금액 구조 매핑
       originalPrice: q.originalPrice,   // 견적 시 계산된 원래 금액
       discountAmount: q.discountAmount,   // 쿠폰/할인 적용된 금액
-      discountedPrice: dto.expectedPaidWei, // 실제 결제 금액 (체인 tx에서 받은 값)
+      discountedPrice: dto.expectedPaidWei ?? q.discountedPrice, // 실제 결제 금액 (체인 tx에서 받은 값)
       cashbackAmount: "0",             // 처음에는 0으로, 캐시백 완료 시 업데이트
 
       // checkout 시점에는 null, 트랜잭션이 확정되면 서버가 체인에서 조회해 갱신 
@@ -227,7 +227,7 @@ export class PaymentService {
       // 상품 확인 
       let product: Product | null = null;
       if (productId) {
-        product = await this.productRepository.findOne({ where: { id: productId as any } });
+        product = await this.productRepository.findOne({ where: { id: String(productId) } });
         if (!product) {
           throw new NotFoundException(`상품 ID ${productId}을 찾을 수 없습니다.`);
         }
@@ -235,8 +235,8 @@ export class PaymentService {
 
       // DTO → 엔티티 필드 매핑 (명시적)
       const payment = this.paymentRepository.create({
-        txHash: txHash.toLowerCase(),
-        from: (from || '').toLowerCase(),
+        txHash: txHash ? txHash.toLowerCase() : undefined,
+        from: from ? from.toLowerCase() : undefined,
 
         originalPrice: originalPrice,
         discountAmount: discountAmount,
@@ -261,13 +261,13 @@ export class PaymentService {
 
   // ------- 상태 변경/조회 --------
   // 결제 상태 수정 (성공/실패 )
-  async updateStatus(id: number, status: 'SUCCESS' | 'FAILED') {
+  async updateStatus(id: string, status: 'SUCCESS' | 'FAILED') {
     // 해당 ID의 결제 레코드를 찾아 status 값을 변경한다 
-    await this.paymentRepository.update(id as any, {
+    await this.paymentRepository.update(id, {
       status: status as PaymentStatus,
     });
     return this.paymentRepository.findOne({
-      where: { id: id as any },
+      where: { id },
       relations: ['product'],
     });  // 변경된 레코드 반환 
   }
