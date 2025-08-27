@@ -77,6 +77,7 @@ export async function sendPaymentToBackend({
         ...(gasUsedStr && { gasUsed: gasUsedStr }),
         ...(gasCostStr && { gasCost: gasCostStr.toString() }),
     };
+    console.log("[payment-payload]", payload);
 
     // axios 인스턴스 사용: Authorization/timeout/에러 처리 일원화
     const { data } = await api.post<PaymentResponse>("/payment", payload, {
