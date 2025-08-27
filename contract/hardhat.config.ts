@@ -23,7 +23,7 @@ const config: HardhatUserConfig = {
   },
   networks: {
     kairos: {
-      url: process.env.RPC_URL || "https://kairos.blockpi.network/v1/rpc/public",
+      url: process.env.RPC_URL || "https://kairos.blockpi.network/v1/rpc/public" || "https://Klaytn/v2.0.3/linux-amd64/go1.23.7",
       chainId: 1001,
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
     },
