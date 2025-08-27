@@ -100,12 +100,20 @@ const PayButton: React.FC<PayButtonProps> = ({
             // permit allowance(value): afterPrice 이상이어야 하므로 price 이상으로 설정하면 안전
             const valueBN = priceBN;
 
-            // 쿠폰 파라미터 구성
-            const couponNftAddress = selectedCoupon
-                ? (process.env.REACT_APP_COUPON1155_ADDRESS as string)
-                : ZERO_ADDRESS;
-            const couponId = selectedCoupon ? BigInt(Number(selectedCoupon.id)) : 0n;
-            const useCoupon = Boolean(selectedCoupon);
+            /** 쿠폰 OFF로 시뮬레이션 하기 
+             * 시뮬레이션 후 아레 "쿠폰 파라미터 구성의 주석처리 해지 "
+             */
+
+            const couponNftAddress = ZERO_ADDRESS;
+            const couponId = 0n;
+            const useCoupon = false;
+
+            // 쿠폰 파라미터 구성 
+            // const couponNftAddress = selectedCoupon
+            //     ? (process.env.REACT_APP_COUPON1155_ADDRESS as string)
+            //     : ZERO_ADDRESS;
+            // const couponId = selectedCoupon ? BigInt(Number(selectedCoupon.id)) : 0n;
+            // const useCoupon = Boolean(selectedCoupon);
 
             // Permit 서명 데이터 생성 (메타마스크 서명 팝업)
             const { v, r, s, deadline } = await buildPermitCallData(
