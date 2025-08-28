@@ -1,4 +1,4 @@
-// frontend/src/api/coupons.ts
+// frontend/src/api/couponApi.ts
 // 프론트엔드에서 백엔드 쿠폰 관련 API를 호출하는 전용 클라이언트 모듈
 // 역할 1: 쿠폰 데이터 가져오기 (/coupons/owned)
 // 역할 2: 숫자 필드(balance 등) 정규화
@@ -29,25 +29,27 @@ const authHeaders = (access_token?: string) =>
 export async function fetchOwnedCoupons(
     access_token: string
 ): Promise<GetOwnedResponse> {
-    const res = await api.get<GetOwnedResponse>("/coupons/owned", {
+    const res = await api.get<unknown>("/coupons/owned", {
         headers: authHeaders(access_token),
     });
 
+    const d = res?.data as any;
+    const items: any[] = Array.isArray(d) ? d : Array.isArray(d?.items) ? d.items : [];
+    const wallet: string = d?.wallet ?? "";
+    const fetchedAt: string = d?.fetchedAt ?? new Date().toISOString();
+
     // balance(string|number) 정규화 + isConsumable 보정
     const normalized: GetOwnedResponse = {
-        wallet: res.data.wallet,
-        fetchedAt: res.data.fetchedAt,
-        items: res.data.items.map((c) => ({
+        wallet,
+        fetchedAt,
+        items: items.map((c) => ({
             ...c,
             balance: asNumber(c.balance),
             rule: {
-                discountBps:
-                    c.rule?.discountBps !== undefined ? asNumber(c.rule?.discountBps) : undefined,
-                isConsumable:
-                    (c as any).rule?.isConsumable ??
-                    Boolean((c as any).rule?.consumable),
-                priceCapUsd:
-                    c.rule?.priceCapUsd !== undefined ? asNumber(c.rule?.priceCapUsd) : undefined,
+                ...c.rule, // (선택) 원래 rule 유지
+                discountBps: c.rule?.discountBps !== undefined ? asNumber(c.rule?.discountBps) : undefined,
+                isConsumable: (c as any).rule?.isConsumable ?? Boolean((c as any).rule?.consumable),
+                priceCapUsd: c.rule?.priceCapUsd !== undefined ? asNumber(c.rule?.priceCapUsd) : undefined,
                 expiresAt: c.rule?.expiresAt,
             },
         })),
