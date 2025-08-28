@@ -32,11 +32,11 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
     const [paymentSuccess, setPaymentSuccess] = useState(false);
 
     // Context에서 토큰 사용(직접 localStorage 접근 지양)
-    const { access_token } = useAuth();
-    const accessToken = access_token ?? null;
+    const { accessToken: ctxAccessToken } = useAuth();
+    const accessToken = ctxAccessToken ?? null;
 
     // 훅에 토큰 전달 (미전달 시 401 가능)
-    const validateMut = useValidateCouponMutation(accessToken ?? undefined);
+    const validateMut = useValidateCouponMutation(accessToken);
 
     const BASE =
         process.env.REACT_APP_BACKEND_URL ??
@@ -214,7 +214,7 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
                             }
                             try {
                                 const res = await validateMut.mutateAsync({
-                                    couponId: coupon.id,
+                                    couponId: Number(coupon.id),
                                     productId: selectedProduct.id, // uuid 가정
                                 });
                                 // 서버가 priceAfter(wei)를 내려줄 경우 사용
