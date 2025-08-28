@@ -10,6 +10,7 @@ import MyPage from './pages/MyPage';
 import './App.css';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import CouponsSection from './components/coupons/CouponSection';
 
 // 1) QueryClient는 컴포넌트 밖에서 생성(리렌더마다 재생성 방지)
 const queryClient = new QueryClient();
@@ -27,7 +28,7 @@ export default function AppRoot() {
 
 // 3) 실제 앱 내용 (Context 사용)
 export function App() {
-  const { account, isLoggedIn, loading, loginWithWallet, logout } = useAuth();
+  const { account, isLoggedIn, loading, loginWithWallet, logout, accessToken } = useAuth();
 
   // 로딩 중 상태 표시(선택)
   if (loading) {
@@ -63,6 +64,10 @@ export function App() {
             }
           />
           <Route path="/mypage" element={<MyPage />} />
+          <Route
+            path="/coupons"
+            element={<CouponsSection accessToken={accessToken} autoPickFirstUsable />}
+          />
         </Routes>
         <Footer />
       </div>
