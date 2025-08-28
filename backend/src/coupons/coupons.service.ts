@@ -55,10 +55,15 @@ export class CouponsService {
                     ipfsCid: cat.ipfsCid ?? null,
                 },
                 rule: {
-                    discountBps: 0,
-                    consumable: false,
-                    priceCapUsd: 0,
-                    expiresAt: ''
+                    discountBps: (cat as any).discountBps ?? (cat as any).discount_bps ?? 0,
+                    consumable: (cat as any).isConsumable ?? (cat as any).consumable ?? false,
+                    priceCapUsd: (cat as any).priceCapUsd ?? (cat as any).price_cap_usd ?? 0,
+                    expiresAt: (() => {
+                        const v = (cat as any).expiresAt ?? (cat as any).expires_at;
+                        if (!v) return '';
+                        const d = v instanceof Date ? v : new Date(v);
+                        return Number.isFinite(d.getTime()) ? d.toISOString() : '';
+                    })(),
                 }
             });
         }
@@ -87,7 +92,7 @@ export class CouponsService {
      * - 온체인 트랜잭션이 없으므로 txHash에 offchain 키를 사용
      */
     async apply(dto: UseCouponDto, authUser: { address: string }) {
-        const wallet = (authUser.address ?? '').toLowerCase();
+        const wallet = String((authUser as any)?.address ?? (authUser as any)?.sub ?? '').toLowerCase();
         const tokenId = Number(dto.couponId);
         const amount = Number(dto.amount ?? 1);
 
