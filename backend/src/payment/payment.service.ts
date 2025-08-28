@@ -259,7 +259,8 @@ export class PaymentService {
       if (txHash) {
         try {
           const onchain = await this.checkOnchainCashback(txHash);
-          if (onchain.sawVaultCashback || onchain.paidCashbackWei > 0n) {
+          // 캐시백 금액이 실제로 확인될 때만 COMPLETED 
+          if (onchain.paidCashbackWei > 0n) {
             await this.paymentRepository.update(saved.id, {
               cashbackStatus: CashbackStatus.COMPLETED,
               cashbackTxHash: txHash.toLowerCase(),
@@ -324,7 +325,7 @@ export class PaymentService {
     if (!receipt) return { paidCashbackWei: 0n, sawVaultCashback: false };
 
     const paymentIface = new ethers.Interface([
-      'event Paid(address indexed buyer,address indexed vault,uint256,uint256,uint16,uint256,uint16,uint256)'
+      'event Paid(address indexed buyer,address indexed vault,uint256 originalPrice,uint256 discountAmount,uint16 discountBps,uint256 discountedPrice,uint16 cashbackBps,uint256 cashbackAmount)'
     ]);
     const vaultIface = new ethers.Interface([
       'event CashbackProvided(address indexed to,uint256 amount)'
@@ -338,7 +339,12 @@ export class PaymentService {
       try {
         const parsed = paymentIface.parseLog({ topics: log.topics, data: log.data });
         if (parsed?.name === 'Paid') {
-          paidCashbackWei = BigInt(parsed.args.cashbackAmount.toString());
+          // 이름 키 우선, 실패 시 인덱스(7) 폴백
+          const v = parsed.args?.cashbackAmount ?? parsed.args?.[7];
+          if (v != null) {
+            const w = BigInt(v.toString());
+            if (w > paidCashbackWei) paidCashbackWei = w;
+          }
         }
       } catch { /* ignore */ }
 
@@ -347,6 +353,11 @@ export class PaymentService {
         const parsed = vaultIface.parseLog({ topics: log.topics, data: log.data });
         if (parsed?.name === 'CashbackProvided') {
           sawVaultCashback = true;
+          const v = parsed.args?.amount ?? parsed.args?.[1];
+          if (v != null) {
+            const w = BigInt(v.toString());
+            if (w > paidCashbackWei) paidCashbackWei = w;
+          }
         }
       } catch { /* ignore */ }
     }
