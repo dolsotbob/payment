@@ -21,22 +21,31 @@ export default function CouponsSection({
 
     return (
         <section style={{ display: "grid", gap: 12 }}>
-            <h2 style={{ margin: 0 }}>내 쿠폰</h2>
-            <CouponList
-                accessToken={accessToken}
-                autoPickFirstUsable={autoPickFirstUsable}
-                onSelectCoupon={(c) => {
-                    setSelected(c);
-                    onAppliedChange?.(c ?? null);
-                }}
-            />
-            {selected ? (
-                <div style={{ fontSize: 14 }}>
-                    선택한 쿠폰: <b>{selected.meta?.name ?? `#${selected.id}`}</b>
-                </div>
-            ) : (
-                <div style={{ fontSize: 14, opacity: 0.7 }}>선택된 쿠폰 없음</div>
-            )}
+            <div>
+                <h2 style={{ margin: 0 }}>내 쿠폰</h2>
+                <CouponList
+                    accessToken={accessToken}
+                    autoPickFirstUsable={autoPickFirstUsable}
+                    onSelectCoupon={(c) => {
+                        setSelected(c);
+                        // 즉시 피드백 (원하면 toast로 교체 가능)
+                        if (c) {
+                            alert(`쿠폰 선택됨: ${c.meta?.name ?? c.id}`);
+                        } else {
+                            alert("쿠폰 선택 해제");
+                        }
+                        onAppliedChange?.(c ?? null);
+                    }}
+                />
+            </div>
+
+            <div style={{ fontSize: 14, color: "#555" }}>
+                {selected ? (
+                    <>선택된 쿠폰: <b>{selected.meta?.name ?? selected.id}</b></>
+                ) : (
+                    <>선택된 쿠폰 없음</>
+                )}
+            </div>
         </section>
     );
 }
