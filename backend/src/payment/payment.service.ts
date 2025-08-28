@@ -3,6 +3,7 @@
 import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ethers } from 'ethers';
 
 import { Product } from 'src/product/entities/product.entity';
 import { Payment } from './entities/payment.entity';
@@ -251,8 +252,31 @@ export class PaymentService {
 
         product: product ?? null,
       });
+      ////////////
+      const saved = await this.paymentRepository.save(payment);
 
-      return await this.paymentRepository.save(payment);
+      // ✅ 온체인 캐시백 감지 → 백엔드 캐시백 스킵 가드 (txHash가 있을 때만 시도)
+      if (txHash) {
+        try {
+          const onchain = await this.checkOnchainCashback(txHash);
+          if (onchain.sawVaultCashback || onchain.paidCashbackWei > 0n) {
+            await this.paymentRepository.update(saved.id, {
+              cashbackStatus: CashbackStatus.COMPLETED,
+              cashbackTxHash: txHash.toLowerCase(),
+              cashbackAmount: onchain.paidCashbackWei.toString(), // 이벤트 값으로 동기화(선택)
+            });
+            // 운영 로그(선택)
+            // console.log(`[cashback] on-chain detected → mark COMPLETED. tx=${txHash}`);
+            return await this.paymentRepository.findOne({ where: { id: saved.id }, relations: ['product'] });
+          }
+        } catch (e) {
+          // 이벤트 조회 실패 시에는 조용히 넘어가고, 이후 오프체인 로직(있다면)으로 진행
+          // console.warn('[cashback] on-chain check failed:', e);
+        }
+      }
+
+      // ⬇️ 필요 시 오프체인 캐시백 송금 로직 연결 (없다면 그대로 저장값 반환)
+      return await this.paymentRepository.findOne({ where: { id: saved.id }, relations: ['product'] });
     } catch (error) {
       console.error('❌ 결제 생성 실패:', error);
       throw new HttpException('결제 생성 실패', HttpStatus.INTERNAL_SERVER_ERROR);
@@ -287,6 +311,47 @@ export class PaymentService {
     for (const [k, v] of quotes.entries()) {
       if ((v.createdAt ?? 0) < cutoff) quotes.delete(k);
     }
+  }
+
+  /**
+    * 결제 트랜잭션의 로그에서 on-chain 캐시백 여부 확인
+    * - Payment.Paid 의 cashbackAmount>0
+    * - 또는 Vault.CashbackProvided 이벤트 존재
+    */
+  private async checkOnchainCashback(txHash: string): Promise<{ paidCashbackWei: bigint; sawVaultCashback: boolean; }> {
+    const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
+    const receipt = await provider.getTransactionReceipt(txHash);
+    if (!receipt) return { paidCashbackWei: 0n, sawVaultCashback: false };
+
+    const paymentIface = new ethers.Interface([
+      'event Paid(address indexed buyer,address indexed vault,uint256,uint256,uint16,uint256,uint16,uint256)'
+    ]);
+    const vaultIface = new ethers.Interface([
+      'event CashbackProvided(address indexed to,uint256 amount)'
+    ]);
+
+    let paidCashbackWei = 0n;
+    let sawVaultCashback = false;
+
+    for (const log of receipt.logs) {
+      // Payment.Paid
+      try {
+        const parsed = paymentIface.parseLog({ topics: log.topics, data: log.data });
+        if (parsed?.name === 'Paid') {
+          paidCashbackWei = BigInt(parsed.args.cashbackAmount.toString());
+        }
+      } catch { /* ignore */ }
+
+      // Vault.CashbackProvided
+      try {
+        const parsed = vaultIface.parseLog({ topics: log.topics, data: log.data });
+        if (parsed?.name === 'CashbackProvided') {
+          sawVaultCashback = true;
+        }
+      } catch { /* ignore */ }
+    }
+
+    return { paidCashbackWei, sawVaultCashback };
   }
 
   // 실제 온체인 조회(추후 구현 예시)
