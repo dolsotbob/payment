@@ -1,11 +1,11 @@
 // 결제 로직 + 쿠폰 연동 
 import React, { useState } from 'react';
-import { ethers, Interface } from 'ethers';
+import { ethers } from 'ethers';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import { buildPermitCallData } from '../utils/permit';
-import { sendPaymentToBackend } from '../utils/payment';
+import { sendPaymentToBackend, PaymentStatus } from '../utils/payment';
 import PaymentJson from '../abis/Payment.json';
 import TestTokenJson from '../abis/TestToken.json';
 import './css/PayButton.css';
@@ -101,7 +101,7 @@ const PayButton: React.FC<PayButtonProps> = ({
             const valueBN = priceBN;
 
             /** 쿠폰 OFF로 시뮬레이션 하기 
-             * 시뮬레이션 후 아레 "쿠폰 파라미터 구성의 주석처리 해지 "
+             * 시뮬레이션 후 아레 "쿠폰 파라미터 구성의 주석처리 해제 "
              */
 
             const couponNftAddress = ZERO_ADDRESS;
@@ -177,11 +177,15 @@ const PayButton: React.FC<PayButtonProps> = ({
             // 4) 백엔드 전송 (결제 레코드 생성)
             const paymentRes = await sendPaymentToBackend({
                 txHash: receipt.hash,
-                amountWei: priceBN.toString(),     // ← BN을 그대로 문자열로
-                status: "SUCCESS",
+                originalPrice: priceBN.toString(),
+                discountAmount: '0',
+                discountedPrice: priceBN.toString(),
+                status: PaymentStatus.SUCCESS,
+                // amountWei: priceBN.toString(),     // ← BN을 그대로 문자열로
+                // status: "SUCCESS",
                 userAddress: account,
                 cashbackAmountWei: ethers.parseUnits(cashbackAmount, 18).toString(), // 이미 BN이면 .toString()
-                productId,
+                productId: String(productId),
                 gasUsed: receipt.gasUsed,
                 gasPrice: receipt.effectiveGasPrice,
             });
@@ -241,4 +245,3 @@ const PayButton: React.FC<PayButtonProps> = ({
 };
 
 export default PayButton;
-

@@ -8,10 +8,6 @@ export class CreatePaymentDto {
     @IsNotEmpty()
     txHash: string;  // 트랜잭션 해시 (블록체인에 결제한 기록)
 
-    // @IsNotEmpty()
-    // @IsNumber()
-    // productId: number;
-
     @IsUUID('4', { message: 'productId는 UUIDv4 문자열이어야 합니다.' })
     productId!: string;
 
