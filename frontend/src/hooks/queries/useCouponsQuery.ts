@@ -31,13 +31,7 @@ export function useCouponsQuery(
         queryFn: async () => {
             if (!token) throw new Error("로그인이 필요합니다.");
             const res = await fetchOwnedCoupons(token); // GetOwnedResponse
-
-            // 응답 형태 표준화
-            if (Array.isArray(res)) return res;
-            if (res && Array.isArray(res.items)) return res.items;
-            if (res && Array.isArray(res.data)) return res.data;
-            if (res && Array.isArray(res.coupons)) return res.coupons;
-            return [];
+            return res.items ?? [];
         },
     });
 }
