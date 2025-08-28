@@ -213,6 +213,7 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
                                 return;
                             }
                             try {
+                                console.log("VALIDATE CALL ▶", { couponId: Number(coupon.id), productId: selectedProduct.id });
                                 const res = await validateMut.mutateAsync({
                                     couponId: Number(coupon.id),
                                     productId: selectedProduct.id, // uuid 가정

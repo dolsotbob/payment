@@ -69,6 +69,7 @@ export type ValidateCouponRes = {
     reason?: string;
     discountBps?: number;
     priceCapUsd?: number;
+    priceAfter?: string;
 };
 
 export async function validateCoupon(
@@ -77,7 +78,7 @@ export async function validateCoupon(
 ): Promise<ValidateCouponRes> {
     const res = await api.get<ValidateCouponRes>("/coupons/validate", {
         params,
-        headers: authHeaders(access_token),
+        headers: { Authorization: `Bearer ${access_token}` },
     });
     const d = res.data;
     return {
