@@ -32,6 +32,6 @@ export function useCouponsQuery(
             if (!token) throw new Error("로그인이 필요합니다.");
             const res = await fetchOwnedCoupons(token); // GetOwnedResponse
             return res.items ?? [];
-        },
+        }
     });
 }
