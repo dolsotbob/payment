@@ -53,6 +53,7 @@ export const CouponCard: React.FC<Props> = ({
                     style={{ width: 72, height: 72, objectFit: "cover", borderRadius: 12, marginRight: 12 }}
                 />
             )}
+
             <div className="flex-1" style={{ flex: 1 }}>
                 <div className={styles.titleRow}>
                     <h3 className={styles.title}>{name}</h3>

@@ -15,12 +15,12 @@ import { useAuth } from "../../context/AuthContext";
  * - accessToken 인자를 넘기면 그 토큰을 우선 사용
  * - 인자가 없으면 Context의 access_token 사용
  */
-export function useValidateCouponMutation(accessToken?: string) {
-    const { access_token } = useAuth();
-    const token = accessToken ?? access_token ?? "";
+export function useValidateCouponMutation(accessToken: string | null) {
+    const { accessToken: ctxAccessToken } = useAuth();
+    const token = accessToken ?? ctxAccessToken ?? "";
 
     return useMutation<ValidateCouponRes, unknown, ValidateCouponParams>({
-        mutationFn: async (vars) => {
+        mutationFn: async (vars: ValidateCouponParams) => {
             if (!token) throw new Error("로그인이 필요합니다.");
             return validateCoupon(token, vars);
         },
