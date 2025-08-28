@@ -26,6 +26,7 @@ export const CouponCard: React.FC<Props> = ({
 }) => {
     // types/coupons.ts에 맞춘 필드 접근
     const name = coupon.meta?.name ?? `#${coupon.id}`;
+    const img = coupon.meta?.imageUrl || undefined;
     const description = coupon.meta?.ipfsCid ?? ""; // description이 따로 없다면 ipfsCid 대신 meta에 추가할 수도 있음
     const expiresAt = coupon.rule.expiresAt;
     const isExpired = expiresAt ? new Date(expiresAt).getTime() < Date.now() : false;
@@ -42,6 +43,16 @@ export const CouponCard: React.FC<Props> = ({
 
     return (
         <div className={styles.card} role="group" aria-label={`Coupon ${name}`}>
+            {/* 썸네일 */}
+            {img && (
+                <img
+                    src={img}
+                    alt={name}
+                    loading="lazy"
+                    className={styles.thumb}
+                    style={{ width: 72, height: 72, objectFit: "cover", borderRadius: 12, marginRight: 12 }}
+                />
+            )}
             <div className="flex-1" style={{ flex: 1 }}>
                 <div className={styles.titleRow}>
                     <h3 className={styles.title}>{name}</h3>
