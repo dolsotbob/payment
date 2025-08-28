@@ -28,6 +28,7 @@ const Navbar: React.FC<NavbarProps> = ({ account, onLogout }) => {
                 <div className='nav-right'>
                     <Link to="/payment-history">🧾</Link>
                     <Link to="/mypage">👤</Link>
+                    <Link to="/coupons">🧧</Link>
                     <LogoutButton onLogout={onLogout} />
                 </div>
             )}

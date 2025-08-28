@@ -10,7 +10,7 @@ import MyPage from './pages/MyPage';
 import './App.css';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import CouponsSection from './components/coupons/CouponSection';
+import CouponsSection from './components/coupons/CouponsSection';
 
 // 1) QueryClient는 컴포넌트 밖에서 생성(리렌더마다 재생성 방지)
 const queryClient = new QueryClient();
