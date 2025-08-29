@@ -294,6 +294,7 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
                         account={account}
                         amount={String(finalAmountWei ?? selectedProduct.priceWei)}
                         productId={selectedProduct.id}
+                        selectedCoupon={selectedCoupon}
                         onSuccess={() => {
                             setPaymentSuccess(true);
                             setTimeout(() => {
