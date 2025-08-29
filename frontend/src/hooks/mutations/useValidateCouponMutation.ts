@@ -15,14 +15,17 @@ import { useAuth } from "../../context/AuthContext";
  * - accessToken 인자를 넘기면 그 토큰을 우선 사용
  * - 인자가 없으면 Context의 access_token 사용
  */
-export function useValidateCouponMutation(accessToken?: string) {
+export function useValidateCouponMutation(accessToken?: string | null) {
     const { accessToken: ctxAccessToken } = useAuth();
-    const token = accessToken ?? ctxAccessToken ?? undefined;
+    const token: string | undefined =
+        (accessToken ?? ctxAccessToken ?? undefined) || undefined;
 
     return useMutation<ValidateCouponRes, unknown, ValidateCouponParams>({
-        mutationFn: async (vars: ValidateCouponParams) => {
-            // if (!token) throw new Error("로그인이 필요합니다.");
-            return validateCoupon(token!, vars);
+        mutationFn: async (vars) => {
+            if (!token) {
+                throw new Error("로그인이 필요합니다.");
+            }
+            return validateCoupon(token, vars);
         },
         retry: (failureCount, err: any) => {
             if (err?.response?.status === 401) return false; // 인증 에러는 재시도 X

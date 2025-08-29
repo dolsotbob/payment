@@ -6,15 +6,17 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { applyCoupon, type ApplyCouponBody, type ApplyCouponRes } from "../../api/couponApi";
 import { useAuth } from "../../context/AuthContext";
 
-export function useApplyCouponMutation(accessToken?: string) {
+export function useApplyCouponMutation(accessToken?: string | null) {
     const qc = useQueryClient();
-    const { access_token } = useAuth();
-    const token = accessToken ?? access_token ?? "";
+    const { accessToken: ctxAccessToken } = useAuth();
+    const token: string | undefined =
+        (accessToken ?? ctxAccessToken ?? undefined) || undefined;
 
     return useMutation<ApplyCouponRes, unknown, ApplyCouponBody>({
         mutationFn: async (vars) => {
-            if (!token) throw new Error("로그인이 필요합니다.");
-            // { couponId, paymentId, ... }
+            if (!token) {
+                throw new Error("로그인이 필요합니다.");
+            }
             return applyCoupon(token, vars);
         },
         onSuccess: () => {

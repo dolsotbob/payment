@@ -20,7 +20,7 @@ interface PayButtonProps {
     account: string;    // 유저 주소
     amount: string;    // 최종가(할인 후) wei  
     productId: number | string;
-    selectedCoupon?: OwnedCoupon | null;
+    selectedCoupon: OwnedCoupon | null;
     originalPriceWei?: string;  // 원가(할인 전) wei 
     onSuccess: () => void;
     onCancel: () => void;
@@ -49,8 +49,8 @@ const PayButton: React.FC<PayButtonProps> = ({
     const { accessToken } = useAuth();
 
     // 쿠폰 훅 - 검증/적용 훅에 accessToken 인자 전달
-    const { mutateAsync: validateCoupon, isPending: validating } = useValidateCouponMutation(accessToken ?? undefined);
-    const { mutateAsync: applyCouponUse, isPending: applying } = useApplyCouponMutation(accessToken ?? undefined);
+    const { mutateAsync: validateCoupon, isPending: validating } = useValidateCouponMutation(accessToken ?? null);
+    const { mutateAsync: applyCouponUse, isPending: applying } = useApplyCouponMutation(accessToken ?? null);
 
     const disabled = paying || validating || applying;
 
@@ -87,7 +87,6 @@ const PayButton: React.FC<PayButtonProps> = ({
             setPaying(true);
 
             // 1) (선택) 쿠폰 사전 검증 
-            let discountBps = 0;
             if (selectedCoupon) {
                 const res = await validateCoupon({
                     couponId: Number(selectedCoupon.id),
@@ -97,7 +96,6 @@ const PayButton: React.FC<PayButtonProps> = ({
                     toast.error(`쿠폰 사용 불가: ${res.reason ?? '알 수 없는 사유'}`);
                     return;
                 }
-                discountBps = res.discountBps ?? 0;
             }
 
             // 2) 결제 트랜잭션 실행 
@@ -113,17 +111,16 @@ const PayButton: React.FC<PayButtonProps> = ({
             const priceBN = BigInt(originalPriceWei ?? amount);
             const valueBN = BigInt(amount);
 
-            // 쿠폰 파라미터 (한 번만 선언)
+            // 쿠폰 파라미터 (한 번만 선언) 
             if (selectedCoupon && !coupon1155Address) {
                 toast.error('쿠폰 기능을 위해 REACT_APP_COUPON1155_ADDRESS가 필요합니다.');
                 setPaying(false);
                 return;
             }
-            const couponNftAddress = selectedCoupon && coupon1155Address
-                ? coupon1155Address
-                : ZERO_ADDRESS;
-            const couponId = selectedCoupon ? BigInt(Number(selectedCoupon.id)) : 0n;
-            const useCoupon = Boolean(selectedCoupon && coupon1155Address);
+
+            const useCoupon = !!selectedCoupon;
+            const couponNftAddress = useCoupon ? (coupon1155Address as string) : ZERO_ADDRESS;
+            const couponId = useCoupon ? BigInt(Number(selectedCoupon!.id)) : 0n;
 
             // 디버그 로그
             console.log('[pay-args]', {
@@ -140,7 +137,7 @@ const PayButton: React.FC<PayButtonProps> = ({
                 payment,
                 signer,
                 account,
-                amount,   // wei 문자열 금액 
+                valueBN.toString(), // 최종가(wei) 정확히 전달 
             );
 
             // 결제 트랜잭션 실행 

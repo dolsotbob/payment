@@ -14,13 +14,17 @@ import HeroSection from "../components/HeroSection";
 import { CouponList } from "../components/coupons/CouponList";
 import type { OwnedCoupon } from "../types/couponTypes";
 import { useValidateCouponMutation } from "../hooks/mutations/useValidateCouponMutation";
-import { formatUnits } from "ethers";
 import { useAuth } from "../context/AuthContext";
 
 interface Props {
     account: string | null;  // 유저 주소 
     onLogin: () => void;
 }
+
+const DebugLog: React.FC<{ label: string; data: any }> = ({ label, data }) => {
+    console.log(label, data);
+    return null; // JSX에 넣어도 ReactNode로 허용됨
+};
 
 const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
     const [products, setProducts] = useState<Product[]>([]);
@@ -65,15 +69,6 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
     const BASE =
         process.env.REACT_APP_BACKEND_URL ??
         "https://payment-backend-feature.onrender.com";
-
-    const toTori = (wei?: string | bigint) =>
-        wei == null ? '0' : formatUnits(wei, 18); // "0.01" 같은 문자열 반환
-
-    // 파일 상단 어딘가(컴포넌트 정의 위)에 추가
-    const DebugLog: React.FC<{ label: string; data: any }> = ({ label, data }) => {
-        console.log(label, data);
-        return null; // JSX에 넣어도 ReactNode로 허용됨
-    };
 
     useEffect(() => {
         // 1. 상품 목록 로드 
@@ -208,59 +203,6 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
         return String(v);
     };
 
-    // ✅ 쿠폰 선택 즉시 검증
-    async function handleSelectCoupon(coupon: OwnedCoupon | null) {
-        setSelectedCoupon(coupon);
-
-        if (!selectedProduct) return;
-        if (!coupon) {
-            setFinalAmountWei(selectedProduct.priceWei);
-            return;
-        }
-        if (!accessToken) {
-            alert("로그인이 필요합니다.");
-            setSelectedCoupon(null);
-            setFinalAmountWei(selectedProduct.priceWei);
-            return;
-        }
-
-        try {
-            console.log("[validate-call]", {
-                tokenExists: !!accessToken,
-                couponId: Number(coupon.id),
-                productId: selectedProduct.id,
-            });
-
-            const res = await validateMut.mutateAsync({
-                couponId: Number(coupon.id),
-                productId: selectedProduct.id,
-            });
-
-            // 서버가 priceAfter(wei) 내려주면 사용
-            const priceAfterWei = toWeiString((res as any)?.priceAfter);
-            if (priceAfterWei) {
-                setFinalAmountWei(priceAfterWei);
-                return;
-            }
-
-            // 아니면 BPS로 프론트 계산(임시)
-            const priceWei = BigInt(selectedProduct.priceWei);
-            const bps: number = (res as any)?.discountBps ?? 0; // ex) 500 = 5%
-            let discountWei = (priceWei * BigInt(bps)) / BigInt(10_000);
-            if (discountWei > priceWei) discountWei = priceWei;
-            setFinalAmountWei((priceWei - discountWei).toString());
-        } catch (e: any) {
-            console.error("[validate-error]", e?.response?.status, e?.message || e);
-            alert(
-                e?.response?.status === 401
-                    ? "세션이 만료되었습니다. 다시 로그인 해주세요."
-                    : "쿠폰 검증 실패"
-            );
-            setSelectedCoupon(null);
-            setFinalAmountWei(selectedProduct.priceWei);
-        }
-    }
-
     return (
         <div>
             {/* 🛍️  */}
@@ -287,7 +229,7 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
                 <div style={{ margin: "12px 0" }}>
                     <h3>쿠폰 선택</h3>
                     <CouponList
-                        accessToken={accessToken}
+                        accessToken={accessToken as string}
                         onSelectCoupon={async (coupon) => {
                             setSelectedCoupon(coupon);
                             // 상품이 선택되어 있으면 즉시 검증 
