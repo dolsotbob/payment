@@ -73,19 +73,20 @@ export type ValidateCouponRes = {
 };
 
 export async function validateCoupon(
-    access_token: string,
+    access_token: string | undefined,
     params: ValidateCouponParams
 ): Promise<ValidateCouponRes> {
     const res = await api.get<ValidateCouponRes>("/coupons/validate", {
         params,
-        headers: { Authorization: `Bearer ${access_token}` },
+        headers: authHeaders(access_token),
     });
     const d = res.data;
     return {
         ...d,
-        priceAfter: d.priceAfter != null ? String(d.priceAfter) : undefined,
-        discountBps: d.discountBps !== undefined ? asNumber(d.discountBps) : undefined,
-        priceCapUsd: d.priceCapUsd !== undefined ? asNumber(d.priceCapUsd) : undefined,
+        discountBps:
+            d.discountBps !== undefined ? asNumber(d.discountBps) : undefined,
+        priceCapUsd:
+            d.priceCapUsd !== undefined ? asNumber(d.priceCapUsd) : undefined,
     };
 }
 
