@@ -7,14 +7,13 @@ import {
     ValidationPipe,
     UseGuards,
     Req,
-    BadRequestException,
+    UnauthorizedException,
     Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { CouponsService } from './coupons.service';
 import { UseCouponDto } from './dto/use-coupon.dto';
-import { Product } from 'src/product/entities/product.entity';
 
 @Controller('coupons')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
@@ -32,10 +31,12 @@ export class CouponsController {
             u.userAddress ??
             null;
 
-        if (!addr) throw new BadRequestException('JWT payload에 address가 없습니다.');
-        return addr.toLowerCase();
+        if (!addr) throw new UnauthorizedException('JWT payload에 address가 없습니다.');
+        return String(addr).toLowerCase();
     }
 
+    // ─────────────────────────────────────────────────────────────
+    // 보유 쿠폰
     // JWT 인증 필요, 주소는 토큰의 payload에서 획득 
     @UseGuards(AuthGuard('jwt'))
     @Get('owned')
@@ -52,32 +53,36 @@ export class CouponsController {
         @Query('couponId') couponIdRaw: string,
         @Query('productId') productId?: string,
         @Query('amount') amountRaw?: string,
+        @Query('priceWei') priceWei?: string,
     ) {
         const address = this.userAddr(req);
 
         const couponId = Number(couponIdRaw);
         if (!Number.isFinite(couponId) || couponId < 0) {
-            throw new BadRequestException('잘못된 couponId');
+            throw new UnauthorizedException('잘못된 couponId');
         }
 
-        // amount는 선택 (없으면 1로 처리 or 서비스에서 자체 계산)
         const amount = amountRaw ? Number(amountRaw) : 1;
-        if (amount <= 0 || !Number.isFinite(amount)) {
-            throw new BadRequestException('잘못된 amount');
+        if (!Number.isFinite(amount) || amount <= 0) {
+            throw new UnauthorizedException('잘못된 amount');
         }
 
-        // 서비스 시그니처를 productId를 받도록 확장하는 것을 권장
-        // ex) canUseWithProduct(address, couponId, { productId, amount })
-        const result = await this.coupons.canUseWithProduct?.(address, couponId, { productId, amount })
-            ?? await this.coupons.canUse(address, couponId, amount);
+        const result =
+            (this.coupons as any).canUseWithProduct
+                ? await (this.coupons as any).canUseWithProduct(address, couponId, {
+                    productId,
+                    amount,
+                    priceWei,
+                })
+                : await this.coupons.canUse(address, couponId, amount);
 
-        // 프론트 계약 형식으로 반환 보장
-        // { ok, reason?, discountBps?, priceAfter? }
+        // 프론트 계약 형식으로 반환(필드 통일)
         return {
             ok: !!result?.ok,
             reason: result?.reason,
             discountBps: result?.discountBps,
-            priceAfter: result?.priceAfter, // wei 문자열 기대 시 서비스에서 계산해 전달
+            priceAfter: result?.priceAfter,   // (서비스에서 계산해 왔을 때만 존재)
+            priceCapUsd: result?.priceCapUsd, // (있다면 그대로 전달)
         };
     }
 

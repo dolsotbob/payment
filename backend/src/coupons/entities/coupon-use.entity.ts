@@ -31,5 +31,3 @@ export class CouponUse {
     @CreateDateColumn({ name: 'usedAt', type: 'timestamptz' })
     usedAt: Date;
 }
-
-

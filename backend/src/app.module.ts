@@ -31,14 +31,17 @@ import { AuthModule } from './auth/auth.module';
       useFactory: dbConfig,
     }),
 
+    // 도메인 모듈 
     UserModule,
     AuthModule,
     ProductModule,
     PaymentModule,  // 결제 정보 저장, 상태 업뎃 등 DB 조작 담당 
     CouponsModule,
     CashbackModule, // DB에서 캐시백 대상 조회 -> 스마트 컨트랙트 호출로 캐시백 처리 
+
     ScheduleModule.forRoot(), // // Cron을 NestJS에 활성화
     ScheduleFeatureModule,  // @Cron 스케줄러를 통해 주기적으로 CashbackService.processCashbacks() 실행 
+
     ShippingInfoModule,
   ],
   controllers: [AppController],

@@ -16,6 +16,7 @@ function fromCookie(req: Request): string | null {
 // PassportStrategy를 상속해 JwtStrategy를 구현한다 
 // Strategy는 passposrt-jwt에서 가져온 JWT 전략을 의미한다 
 export class JwtStrategy extends PassportStrategy(Strategy) {
+    logger: any;
     constructor(private readonly configService: ConfigService) {
         const secret = configService.get<string>('JWT_SECRET') ?? process.env.JWT_SECRET;
         if (!secret) {
@@ -41,6 +42,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * 컨트롤러의 userAddr()가 기대하는 키들을 모두 채워 줍니다.
    */
     async validate(payload: any) {
+        this.logger.debug('[JWT validate] payload=%o', payload);
         // 발급 시점에 sub에 지갑주소를 넣고 있다면 그대로 사용
         const rawAddr: string | undefined =
             payload?.sub ??

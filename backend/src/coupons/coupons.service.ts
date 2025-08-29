@@ -10,6 +10,14 @@ import { CouponUse } from './entities/coupon-use.entity';
 import { OwnedCoupon } from './types/owned-coupon.type';
 import { UseCouponDto } from './dto/use-coupon.dto';
 
+type ValidateWithProductResult = {
+    ok: boolean;
+    reason?: string;
+    discountBps?: number;
+    priceCapUsd?: number;
+    priceAfter?: string; // wei 문자열
+};
+
 @Injectable()
 export class CouponsService {
     constructor(
@@ -34,7 +42,13 @@ export class CouponsService {
         if (ids.length === 0) return [];
 
         const balanceStrs = await this.erc1155.balanceOfBatch(address, ids);
-        const balances = balanceStrs.map(s => { try { return BigInt(s ?? '0'); } catch { return 0n; } });
+        const balances = balanceStrs.map((s) => {
+            try {
+                return BigInt(s ?? '0');
+            } catch {
+                return 0n;
+            }
+        });
 
         const items: OwnedCoupon[] = [];
         for (let i = 0; i < ids.length; i++) {
@@ -42,7 +56,7 @@ export class CouponsService {
             const bal = balances[i] ?? 0n;
             if (bal === 0n) continue;
 
-            const cat = catalogs.find(c => Number(c.tokenId) === tokenId);
+            const cat = catalogs.find((c) => Number(c.tokenId) === tokenId);
             if (!cat) continue;
 
             items.push({
@@ -55,17 +69,28 @@ export class CouponsService {
                     ipfsCid: cat.ipfsCid ?? null,
                 },
                 rule: {
-                    discountBps: (cat as any).discountBps ?? (cat as any).discount_bps ?? 0,
-                    consumable: (cat as any).isConsumable ?? (cat as any).consumable ?? false,
-                    priceCapUsd: (cat as any).priceCapUsd ?? (cat as any).price_cap_usd ?? 0,
+                    // 프론트에서 숫자 보정 중이긴 하지만 여기서도 최대한 숫자로 맞춰줌
+                    discountBps:
+                        (cat as any).discountBps ??
+                        (cat as any).discount_bps ??
+                        0,
+                    // 필드 혼재 대응
+                    isConsumable:
+                        (cat as any).isConsumable ??
+                        (cat as any).consumable ??
+                        false,
+                    priceCapUsd:
+                        (cat as any).priceCapUsd ??
+                        (cat as any).price_cap_usd ??
+                        0,
                     expiresAt: (() => {
                         const v = (cat as any).expiresAt ?? (cat as any).expires_at;
                         if (!v) return '';
                         const d = v instanceof Date ? v : new Date(v);
                         return Number.isFinite(d.getTime()) ? d.toISOString() : '';
                     })(),
-                }
-            });
+                },
+            } as any);
         }
         return items;
     }
@@ -74,16 +99,126 @@ export class CouponsService {
     async canUse(address: string, tokenId: number, amount = 1): Promise<{ ok: boolean; reason?: string }> {
         const addr = this.addr(address);
 
-        const catalog = await this.catalogRepo.findOne({ where: { tokenId } });
+        const catalog = await this.catalogRepo.findOne({
+            where: { tokenId: Number(tokenId) as any },
+        });
         if (!catalog) return { ok: false, reason: 'CATALOG_NOT_FOUND' };
         if (!catalog.isActive) return { ok: false, reason: 'DISABLED' };
 
+        // 만료 체크(있으면)
+        const rawExp = (catalog as any).expiresAt ?? (catalog as any).expires_at;
+        if (rawExp) {
+            const exp = rawExp instanceof Date ? rawExp : new Date(rawExp);
+            if (Number.isFinite(exp.getTime()) && exp.getTime() < Date.now()) {
+                return { ok: false, reason: 'EXPIRED' };
+            }
+        }
+
         const [balanceStr] = await this.erc1155.balanceOfBatch(addr, [tokenId]);
         let bal = 0n;
-        try { bal = BigInt(balanceStr ?? '0'); } catch { bal = 0n; }
+        try {
+            bal = BigInt(balanceStr ?? '0');
+        } catch {
+            bal = 0n;
+        }
 
         if (bal < BigInt(amount)) return { ok: false, reason: 'NOT_ENOUGH_BALANCE' };
         return { ok: true };
+    }
+
+    /**
+      * ✅ 상품 단위 검증 + 할인액 계산(optional)
+      * - catalog 활성/만료/잔고 체크
+      * - 상품 제한(allowedProductIds/allowedProductId)이 있으면 검사
+      * - discountBps가 있고 priceWei가 주어지면 priceAfter 계산하여 반환
+      */
+    async canUseWithProduct(
+        address: string,
+        couponId: number,
+        opts: { productId: string; amount?: number; priceWei?: string },
+    ): Promise<ValidateWithProductResult> {
+        const { productId, amount = 1, priceWei } = opts;
+        const addr = this.addr(address);
+
+        const catalog = await this.catalogRepo.findOne({
+            where: { tokenId: Number(couponId) as any },
+        });
+        if (!catalog) return { ok: false, reason: 'CATALOG_NOT_FOUND' };
+        if (!(catalog as any).isActive) return { ok: false, reason: 'DISABLED' };
+
+        // 만료 체크
+        const rawExp = (catalog as any).expiresAt ?? (catalog as any).expires_at;
+        if (rawExp) {
+            const exp = rawExp instanceof Date ? rawExp : new Date(rawExp);
+            if (Number.isFinite(exp.getTime()) && exp.getTime() < Date.now()) {
+                return { ok: false, reason: 'EXPIRED' };
+            }
+        }
+
+        // 잔고 체크
+        const [balanceStr] = await this.erc1155.balanceOfBatch(addr, [Number(couponId)]);
+        let bal = 0n;
+        try {
+            bal = BigInt(balanceStr ?? '0');
+        } catch {
+            bal = 0n;
+        }
+        if (bal < BigInt(amount)) return { ok: false, reason: 'NOT_ENOUGH_BALANCE' };
+
+        // 상품 제한(선택): 컬럼 예시 - allowedProductIds(JSON/CSV) 또는 allowedProductId(단일)
+        const allowedListRaw =
+            (catalog as any).allowedProductIds ??
+            (catalog as any).allowed_product_ids ??
+            null;
+        const allowedSingle =
+            (catalog as any).allowedProductId ??
+            (catalog as any).allowed_product_id ??
+            null;
+
+        let productAllowed = true;
+        if (allowedSingle) {
+            productAllowed = String(allowedSingle) === String(productId);
+        } else if (allowedListRaw) {
+            // JSON 배열 또는 콤마 문자열 모두 허용
+            let list: string[] = [];
+            if (Array.isArray(allowedListRaw)) list = allowedListRaw.map(String);
+            else if (typeof allowedListRaw === 'string')
+                list = allowedListRaw.split(',').map((s) => s.trim());
+            productAllowed = list.includes(String(productId));
+        }
+        if (!productAllowed) {
+            return { ok: false, reason: 'PRODUCT_NOT_ALLOWED' };
+        }
+
+        // 할인 정보 구성
+        const discountBps: number =
+            (catalog as any).discountBps ??
+            (catalog as any).discount_bps ??
+            0;
+        const priceCapUsd: number | undefined =
+            (catalog as any).priceCapUsd ??
+            (catalog as any).price_cap_usd ??
+            undefined;
+
+        const result: ValidateWithProductResult = {
+            ok: true,
+            discountBps,
+            priceCapUsd,
+        };
+
+        // 프론트가 priceAfter를 원하면 계산 (priceWei가 넘어온 경우)
+        if (priceWei && Number.isFinite(discountBps)) {
+            try {
+                const price = BigInt(priceWei);
+                const discount = (price * BigInt(discountBps)) / 10_000n;
+                const after = price > discount ? price - discount : 0n;
+                result.priceAfter = after.toString();
+            } catch {
+                // priceWei가 BigInt로 변환 불가하면 계산 생략
+            }
+        }
+
+        return result;
     }
 
     /**
