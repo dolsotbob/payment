@@ -184,50 +184,103 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
         return String(v);
     };
 
-    /** ✅ 쿠폰/상품 변경 시 자동 검증 + 최종금액 갱신 */
-    const validateAndUpdatePrice = useCallback(async () => {
-        if (!selectedProduct || !selectedCoupon || !accessToken) return;
+    // ✅ 쿠폰 선택 즉시 검증
+    async function handleSelectCoupon(coupon: OwnedCoupon | null) {
+        setSelectedCoupon(coupon);
+
+        if (!selectedProduct) return;
+        if (!coupon) {
+            setFinalAmountWei(selectedProduct.priceWei);
+            return;
+        }
+        if (!accessToken) {
+            alert("로그인이 필요합니다.");
+            setSelectedCoupon(null);
+            setFinalAmountWei(selectedProduct.priceWei);
+            return;
+        }
 
         try {
-            console.log("VALIDATE ▶", {
-                couponId: Number(selectedCoupon.id),
+            console.log("[validate-call]", {
+                tokenExists: !!accessToken,
+                couponId: Number(coupon.id),
                 productId: selectedProduct.id,
             });
 
             const res = await validateMut.mutateAsync({
-                couponId: Number(selectedCoupon.id),
+                couponId: Number(coupon.id),
                 productId: selectedProduct.id,
             });
 
-            // 1) 서버가 priceAfter(wei)를 주면 우선 사용
+            // 서버가 priceAfter(wei) 내려주면 사용
             const priceAfterWei = toWeiString((res as any)?.priceAfter);
             if (priceAfterWei) {
                 setFinalAmountWei(priceAfterWei);
                 return;
             }
 
-            // 2) 없으면 bps 기준 임시 계산
+            // 아니면 BPS로 프론트 계산(임시)
             const priceWei = BigInt(selectedProduct.priceWei);
-            const bps: number = (res as any)?.discountBps ?? 0; // 예: 500 = 5%
+            const bps: number = (res as any)?.discountBps ?? 0; // ex) 500 = 5%
             let discountWei = (priceWei * BigInt(bps)) / BigInt(10_000);
             if (discountWei > priceWei) discountWei = priceWei;
-
-            const finalWei = (priceWei - discountWei).toString();
-            setFinalAmountWei(finalWei);
+            setFinalAmountWei((priceWei - discountWei).toString());
         } catch (e: any) {
-            console.error("validate failed:", e?.response?.status, e?.message || e);
+            console.error("[validate-error]", e?.response?.status, e?.message || e);
             alert(
                 e?.response?.status === 401
                     ? "세션이 만료되었습니다. 다시 로그인 해주세요."
                     : "쿠폰 검증 실패"
             );
-            setFinalAmountWei(selectedProduct?.priceWei ?? null);
+            setSelectedCoupon(null);
+            setFinalAmountWei(selectedProduct.priceWei);
         }
-    }, [selectedProduct, selectedCoupon, accessToken, validateMut]);
+    }
 
-    useEffect(() => {
-        void validateAndUpdatePrice();
-    }, [validateAndUpdatePrice]);
+    /** ✅ 쿠폰/상품 변경 시 자동 검증 + 최종금액 갱신 */
+    // const validateAndUpdatePrice = useCallback(async () => {
+    //     if (!selectedProduct || !selectedCoupon || !accessToken) return;
+
+    //     try {
+    //         console.log("VALIDATE ▶", {
+    //             couponId: Number(selectedCoupon.id),
+    //             productId: selectedProduct.id,
+    //         });
+
+    //         const res = await validateMut.mutateAsync({
+    //             couponId: Number(selectedCoupon.id),
+    //             productId: selectedProduct.id,
+    //         });
+
+    //         // 1) 서버가 priceAfter(wei)를 주면 우선 사용
+    //         const priceAfterWei = toWeiString((res as any)?.priceAfter);
+    //         if (priceAfterWei) {
+    //             setFinalAmountWei(priceAfterWei);
+    //             return;
+    //         }
+
+    //         // 2) 없으면 bps 기준 임시 계산
+    //         const priceWei = BigInt(selectedProduct.priceWei);
+    //         const bps: number = (res as any)?.discountBps ?? 0; // 예: 500 = 5%
+    //         let discountWei = (priceWei * BigInt(bps)) / BigInt(10_000);
+    //         if (discountWei > priceWei) discountWei = priceWei;
+
+    //         const finalWei = (priceWei - discountWei).toString();
+    //         setFinalAmountWei(finalWei);
+    //     } catch (e: any) {
+    //         console.error("validate failed:", e?.response?.status, e?.message || e);
+    //         alert(
+    //             e?.response?.status === 401
+    //                 ? "세션이 만료되었습니다. 다시 로그인 해주세요."
+    //                 : "쿠폰 검증 실패"
+    //         );
+    //         setFinalAmountWei(selectedProduct?.priceWei ?? null);
+    //     }
+    // }, [selectedProduct, selectedCoupon, accessToken, validateMut]);
+
+    // useEffect(() => {
+    //     void validateAndUpdatePrice();
+    // }, [validateAndUpdatePrice]);
 
     return (
         <div>
@@ -256,11 +309,7 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
                     <h3>쿠폰 선택</h3>
                     <CouponList
                         accessToken={accessToken}
-                        onSelectCoupon={(coupon) => {
-                            console.log('[PaymentPage] onSelectCoupon ▶', coupon);
-                            setSelectedCoupon(coupon); // ✅ 선택만, 검증은 useEffect가 담당
-                            if (!coupon && selectedProduct) setFinalAmountWei(selectedProduct.priceWei);
-                        }}
+                        onSelectCoupon={handleSelectCoupon}
                     />
                     {/* 검증 상태/최종 금액 표시 */}
                     <div style={{ marginTop: 8 }}>
