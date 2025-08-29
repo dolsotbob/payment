@@ -18,10 +18,12 @@ export function extractCouponReason(err: any): string | undefined {
 }
 
 /** 문자열 -> 숫자 변환 유틸(안전) */
-const asNumber = (v: any): number =>
-    typeof v === "string" ? parseInt(v, 10) : Number(v ?? 0);
+const asNumber = (v: any): number => {
+    const n = typeof v === "string" ? Number(v) : Number(v ?? 0);
+    return Number.isFinite(n) ? n : 0;
+};
 
-/** JWT 헤더 헬퍼 */
+/** JWT 헤더 헬퍼: 토큰이 있을 때만 Authorization 부착 */
 const authHeaders = (access_token?: string) =>
     access_token ? { Authorization: `Bearer ${access_token}` } : undefined;
 
@@ -34,7 +36,11 @@ export async function fetchOwnedCoupons(
     });
 
     const d = res?.data as any;
-    const items: any[] = Array.isArray(d) ? d : Array.isArray(d?.items) ? d.items : [];
+    const items: any[] = Array.isArray(d)
+        ? d
+        : Array.isArray(d?.items)
+            ? d.items
+            : [];
     const wallet: string = d?.wallet ?? "";
     const fetchedAt: string = d?.fetchedAt ?? new Date().toISOString();
 
@@ -47,9 +53,17 @@ export async function fetchOwnedCoupons(
             balance: asNumber(c.balance),
             rule: {
                 ...c.rule, // (선택) 원래 rule 유지
-                discountBps: c.rule?.discountBps !== undefined ? asNumber(c.rule?.discountBps) : undefined,
-                isConsumable: (c as any).rule?.isConsumable ?? Boolean((c as any).rule?.consumable),
-                priceCapUsd: c.rule?.priceCapUsd !== undefined ? asNumber(c.rule?.priceCapUsd) : undefined,
+                discountBps:
+                    c.rule?.discountBps !== undefined
+                        ? asNumber(c.rule?.discountBps)
+                        : undefined,
+                isConsumable:
+                    (c as any).rule?.isConsumable ??
+                    Boolean((c as any).rule?.consumable),
+                priceCapUsd:
+                    c.rule?.priceCapUsd !== undefined
+                        ? asNumber(c.rule?.priceCapUsd)
+                        : undefined,
                 expiresAt: c.rule?.expiresAt,
             },
         })),
@@ -78,6 +92,7 @@ export async function validateCoupon(
 ): Promise<ValidateCouponRes> {
     const res = await api.get<ValidateCouponRes>("/coupons/validate", {
         params,
+        // 토큰이 있을 때만 Authorization 헤더 추가 
         headers: authHeaders(access_token),
     });
     const d = res.data;

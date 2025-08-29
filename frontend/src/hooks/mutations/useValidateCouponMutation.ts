@@ -17,18 +17,24 @@ import { useAuth } from "../../context/AuthContext";
  */
 export function useValidateCouponMutation(accessToken?: string | null) {
     const { accessToken: ctxAccessToken } = useAuth();
-    const token: string | undefined =
-        (accessToken ?? ctxAccessToken ?? undefined) || undefined;
 
     return useMutation<ValidateCouponRes, unknown, ValidateCouponParams>({
         mutationFn: async (vars) => {
+            const token = (accessToken ?? ctxAccessToken ?? undefined) || undefined;
+
+            // 🔧 토큰이 없으면 네트워크 호출하지 않고 "quiet fail" 반환
             if (!token) {
-                throw new Error("로그인이 필요합니다.");
+                return Promise.resolve({
+                    ok: false,
+                    reason: "NO_TOKEN",
+                } as ValidateCouponRes);
             }
+
+            // 정상 호출
             return validateCoupon(token, vars);
         },
         retry: (failureCount, err: any) => {
-            if (err?.response?.status === 401) return false; // 인증 에러는 재시도 X
+            if (err?.response?.status === 401) return false; // 인증 에러 재시도 X
             return failureCount < 2;
         },
     });

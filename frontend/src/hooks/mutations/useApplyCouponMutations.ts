@@ -9,24 +9,26 @@ import { useAuth } from "../../context/AuthContext";
 export function useApplyCouponMutation(accessToken?: string | null) {
     const qc = useQueryClient();
     const { accessToken: ctxAccessToken } = useAuth();
-    const token: string | undefined =
-        (accessToken ?? ctxAccessToken ?? undefined) || undefined;
 
     return useMutation<ApplyCouponRes, unknown, ApplyCouponBody>({
         mutationFn: async (vars) => {
+            const token = (accessToken ?? ctxAccessToken ?? undefined) || undefined;
+
+            // 🔧 토큰 없으면 네트워크 호출 skip (조용히 성공처럼 처리하거나 상위에서 조건부 호출)
             if (!token) {
-                throw new Error("로그인이 필요합니다.");
+                // 필요시: 그냥 no-op 성공으로 처리
+                return Promise.resolve({ ok: true, useId: "" } as ApplyCouponRes);
             }
+
             return applyCoupon(token, vars);
         },
         onSuccess: () => {
-            // ✅ 토큰 포함 여부와 무관하게 coupons 계열 쿼리 전부 무효화
             qc.invalidateQueries({
                 predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === "coupons",
             });
         },
         retry: (failureCount, err: any) => {
-            if (err?.response?.status === 401) return false; // 인증 에러는 재시도 X
+            if (err?.response?.status === 401) return false;
             return failureCount < 2;
         },
     });
