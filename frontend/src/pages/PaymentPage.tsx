@@ -36,7 +36,7 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
     const accessToken = ctxAccessToken ?? null;
 
     // 훅에 토큰 전달 (미전달 시 401 가능)
-    const validateMut = useValidateCouponMutation(accessToken ?? null);
+    const validateMut = useValidateCouponMutation(accessToken ?? undefined);
 
     const BASE =
         process.env.REACT_APP_BACKEND_URL ??
@@ -309,7 +309,27 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
                     <h3>쿠폰 선택</h3>
                     <CouponList
                         accessToken={accessToken}
-                        onSelectCoupon={handleSelectCoupon}
+                        onSelectCoupon={async (coupon) => {
+                            console.log('[PaymentPage] onSelectCoupon ▶', coupon);
+                            setSelectedCoupon(coupon);
+                            if (!coupon) { setFinalAmountWei(selectedProduct!.priceWei); return; }
+
+                            console.log('[PaymentPage] validate call ▶', {
+                                couponId: Number(coupon.id),
+                                productId: selectedProduct!.id,
+                            });
+                            try {
+                                const res = await validateMut.mutateAsync({
+                                    couponId: Number(coupon.id),
+                                    productId: selectedProduct!.id,
+                                });
+                                const priceAfter = (res as any)?.priceAfter;
+                                setFinalAmountWei(priceAfter ?? selectedProduct!.priceWei);
+                            } catch (e) {
+                                console.error('validate error ▶', e);
+                                setFinalAmountWei(selectedProduct!.priceWei);
+                            }
+                        }}
                     />
                     {/* 검증 상태/최종 금액 표시 */}
                     <div style={{ marginTop: 8 }}>

@@ -7,8 +7,8 @@ let BASE_URL: string =
     "https://payment-backend-feature.onrender.com";
 
 const api = axios.create({
-    baseURL: BASE_URL,
-    withCredentials: true,
+    baseURL: BASE_URL.replace(/\/+$/, ""),
+    withCredentials: false,
     timeout: 15000, // 선택: 네트워크 타임아웃
     headers: {
         "Content-Type": "application/json",
@@ -42,7 +42,7 @@ export function getAuthToken(): string | null {
 // 요청 인터셉터: 토큰 자동 첨부 (기본 헤더 미설정 시 대비)
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem(TOKEN_KEY);
-    const headers = config.headers as any;
+    const headers = config.headers ?? {};
     if (token) {
         headers?.set
             ? headers.set("Authorization", `Bearer ${token}`)

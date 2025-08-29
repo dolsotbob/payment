@@ -49,7 +49,7 @@ const PayButton: React.FC<PayButtonProps> = ({
     const { accessToken } = useAuth();
 
     // 쿠폰 훅 - 검증/적용 훅에 accessToken 인자 전달
-    const { mutateAsync: validateCoupon, isPending: validating } = useValidateCouponMutation(accessToken ?? null);
+    const { mutateAsync: validateCoupon, isPending: validating } = useValidateCouponMutation(accessToken ?? undefined);
     const { mutateAsync: applyCouponUse, isPending: applying } = useApplyCouponMutation(accessToken ?? undefined);
 
     const disabled = paying || validating || applying;

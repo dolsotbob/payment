@@ -19,7 +19,7 @@ export const CouponList: React.FC<Props> = ({
     autoPickFirstUsable = false,
 }) => {
     // 훅으로 data, isPending, isError, error를 한 번에 제공
-    const { data: coupons = [], isPending, isError, error, refetch, isRefetching } = useCouponsQuery(accessToken);
+    const { data: coupons = [], isPending, isError, error, refetch, isRefetching } = useCouponsQuery(accessToken ?? undefined);
     // 쿠폰 id가 string일 가능성이 높으므로 단순화
     const [selectedId, setSelectedId] = useState<string | null>(null);
 

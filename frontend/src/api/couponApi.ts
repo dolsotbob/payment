@@ -83,6 +83,7 @@ export async function validateCoupon(
     const d = res.data;
     return {
         ...d,
+        priceAfter: d.priceAfter != null ? String(d.priceAfter) : undefined,
         discountBps: d.discountBps !== undefined ? asNumber(d.discountBps) : undefined,
         priceCapUsd: d.priceCapUsd !== undefined ? asNumber(d.priceCapUsd) : undefined,
     };
@@ -127,13 +128,3 @@ export async function fetchMyCouponUses(
     });
     return res.data;
 }
-
-api.interceptors.response.use(
-    r => r,
-    (err) => {
-        const s = err?.response?.status;
-        const data = err?.response?.data;
-        console.warn('[API ERR]', err.config?.url, s, data);
-        return Promise.reject(err);
-    }
-);

@@ -41,6 +41,11 @@ export const CouponCard: React.FC<Props> = ({
             ? `${styles.badge} ${styles.badgeActive}`
             : `${styles.badge} ${styles.badgeDisabled}`;
 
+    const handleApplyClick = (e?: React.MouseEvent) => {
+        e?.stopPropagation();           // 버블링 방지
+        onApply?.(coupon);              // 타입 일치: (coupon: OwnedCoupon) => void
+    };
+
     return (
         <div className={styles.card} role="group" aria-label={`Coupon ${name}`}>
             {/* 썸네일 */}
@@ -79,7 +84,7 @@ export const CouponCard: React.FC<Props> = ({
                     coupon={coupon}
                     disabled={!isUsable}
                     busy={applying}
-                    onApply={() => onApply(coupon)}
+                    onApply={handleApplyClick}
                 />
             )}
         </div>
