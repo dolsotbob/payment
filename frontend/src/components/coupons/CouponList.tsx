@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import type { OwnedCoupon } from "../../types/couponTypes";
-// import { fetchOwnedCoupons } from "../../api/coupons";
 import { CouponCard } from "./CouponCard";
 import styles from "../css/coupons.module.css";
 import { useCouponsQuery } from "../../hooks/queries/useCouponsQuery";
@@ -13,13 +12,15 @@ type Props = {
     autoPickFirstUsable?: boolean;
 };
 
+const STORAGE_KEY = "selected_coupon_id";
+
 export const CouponList: React.FC<Props> = ({
     accessToken,
     onSelectCoupon,
     autoPickFirstUsable = false,
 }) => {
     // 훅으로 data, isPending, isError, error를 한 번에 제공
-    const { data: coupons = [], isPending, isError, error, refetch, isRefetching } = useCouponsQuery(accessToken ?? undefined);
+    const { data: coupons = [], isPending, isError, error, refetch, isRefetching } = useCouponsQuery(accessToken);
     // 쿠폰 id가 string일 가능성이 높으므로 단순화
     const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -55,26 +56,54 @@ export const CouponList: React.FC<Props> = ({
         return [usable, [...usable, ...unusable]];
     }, [coupons]);
 
-    // 옵션: 첫 사용가능 쿠폰 자동 선택
-    // autoPickFirstUsable가 true면 첫 사용가능 쿠폰을 자동으로 선택하여 결제 플로우로 전달
+    // 저장된 선택(있다면) 복원
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (!saved) return;
+
+            const found = coupons.find(c => String(c.id) === saved);
+            if (found) {
+                setSelectedId(saved);
+                onSelectCoupon?.(found);
+            } else {
+                // 저장된 id가 더 이상 유효하지 않으면 정리
+                localStorage.removeItem(STORAGE_KEY);
+                setSelectedId(null);
+                onSelectCoupon?.(null);
+            }
+        } catch { }
+        // coupons가 바뀔 때만 동작
+    }, [coupons, onSelectCoupon]);
+
+    // 첫 사용가능 쿠폰 자동 선택
     useEffect(() => {
         if (autoPickFirstUsable && usableCoupons.length > 0 && selectedId == null) {
             const first = usableCoupons[0];
-            setSelectedId(String(first.id));
+            const id = String(first.id);
+            setSelectedId(id);
             onSelectCoupon?.(first);
+            try {
+                localStorage.setItem(STORAGE_KEY, id);
+            } catch { }
         }
     }, [autoPickFirstUsable, usableCoupons, selectedId, onSelectCoupon]);
 
     const handleApply = useCallback(
         (coupon: OwnedCoupon) => {
             const id = String(coupon.id);
-            // 같은 쿠폰을 다시 누르면 해제
             if (selectedId === id) {
                 setSelectedId(null);
                 onSelectCoupon?.(null);
+                try {
+                    localStorage.removeItem(STORAGE_KEY);
+                } catch { }
             } else {
                 setSelectedId(id);
                 onSelectCoupon?.(coupon);
+                try {
+                    localStorage.setItem(STORAGE_KEY, id);
+                } catch { }
             }
         },
         [selectedId, onSelectCoupon]
