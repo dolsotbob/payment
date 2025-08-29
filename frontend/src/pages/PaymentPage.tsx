@@ -35,36 +35,20 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
     const [showShippingForm, setShowShippingForm] = useState(false);
     const [paymentSuccess, setPaymentSuccess] = useState(false);
 
+    // ref (렌더 간 유지용, 값 바뀌어도 리랜더 안 됨)
+    const lastValidateKeyRef = React.useRef<string | null>(null);
+
+    // 상품이 바뀌면 새 조합으로 다시 검증 가능하도록 리셋
+    useEffect(() => {
+        lastValidateKeyRef.current = null;
+    }, [selectedProduct]);
+
     // Context에서 토큰 사용(직접 localStorage 접근 지양)
     const { accessToken: ctxAccessToken } = useAuth();
     const accessToken = ctxAccessToken ?? null;
 
     // 훅에 토큰 전달 (미전달 시 401 가능)
     const validateMut = useValidateCouponMutation(accessToken ?? undefined);
-
-    // 상품을 고른 직후, 이미 선택돼 있던 쿠폰으로 자동 검증 
-    useEffect(() => {
-        if (!selectedProduct || !selectedCoupon || !accessToken) return;
-        (async () => {
-            try {
-                const res = await validateMut.mutateAsync({
-                    couponId: Number(selectedCoupon.id),
-                    productId: selectedProduct.id,
-                });
-                const priceAfter = (res as any)?.priceAfter as string | undefined;
-                if (priceAfter) setFinalAmountWei(priceAfter);
-                else {
-                    const priceWei = BigInt(selectedProduct.priceWei);
-                    const bps = (res as any)?.discountBps ?? 0;
-                    const discount = (priceWei * BigInt(bps)) / 10_000n;
-                    setFinalAmountWei((priceWei - discount).toString());
-                }
-            } catch (e) {
-                console.error("[auto-validate] fail", e);
-                setFinalAmountWei(selectedProduct.priceWei);
-            }
-        })();
-    }, [selectedProduct, selectedCoupon, accessToken, validateMut]);
 
     const BASE =
         process.env.REACT_APP_BACKEND_URL ??
@@ -229,16 +213,25 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
                 <div style={{ margin: "12px 0" }}>
                     <h3>쿠폰 선택</h3>
                     <CouponList
-                        accessToken={accessToken as string}
+                        accessToken={accessToken!}
                         onSelectCoupon={async (coupon) => {
                             setSelectedCoupon(coupon);
-                            // 상품이 선택되어 있으면 즉시 검증 
+
+                            // 해제: 원가 복원 + 키 리셋 
                             if (!coupon) {
                                 if (selectedProduct) setFinalAmountWei(selectedProduct.priceWei);
+                                lastValidateKeyRef.current = null;
                                 return;
                             }
                             // 상품 미선택 시 검증 지연 
                             if (!selectedProduct) return;
+
+                            const thisKey = `${selectedProduct!.id}:${coupon.id}`;
+
+                            // 같은 조합의 중복 요청 막기 (요청 in-flight 또는 직후)
+                            if (lastValidateKeyRef.current === thisKey) return;
+                            lastValidateKeyRef.current = thisKey;
+
 
                             try {
                                 const res = await validateMut.mutateAsync({
@@ -246,17 +239,23 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
                                     productId: selectedProduct!.id,
                                 });
 
+                                // 응답이 돌아왔을 때 여전히 최신 요청인지 확인 (레이스가드)
+                                if (lastValidateKeyRef.current !== thisKey) return;
+
                                 // 서버가 priceAfter(wei)를 주면 그 값을 사용 
                                 const priceAfter = (res as any)?.priceAfter as string | undefined;
-                                if (priceAfter) setFinalAmountWei(priceAfter);
-                                // 없으면 discountBps로 계산(프론트 계산)
-                                else {
+                                if (priceAfter) {
+                                    setFinalAmountWei(priceAfter);
+                                    // 없으면 discountBps로 계산(프론트 계산)
+                                } else {
                                     const priceWei = BigInt(selectedProduct.priceWei);
                                     const bps = (res as any)?.discountBps ?? 0; // 예: 500 = 5%
                                     const discount = (priceWei * BigInt(bps)) / 10_000n;
                                     setFinalAmountWei((priceWei - discount).toString());
                                 }
                             } catch (e: any) {
+                                // 실패 시 다음 시도 가능하도록 리셋 
+                                lastValidateKeyRef.current = null;
                                 console.error("[onSelectCoupon] validate failed:", e);
                                 // 실패 시 선택 해제 + 원가 복원
                                 setSelectedCoupon(null);
