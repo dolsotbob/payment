@@ -38,13 +38,12 @@ const PayButton: React.FC<PayButtonProps> = ({
     onCancel,
 }) => {
     const [paying, setPaying] = useState(false);
-
     // jwt 대신 accessToken 사용
     const { accessToken } = useAuth();
 
     // 쿠폰 훅 - 검증/적용 훅에 accessToken 인자 전달
-    const { mutateAsync: validateCoupon, isPending: validating } = useValidateCouponMutation(accessToken || '');
-    const { mutateAsync: applyCouponUse, isPending: applying } = useApplyCouponMutation(accessToken || '');
+    const { mutateAsync: validateCoupon, isPending: validating } = useValidateCouponMutation(accessToken ?? null);
+    const { mutateAsync: applyCouponUse, isPending: applying } = useApplyCouponMutation(accessToken ?? undefined);
 
     const disabled = paying || validating || applying;
 
@@ -85,7 +84,6 @@ const PayButton: React.FC<PayButtonProps> = ({
             if (selectedCoupon) {
                 const res = await validateCoupon({
                     couponId: Number(selectedCoupon.id),
-                    amount: Number(amount),  // 서버가 쓰지 않으면 무시됨 
                     productId: String(productId ?? ''),
                 });
                 if (!res.ok) {
@@ -103,7 +101,6 @@ const PayButton: React.FC<PayButtonProps> = ({
             // 컨트랙트 객체 생성  
             const token = new ethers.Contract(tokenAddress, TestTokenJson.abi, provider);
             const payment = new ethers.Contract(paymentAddress, PaymentJson.abi, signer);
-
 
             // priceBN=원가, valueBN=최종가(허용치)
             const priceBN = BigInt(originalPriceWei ?? amount);
