@@ -292,9 +292,10 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
                 >
                     <PayButton
                         account={account}
-                        amount={String(finalAmountWei ?? selectedProduct.priceWei)}
+                        amount={String(finalAmountWei ?? selectedProduct.priceWei)} // 최종가(할인 후)
                         productId={selectedProduct.id}
                         selectedCoupon={selectedCoupon}
+                        originalPriceWei={selectedProduct.priceWei}
                         onSuccess={() => {
                             setPaymentSuccess(true);
                             setTimeout(() => {
