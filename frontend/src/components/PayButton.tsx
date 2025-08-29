@@ -1,5 +1,5 @@
 // 결제 로직 + 쿠폰 연동 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -37,6 +37,13 @@ const PayButton: React.FC<PayButtonProps> = ({
     onSuccess,
     onCancel,
 }) => {
+    useEffect(() => {
+        console.log('[PayButton] props ▶', {
+            selectedCoupon,
+            hasEnvCoupon: !!process.env.REACT_APP_COUPON1155_ADDRESS,
+        });
+    }, [selectedCoupon]);
+
     const [paying, setPaying] = useState(false);
     // jwt 대신 accessToken 사용
     const { accessToken } = useAuth();

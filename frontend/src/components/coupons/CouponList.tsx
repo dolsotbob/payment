@@ -127,10 +127,14 @@ export const CouponList: React.FC<Props> = ({
                             aria-pressed={selected}
                             aria-selected={selected}
                             className={styles.clickable}
-                            onClick={() => handleApply(coupon)}
+                            onClick={(e) => {
+                                e.stopPropagation(); // 부모로 이벤트 전파 방지 
+                                handleApply(coupon);
+                            }}
                             onKeyDown={(e) => {
                                 if (e.key === "Enter" || e.key === " ") {
                                     e.preventDefault();
+                                    e.stopPropagation();
                                     handleApply(coupon);
                                 }
                             }}

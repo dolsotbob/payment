@@ -45,6 +45,12 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
     const toTori = (wei?: string | bigint) =>
         wei == null ? '0' : formatUnits(wei, 18); // "0.01" 같은 문자열 반환
 
+    // 파일 상단 어딘가(컴포넌트 정의 위)에 추가
+    const DebugLog: React.FC<{ label: string; data: any }> = ({ label, data }) => {
+        console.log(label, data);
+        return null; // JSX에 넣어도 ReactNode로 허용됨
+    };
+
     useEffect(() => {
         // 1. 상품 목록 로드 
         const fetchProducts = async () => {
@@ -52,7 +58,7 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
                 const res = await fetch(`${BASE}/product`, { method: 'GET' });
                 if (!res.ok) {
                     const txt = await res.text().catch(() => "");
-                    throw new Error(`상품 API 오류': ${res.status} ${txt}`);
+                    throw new Error(`상품 API 오류: ${res.status} ${txt}`);
                 }
 
                 const data = await res.json();
@@ -62,7 +68,6 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
                 const parsedData: Product[] = data.map((p: any) => ({
                     ...p,
                     priceWei: p.priceWei ?? p.price_wei,     // 혹시 백엔드가 raw로 보낼 때 대비
-                    priceTori: toTori(p.priceWei ?? p.price_wei),
                 }));
                 setProducts(parsedData);
             } catch (err) {
@@ -252,8 +257,9 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
                     <CouponList
                         accessToken={accessToken}
                         onSelectCoupon={(coupon) => {
+                            console.log('[PaymentPage] onSelectCoupon ▶', coupon);
                             setSelectedCoupon(coupon); // ✅ 선택만, 검증은 useEffect가 담당
-                            if (!coupon) setFinalAmountWei(selectedProduct.priceWei);
+                            if (!coupon && selectedProduct) setFinalAmountWei(selectedProduct.priceWei);
                         }}
                     />
                     {/* 검증 상태/최종 금액 표시 */}
@@ -282,34 +288,45 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
 
             {/* 결제 모달 */}
             {account && selectedProduct && !showShippingForm && shippingInfo && (
-                <Modal
-                    onClose={() => {
-                        setSelectedProduct(null);
-                        setShippingInfo(null);
-                        setSelectedCoupon(null);
-                        setFinalAmountWei(null);
-                    }}
-                >
-                    <PayButton
-                        account={account}
-                        amount={String(finalAmountWei ?? selectedProduct.priceWei)} // 최종가(할인 후)
-                        productId={selectedProduct.id}
-                        selectedCoupon={selectedCoupon}
-                        originalPriceWei={selectedProduct.priceWei}
-                        onSuccess={() => {
-                            setPaymentSuccess(true);
-                            setTimeout(() => {
-                                setPaymentSuccess(false);
-                                setSelectedProduct(null);
-                                setShippingInfo(null);
-                            }, 2500);
-                        }}
-                        onCancel={() => {
-                            setSelectedProduct(null);
-                            setShippingInfo(null);
+                <>
+                    {/*  PayButton 렌더 순간의 값 확인 */}
+                    <DebugLog
+                        label="[PaymentPage] render PayButton ▶"
+                        data={{
+                            selectedCoupon,
+                            originalPriceWei: selectedProduct.priceWei,
+                            finalAmountWei,
                         }}
                     />
-                </Modal>
+                    <Modal
+                        onClose={() => {
+                            setSelectedProduct(null);
+                            setShippingInfo(null);
+                            setSelectedCoupon(null);
+                            setFinalAmountWei(null);
+                        }}
+                    >
+                        <PayButton
+                            account={account}
+                            amount={String(finalAmountWei ?? selectedProduct.priceWei)} // 최종가(할인 후)
+                            productId={selectedProduct.id}
+                            selectedCoupon={selectedCoupon}
+                            originalPriceWei={selectedProduct.priceWei}
+                            onSuccess={() => {
+                                setPaymentSuccess(true);
+                                setTimeout(() => {
+                                    setPaymentSuccess(false);
+                                    setSelectedProduct(null);
+                                    setShippingInfo(null);
+                                }, 2500);
+                            }}
+                            onCancel={() => {
+                                setSelectedProduct(null);
+                                setShippingInfo(null);
+                            }}
+                        />
+                    </Modal>
+                </>
             )}
 
             {paymentSuccess && (
