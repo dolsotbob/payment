@@ -19,7 +19,7 @@ import { LoginChallenge } from './entities/login-challenge.entity';
     ConfigModule.forRoot({ isGlobal: true }),
 
     // Passport 전략 활성화 
-    PassportModule,
+    PassportModule.register({ defaultStrategy: 'jwt' }),
 
     // TypeORM: challenge 저장소 주입
     TypeOrmModule.forFeature([LoginChallenge]),
@@ -27,11 +27,12 @@ import { LoginChallenge } from './entities/login-challenge.entity';
     // JWT
     JwtModule.registerAsync({
       imports: [ConfigModule],
+      inject: [ConfigService],
       useFactory: async (ConfigService: ConfigService) => ({
         secret: ConfigService.get<string>('JWT_SECRET'),
         signOptions: { expiresIn: '1h' },
       }),
-      inject: [ConfigService],
+
     }),
 
     // 도메인 모듈 

@@ -84,20 +84,15 @@ api.interceptors.response.use(
         const data = err.response?.data;
         console.warn("[API ERR]", method, url, status, data);
 
-        if (status === 401 && onUnauthorized) {
-            // 1) 인증 핵심 엔드포인트만 or 명시 코드가 있을 때만 처리
-            const isAuthCore =
-                /\/auth\/(me|refresh|login)$/i.test(url) ||
-                data?.code === "TOKEN_EXPIRED" ||
-                data?.error === "Unauthorized";
+        if (status === 401) {
+            // 핵심 엔드포인트에서만 자동 로그아웃
+            const shouldLogout =
+                /\/me\b/.test(url) ||
+                /\/auth\//.test(url);
 
-            // 쿠폰 검증/목록 등 비핵심 401은 전역 로그아웃 트리거하지 않음
-            if (isAuthCore) {
-                const now = Date.now();
-                if (now - last401At > 10_000) {
-                    last401At = now;
-                    try { onUnauthorized({ url, code: data?.code }); } catch { }
-                }
+            // ❌ validate/owned 등은 자동 로그아웃 금지 (무한 루프 방지)
+            if (shouldLogout && onUnauthorized) {
+                try { onUnauthorized(); } catch { /* no-op */ }
             }
         }
         return Promise.reject(err);
