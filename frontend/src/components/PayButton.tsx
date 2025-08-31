@@ -1,4 +1,6 @@
-// 결제 로직 + 쿠폰 연동 
+// 결제 로직 + 쿠폰 연동 (쿠폰 할인은 현재 비활성화)
+// [쿠폰 할인 재활성화 시 이 주석 제거] 라벨이 붙은 부분을 복구하면 기존 쿠폰 로직을 살릴 수 있습니다.
+
 import React, { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import { toast } from 'react-toastify';
@@ -11,8 +13,12 @@ import TestTokenJson from '../abis/TestToken.json';
 import './css/PayButton.css';
 
 import type { OwnedCoupon } from '../types/couponTypes';
-import { useValidateCouponMutation } from '../hooks/mutations/useValidateCouponMutation';
-import { useApplyCouponMutation } from '../hooks/mutations/useApplyCouponMutations';
+
+// ===== 쿠폰 검증/적용 훅 비활성화 =====
+// [쿠폰 할인 재활성화 시 이 주석 제거]: 아래 두 import를 다시 활성화
+// import { useValidateCouponMutation } from '../hooks/mutations/useValidateCouponMutation';
+// import { useApplyCouponMutation } from '../hooks/mutations/useApplyCouponMutations';
+
 import { useAuth } from "../context/AuthContext";
 import { decodePaymentError } from '../utils/decodeError';
 
@@ -20,7 +26,7 @@ interface PayButtonProps {
     account: string;    // 유저 주소
     amount: string;    // 최종가(할인 후) wei  
     productId: number | string;
-    selectedCoupon: OwnedCoupon | null;
+    selectedCoupon: OwnedCoupon | null;  // UI에서만 선택 표시 (미적용)
     originalPriceWei?: string;  // 원가(할인 전) wei 
     onSuccess: () => void;
     onCancel: () => void;
@@ -45,14 +51,17 @@ const PayButton: React.FC<PayButtonProps> = ({
     }, [selectedCoupon]);
 
     const [paying, setPaying] = useState(false);
-    // jwt 대신 accessToken 사용
     const { accessToken } = useAuth();
 
+    // ===== 쿠폰 훅 비활성화 =====
+    // [쿠폰 할인 재활성화 시 이 주석 제거]: 아래 두 줄 복구
     // 쿠폰 훅 - 검증/적용 훅에 accessToken 인자 전달
-    const { mutateAsync: validateCoupon, isPending: validating } = useValidateCouponMutation(accessToken ?? null);
-    const { mutateAsync: applyCouponUse, isPending: applying } = useApplyCouponMutation(accessToken ?? null);
+    // const { mutateAsync: validateCoupon, isPending: validating } = useValidateCouponMutation(accessToken ?? null);
+    // const { mutateAsync: applyCouponUse, isPending: applying } = useApplyCouponMutation(accessToken ?? null);
 
-    const disabled = paying || validating || applying;
+    // 현재는 결제 버튼은 결제 진행 여부만으로 비활성화
+    const disabled = paying; // [쿠폰 할인 재활성화 시 이 주석 제거]: validating/applying을 다시 합치세요 (e.g., paying || validating || applying)
+
 
     const handlePay = async () => {
         try {
@@ -86,17 +95,19 @@ const PayButton: React.FC<PayButtonProps> = ({
 
             setPaying(true);
 
+            // ===== (선택) 쿠폰 사전 검증 비활성화 =====
+            // [쿠폰 할인 재활성화 시 이 주석 제거]: 아래 블록을 복구해 사전 검증을 실행
             // 1) (선택) 쿠폰 사전 검증 
-            if (selectedCoupon) {
-                const res = await validateCoupon({
-                    couponId: Number(selectedCoupon.id),
-                    productId: String(productId ?? ''),
-                });
-                if (!res.ok) {
-                    toast.error(`쿠폰 사용 불가: ${res.reason ?? '알 수 없는 사유'}`);
-                    return;
-                }
-            }
+            // if (selectedCoupon) {
+            //     const res = await validateCoupon({
+            //         couponId: Number(selectedCoupon.id),
+            //         productId: String(productId ?? ''),
+            //     });
+            //     if (!res.ok) {
+            //         toast.error(`쿠폰 사용 불가: ${res.reason ?? '알 수 없는 사유'}`);
+            //         return;
+            //     }
+            // }
 
             // 2) 결제 트랜잭션 실행 
             // provider, signer 준비 
@@ -107,22 +118,21 @@ const PayButton: React.FC<PayButtonProps> = ({
             const token = new ethers.Contract(tokenAddress, TestTokenJson.abi, provider);
             const payment = new ethers.Contract(paymentAddress, PaymentJson.abi, signer);
 
-            // priceBN=원가, valueBN=최종가(허용치)
+            // priceBN=원가, valueBN=최종가(허용치; 현재는 원가와 동일하게 전달됨)
             const priceBN = BigInt(originalPriceWei ?? amount);
             const valueBN = BigInt(amount);
 
-            // 쿠폰 파라미터 (한 번만 선언) 
-            if (selectedCoupon && !coupon1155Address) {
-                toast.error('쿠폰 기능을 위해 REACT_APP_COUPON1155_ADDRESS가 필요합니다.');
-                setPaying(false);
-                return;
-            }
+            // ===== 쿠폰 파라미터 완전 비활성화 =====
+            // 선택한 쿠폰이 있어도 온체인 결제에는 전달하지 않습니다.
+            const useCoupon = false;                          // [쿠폰 할인 재활성화 시 이 라인 삭제]
+            const couponNftAddress = ZERO_ADDRESS;            // [쿠폰 할인 재활성화 시 이 라인 삭제]
+            const couponId = 0n;                              // [쿠폰 할인 재활성화 시 이 라인 삭제]
 
-            const useCoupon = !!selectedCoupon;
-            const couponNftAddress = useCoupon ? (coupon1155Address as string) : ZERO_ADDRESS;
-            const couponId = useCoupon ? BigInt(Number(selectedCoupon!.id)) : 0n;
+            // [쿠폰 할인 재활성화 시 이 주석 제거]:
+            // const useCoupon = !!selectedCoupon;
+            // const couponNftAddress = useCoupon ? (coupon1155Address as string) : ZERO_ADDRESS;
+            // const couponId = useCoupon ? BigInt(Number(selectedCoupon!.id)) : 0n;
 
-            // 디버그 로그
             console.log('[pay-args]', {
                 priceBN: priceBN.toString(),
                 valueBN: valueBN.toString(),
@@ -170,9 +180,9 @@ const PayButton: React.FC<PayButtonProps> = ({
                 deadline,
                 v, r, s,
                 priceBN,  // 원가 
-                couponNftAddress,
-                couponId,
-                useCoupon
+                couponNftAddress, // ZERO
+                couponId,    // 0
+                useCoupon   // false 
             );
             const receipt = await tx.wait();
 
@@ -187,16 +197,21 @@ const PayButton: React.FC<PayButtonProps> = ({
                 console.warn('⚠️ 캐시백 비율 조회 실패:', err);
             }
 
-            // 4) 백엔드 전송 (결제 레코드 생성) — 할인값 기록
+            // 4) 백엔드 전송 — 할인값은 강제로 0으로 기록(유틸에서 다시 한 번 0으로 덮습니다)
             const originalWei = priceBN;
             const finalWei = valueBN;
-            const discountWei = originalWei > finalWei ? (originalWei - finalWei) : 0n;
+
+            // [쿠폰 할인 재활성화 시 이 라인 삭제]: 프론트 계산을 무시하고 항상 0
+            const discountWei = 0n;
+
+            // [쿠폰 할인 재활성화 시 이 주석 제거]:
+            // const discountWei = originalWei > finalWei ? (originalWei - finalWei) : 0n;
 
             const paymentRes = await sendPaymentToBackend({
                 txHash: receipt.hash,
                 originalPrice: originalWei.toString(),
-                discountAmount: discountWei.toString(),                 // 원가/최종가 분리하려면 PaymentPage에서 원가도 prop으로 내려주세요
-                discountedPrice: finalWei.toString(), // 지금은 최종가=amount
+                discountAmount: discountWei.toString(),     // 유틸에서 최종적으로 '0'으로 강제됨
+                discountedPrice: finalWei.toString(),       // 유틸에서 originalPrice로 강제됨
                 status: PaymentStatus.SUCCESS,
                 userAddress: account,
                 cashbackAmountWei: ethers.parseUnits(cashbackAmount, 18).toString(),
@@ -208,15 +223,17 @@ const PayButton: React.FC<PayButtonProps> = ({
             // paymentId 확보 (id가 없으면 txHash로 대체)
             const paymentId = String(paymentRes?.id ?? receipt.hash);
 
+            // ===== 쿠폰 사용 기록 생성 비활성화 =====
+            // [쿠폰 할인 재활성화 시 이 주석 제거]: 아래 블록을 복구
             // 5) (선택) 쿠폰 사용 기록 생성
-            if (selectedCoupon) {
-                await applyCouponUse({
-                    couponId: Number(selectedCoupon.id),
-                    paymentId, // 문자열로 전달
-                    // amount나 orderUsdTotal을 정책에 맞게 추가 가능
-                });
-                // onSuccess 내부에서 쿠폰 목록은 invalidate되어 최신화됩니다.
-            }
+            // if (selectedCoupon) {
+            //     await applyCouponUse({
+            //         couponId: Number(selectedCoupon.id),
+            //         paymentId, // 문자열로 전달
+            //         // amount나 orderUsdTotal을 정책에 맞게 추가 가능
+            //     });
+            //     // onSuccess 내부에서 쿠폰 목록은 invalidate되어 최신화됩니다.
+            // }
 
             // 유저에게 완료 알림 
             toast.success('🎉 결제 완료!', { position: 'top-center', autoClose: 3000 });

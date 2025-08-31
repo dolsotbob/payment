@@ -1,5 +1,6 @@
 // NestJS에서 결제 관련 비즈니스 로직을 처리하는 파일
-// 즉, 단순히 요청을 받는 것이 아니라 데이터베이스에 결제 기록을 저장하거나, 특정 조건에 따라 로직을 실행하는 등 실제 “일”을 하는 곳 
+// 현재는 "쿠폰 할인 비활성화" 상태입니다. 표식이 있는 부분을 복구하면 할인 로직을 되살릴 수 있습니다.
+
 import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -47,12 +48,8 @@ function randomId() {
   return 'q_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-@Injectable()  // 이 클래스가 NestJS에서 의존성 주입 가능한 서비스임을 명시
-// NestJS가 의존성 주입을 할 수 있도록 이 클래스를 서비스로 등록 
+@Injectable()
 export class PaymentService {
-  // 생성자: 의존성 주입 
-  // Payment Entity에 대한 레포지토리(=DB 접근 도구)를 주입한다
-  // 이 레포지토리는 DB에서 데이터를 생성, 읽기, 수정, 삭제 하는 데 사용됨 
   constructor(
     @InjectRepository(Payment)
     private readonly paymentRepository: Repository<Payment>,
@@ -90,32 +87,39 @@ export class PaymentService {
       throw new BadRequestException('상품 가격이 올바르지 않습니다.');
     }
 
-    // 선택: 상품 정적 할인/캐시백 bps (없으면 0)
-    const staticDiscountBps = BigInt((product as any).discountBps ?? 0);
-    const cashbackBps = BigInt((product as any).cashbackBps ?? 0);
+    // ===== 기존 할인/쿠폰 계산 비활성화 =====
+    // [쿠폰 할인 재활성화 시 이 주석 제거] 후 아래의 정적 할인/쿠폰 bps 로직을 복구하세요.
+    // // 선택: 상품 정적 할인/캐시백 bps (없으면 0)
+    // const staticDiscountBps = BigInt((product as any).discountBps ?? 0);
+    // const cashbackBps = BigInt((product as any).cashbackBps ?? 0);
 
-    // 쿠폰 적용 정책 (MVP: 쿠폰 선택 시 기본 할인보다 +5%p)
-    let appliedRule: any | undefined;
-    let appliedCouponId: number | undefined;
-    let discountBps = staticDiscountBps;
+    // // 쿠폰 적용 정책 (MVP: 쿠폰 선택 시 기본 할인보다 +5%p)
+    // let appliedRule: any | undefined;
+    // let appliedCouponId: number | undefined;
+    // let discountBps = staticDiscountBps;
 
-    if (typeof dto.selectedCouponId === 'number') {
-      // 실제 온체인 canUseCoupon/DiscountQuote 조회는 추후 추가:
-      // const onchain = await this.fetchOnchainQuote(...);
-      // discountBps = BigInt(onchain.quotedBps);
-      // appliedRule = { consumable: onchain.willConsume, discountBps: Number(onchain.quotedBps) };
+    // if (typeof dto.selectedCouponId === 'number') {
+    //   // 실제 온체인 canUseCoupon/DiscountQuote 조회는 추후 추가:
+    //   // const onchain = await this.fetchOnchainQuote(...);
+    //   // discountBps = BigInt(onchain.quotedBps);
+    //   // appliedRule = { consumable: onchain.willConsume, discountBps: Number(onchain.quotedBps) };
 
-      // MVP: 쿠폰이 선택되면 상품 기본 할인보다 5%p 더 큰 할인 가정 (예: 데모/테스트)
-      const bonus = 500n; // 5%
-      discountBps = clampBps(discountBps + bonus);
-      appliedCouponId = dto.selectedCouponId;
-      appliedRule = { discountBps: Number(discountBps), consumable: true };
-    }
+    //   // MVP: 쿠폰이 선택되면 상품 기본 할인보다 5%p 더 큰 할인 가정 (예: 데모/테스트)
+    //   const bonus = 500n; // 5%
+    //   discountBps = clampBps(discountBps + bonus);
+    //   appliedCouponId = dto.selectedCouponId;
+    //   appliedRule = { discountBps: Number(discountBps), consumable: true };
+    // }
 
-    // 금액 계산
-    const discountAmount = (originalWei * discountBps) / BPS_DEN;
-    const discountedPrice = originalWei - discountAmount;
-    const cashbackAmount = (discountedPrice * cashbackBps) / BPS_DEN;
+    // // 금액 계산
+    // const discountAmount = (originalWei * discountBps) / BPS_DEN;
+    // const discountedPrice = originalWei - discountAmount;
+    // const cashbackAmount = (discountedPrice * cashbackBps) / BPS_DEN;
+
+    // ===== 할인/쿠폰 완전 비활성화 버전 =====
+    const discountAmount = 0n;
+    const discountedPrice = originalWei;
+    const cashbackAmount = 0n; // 필요 
 
     // 견적 만료시각
     const expiresAtMs = now() + QUOTE_TTL_MS;
@@ -124,14 +128,13 @@ export class PaymentService {
       productId: String(dto.productId),
       wallet,
       originalPrice: toBigIntStr(originalWei),
-      discountAmount: toBigIntStr(discountAmount),
-      discountedPrice: toBigIntStr(discountedPrice),
-      cashbackAmount: toBigIntStr(cashbackAmount),
-      appliedCouponId,
-      appliedRule,
+      discountAmount: toBigIntStr(discountAmount),     // '0'
+      discountedPrice: toBigIntStr(discountedPrice),   // == original
+      cashbackAmount: toBigIntStr(cashbackAmount),     // '0' (임시)
+      appliedCouponId: undefined,                       // 비활성화
+      appliedRule: undefined,                           // 비활성화
       expiresAt: new Date(expiresAtMs).toISOString(),
-      // signature: 추후 서버 서명(메시지/도메인 구분) 추가 가능
-      reasonIfInvalid: discountedPrice < 0n ? 'INVALID_PRICE' : undefined,
+      reasonIfInvalid: undefined,
     };
 
     quotes.set(quote.quoteId, { ...quote, createdAt: now() });
@@ -161,7 +164,7 @@ export class PaymentService {
       throw new BadRequestException('상품 정보가 견적과 일치하지 않습니다.');
     }
 
-    // 2) 트랜잭션 무결성(금액 일치) 검사 (프론트 제출 금액이 있다면 대조)
+    // 2) 트랜잭션 무결성(금액 일치) 검사 (프론트 제출 금액이 있다면 금액 일치 검사)
     if (dto.expectedPaidWei && parseWei(dto.expectedPaidWei) !== BigInt(q.discountedPrice)) {
       throw new BadRequestException('결제 금액이 견적과 일치하지 않습니다.');
     }
@@ -178,7 +181,7 @@ export class PaymentService {
 
       // 금액 구조 매핑
       originalPrice: q.originalPrice,   // 견적 시 계산된 원래 금액
-      discountAmount: q.discountAmount,   // 쿠폰/할인 적용된 금액
+      discountAmount: q.discountAmount,   // 쿠폰/할인 적용된 금액 - 현재 '0'
       discountedPrice: dto.expectedPaidWei ?? q.discountedPrice, // 실제 결제 금액 (체인 tx에서 받은 값)
       cashbackAmount: "0",             // 처음에는 0으로, 캐시백 완료 시 업데이트
 
@@ -203,10 +206,8 @@ export class PaymentService {
     };
   }
 
-  // ------- 결제 레코드 생성(직접 저장용, 필요 시 유지) --------
-  // 결제 기록 생성 
-  // POST /payment 요청 시 호출되는 함수 
-  // 프론트앤드에서 받은 dto를 기반으로 결제 정보 저장 
+  // ------- 결제 레코드 직접 생성(POST /payment) --------
+  // 프론트가 직접 결제 레코드를 저장할 때도, 할인/최종가는 강제로 0/원가로 덮습니다.
   async create(createPaymentDto: CreatePaymentDto): Promise<Payment> {
     try {
       const {
@@ -214,12 +215,14 @@ export class PaymentService {
         txHash,
         from,
 
-        // 프론트 기준 명령어(Price/Amount)
+        // 프론트 기준 필드
         originalPrice,
-        discountAmount,
-        discountedPrice,
-        cashbackAmount,
+        // 아래 두 값은 들어와도 무시하고 서버에서 덮습니다.
+        // [쿠폰 할인 재활성화 시 이 주석 제거]: 클라이언트 제공 값을 신뢰하려면 아래 덮어쓰기 제거
+        discountAmount: _inDiscountAmount,
+        discountedPrice: _inDiscountedPrice,
 
+        cashbackAmount,
         gasUsed,
         gasCost,
         status
@@ -234,14 +237,22 @@ export class PaymentService {
         }
       }
 
+      // ===== 할인/최종가 강제 덮기 =====
+      const enforcedDiscountAmount = '0';           // [쿠폰 할인 재활성화 시 이 라인 삭제]
+      const enforcedDiscountedPrice = originalPrice; // [쿠폰 할인 재활성화 시 이 라인 삭제]
+
+      // [쿠폰 할인 재활성화 시 이 주석 제거]:
+      // const enforcedDiscountAmount = _inDiscountAmount ?? '0';
+      // const enforcedDiscountedPrice = _inDiscountedPrice ?? originalPrice;
+
       // DTO → 엔티티 필드 매핑 (명시적)
       const payment = this.paymentRepository.create({
         txHash: txHash ? txHash.toLowerCase() : undefined,
         from: from ? from.toLowerCase() : undefined,
 
         originalPrice: originalPrice,
-        discountAmount: discountAmount,
-        discountedPrice: discountedPrice,
+        discountAmount: enforcedDiscountAmount,     // '0'
+        discountedPrice: enforcedDiscountedPrice,   // == originalPrice
         cashbackAmount: cashbackAmount ?? '0',
 
         gasUsed: gasUsed ?? null,
@@ -252,10 +263,10 @@ export class PaymentService {
 
         product: product ?? null,
       });
-      ////////////
+
       const saved = await this.paymentRepository.save(payment);
 
-      // ✅ 온체인 캐시백 감지 → 백엔드 캐시백 스킵 가드 (txHash가 있을 때만 시도)
+      // 온체인 캐시백 감지 → 백엔드 캐시백 스킵 가드 (txHash가 있을 때만 시도)
       if (txHash) {
         try {
           const onchain = await this.checkOnchainCashback(txHash);
