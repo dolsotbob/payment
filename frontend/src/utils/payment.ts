@@ -20,6 +20,9 @@ type SendPaymentArgs = {
 
     // 금액 필드는 모두 wei 문자열(정수)이어야 함 — 백엔드 DTO와 동일한 키 사용
     originalPrice: string;
+
+    // ===== 할인 관련 입력(현재는 무시) =====
+    // [쿠폰 할인 재활성화 시 이 주석 제거]: 아래 두 필드를 다시 사용
     discountAmount: string;
     discountedPrice: string;
 
@@ -34,12 +37,16 @@ type SendPaymentArgs = {
 };
 
 export async function sendPaymentToBackend({
-    // receipt: TransactionReceipt,
     // 프론트에서 executeMetaTransaction을 통해 pay()를 실행한 후, tx.hash만 추출해서 이 함수에 넘겨주면 됨 
     txHash,
     originalPrice,
-    discountAmount,
-    discountedPrice,
+    // coupon 관련 입력값은 무시
+
+    // ===== 현재는 무시합니다 =====
+    // [쿠폰 할인 재활성화 시 이 주석 제거]: 아래 파라미터를 다시 활용
+    discountAmount: _inDiscountAmount,
+    discountedPrice: _inDiscountedPrice,
+
     status = PaymentStatus.SUCCESS,
     userAddress,
     cashbackAmountWei,
@@ -50,9 +57,17 @@ export async function sendPaymentToBackend({
 }: SendPaymentArgs): Promise<PaymentResponse> {
     if (!productId) throw new Error("productId는 필수입니다.");
     if (!/^[0-9]+$/.test(originalPrice)) throw new Error("originalPrice는 wei 정수 문자열이어야 합니다.");
+
+    // 할인 무시: 항상 0/원가로 강제
+    // [쿠폰 할인 재활성화 시 이 라인 삭제] 후 아래 두 줄에서 _inDiscountAmount/_inDiscountedPrice를 사용하세요.
+    const discountAmount = '0';            // [쿠폰 할인 재활성화 시 이 라인 삭제]
+    const discountedPrice = originalPrice; // [쿠폰 할인 재활성화 시 이 라인 삭제]
+
+    // (검증도 고정값 기준으로)
     if (!/^[0-9]+$/.test(discountAmount)) throw new Error("discountAmount는 wei 정수 문자열이어야 합니다.");
     if (!/^[0-9]+$/.test(discountedPrice)) throw new Error("discountedPrice는 wei 정수 문자열이어야 합니다.");
 
+    // 캐시백(선택)
     const cashback =
         (cashbackAmountWei ?? cashbackAmount) && /^[0-9]+$/.test(cashbackAmountWei ?? cashbackAmount!)
             ? cashbackAmountWei ?? cashbackAmount!
@@ -66,8 +81,8 @@ export async function sendPaymentToBackend({
         from: userAddress,
         productId,
         originalPrice,
-        discountAmount,
-        discountedPrice,
+        discountAmount,   // ✅ 항상 '0'
+        discountedPrice,  // ✅ 항상 originalPrice
         status,
         ...(cashback ? { cashbackAmount: cashback } : {}),
         ...(gasUsedStr ? { gasUsed: gasUsedStr } : {}),

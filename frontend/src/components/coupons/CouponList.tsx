@@ -3,6 +3,7 @@ import type { OwnedCoupon } from "../../types/couponTypes";
 import { CouponCard } from "./CouponCard";
 import styles from "../css/coupons.module.css";
 import { useCouponsQuery } from "../../hooks/queries/useCouponsQuery";
+import { COUPON_DISCOUNT_ENABLED } from '../../config/featureFlags';
 
 type Props = {
     accessToken: string;

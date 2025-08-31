@@ -13,7 +13,11 @@ import "./paymentPage.css";
 import HeroSection from "../components/HeroSection";
 import { CouponList } from "../components/coupons/CouponList";
 import type { OwnedCoupon } from "../types/couponTypes";
-import { useValidateCouponMutation } from "../hooks/mutations/useValidateCouponMutation";
+
+// ===== 쿠폰 검증 훅 비활성화 =====
+// [쿠폰 할인 재활성화 시 이 주석 제거]: 아래 두 줄을 다시 import/사용하세요.
+// import { useValidateCouponMutation } from "../hooks/mutations/useValidateCouponMutation";
+
 import { useAuth } from "../context/AuthContext";
 
 interface Props {
@@ -47,8 +51,9 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
     const { accessToken: ctxAccessToken } = useAuth();
     const accessToken = ctxAccessToken ?? null;
 
+    // [쿠폰 할인 재활성화 시 이 주석 제거]: 쿠폰 검증 훅 
     // 훅에 토큰 전달 (미전달 시 401 가능)
-    const validateMut = useValidateCouponMutation(accessToken ?? undefined);
+    // const validateMut = useValidateCouponMutation(accessToken ?? undefined);
 
     const BASE =
         process.env.REACT_APP_BACKEND_URL ??
@@ -217,58 +222,58 @@ const PaymentPage: React.FC<Props> = ({ account, onLogin }) => {
                         onSelectCoupon={async (coupon) => {
                             setSelectedCoupon(coupon);
 
-                            // 해제: 원가 복원 + 키 리셋 
-                            if (!coupon) {
-                                if (selectedProduct) setFinalAmountWei(selectedProduct.priceWei);
-                                lastValidateKeyRef.current = null;
-                                return;
+                            // ===== 할인 비활성화: 항상 원가 고정 =====
+                            // [쿠폰 할인 재활성화 시 이 주석 제거]: 아래 블록을 validate 호출/계산 로직으로 교체
+                            if (selectedProduct) setFinalAmountWei(selectedProduct.priceWei);
+                            lastValidateKeyRef.current = null;
+                            if (coupon) {
+                                console.info("MVP에서는 쿠폰 금액이 반영되지 않습니다. (UI 프리뷰 전용)");
                             }
-                            // 상품 미선택 시 검증 지연 
-                            if (!selectedProduct) return;
 
-                            const thisKey = `${selectedProduct!.id}:${coupon.id}`;
-
-                            // 같은 조합의 중복 요청 막기 (요청 in-flight 또는 직후)
-                            if (lastValidateKeyRef.current === thisKey) return;
-                            lastValidateKeyRef.current = thisKey;
-
-
-                            try {
-                                const res = await validateMut.mutateAsync({
-                                    couponId: Number(coupon.id),
-                                    productId: selectedProduct!.id,
-                                });
-
-                                // 응답이 돌아왔을 때 여전히 최신 요청인지 확인 (레이스가드)
-                                if (lastValidateKeyRef.current !== thisKey) return;
-
-                                // 서버가 priceAfter(wei)를 주면 그 값을 사용 
-                                const priceAfter = (res as any)?.priceAfter as string | undefined;
-                                if (priceAfter) {
-                                    setFinalAmountWei(priceAfter);
-                                    // 없으면 discountBps로 계산(프론트 계산)
-                                } else {
-                                    const priceWei = BigInt(selectedProduct.priceWei);
-                                    const bps = (res as any)?.discountBps ?? 0; // 예: 500 = 5%
-                                    const discount = (priceWei * BigInt(bps)) / 10_000n;
-                                    setFinalAmountWei((priceWei - discount).toString());
-                                }
-                            } catch (e: any) {
-                                // 실패 시 다음 시도 가능하도록 리셋 
-                                lastValidateKeyRef.current = null;
-                                console.error("[onSelectCoupon] validate failed:", e);
-                                // 실패 시 선택 해제 + 원가 복원
-                                setSelectedCoupon(null);
-                                if (selectedProduct) setFinalAmountWei(selectedProduct.priceWei);
-                                alert(e?.response?.status === 401 ? "세션 만료. 다시 로그인" : "쿠폰 검증 실패");
-                            }
+                            // ===== 기존(참고) 로직: 서버 검증 + bps 계산 =====
+                            // [쿠폰 할인 재활성화 시 이 주석 제거] 후, 아래 샘플을 활용해 로직 복구
+                            //
+                            // if (!coupon) {
+                            //   if (selectedProduct) setFinalAmountWei(selectedProduct.priceWei);
+                            //   lastValidateKeyRef.current = null;
+                            //   return;
+                            // }
+                            // if (!selectedProduct) return;
+                            // const thisKey = `${selectedProduct.id}:${coupon.id}`;
+                            // if (lastValidateKeyRef.current === thisKey) return;
+                            // lastValidateKeyRef.current = thisKey;
+                            // try {
+                            //   const res = await validateMut.mutateAsync({
+                            //     couponId: Number(coupon.id),
+                            //     productId: selectedProduct.id,
+                            //   });
+                            //   if (lastValidateKeyRef.current !== thisKey) return;
+                            //   const priceAfter = (res as any)?.priceAfter as string | undefined;
+                            //   if (priceAfter) {
+                            //     setFinalAmountWei(priceAfter);
+                            //   } else {
+                            //     const priceWei = BigInt(selectedProduct.priceWei);
+                            //     const bps = (res as any)?.discountBps ?? 0;
+                            //     const discount = (priceWei * BigInt(bps)) / 10_000n;
+                            //     setFinalAmountWei((priceWei - discount).toString());
+                            //   }
+                            // } catch (e: any) {
+                            //   lastValidateKeyRef.current = null;
+                            //   console.error("[onSelectCoupon] validate failed:", e);
+                            //   setSelectedCoupon(null);
+                            //   if (selectedProduct) setFinalAmountWei(selectedProduct.priceWei);
+                            //   alert(e?.response?.status === 401 ? "세션 만료. 다시 로그인" : "쿠폰 검증 실패");
+                            // }
                         }}
                     />
                     {/* 검증 상태/최종 금액 표시 */}
                     <div style={{ marginTop: 8 }}>
-                        {validateMut.isPending
-                            ? "쿠폰 검증 중..."
-                            : <> 최종 결제 금액: <b>{finalAmountWei ?? selectedProduct?.priceWei ?? "-"}</b></>}
+                        {/* [쿠폰 할인 재활성화 시 이 주석 제거]: validateMut 상태 표시 복구
+                {validateMut.isPending ? "쿠폰 검증 중..." : ... } */}
+                        최종 결제 금액: <b>{finalAmountWei ?? selectedProduct?.priceWei ?? "-"}</b>
+                        <span style={{ marginLeft: 8, fontSize: 12, opacity: 0.7 }}>
+                            (MVP: 쿠폰 미적용)
+                        </span>
                     </div>
                 </div>
             )}
