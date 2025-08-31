@@ -66,6 +66,7 @@ export const CouponList: React.FC<Props> = ({
             const found = coupons.find(c => String(c.id) === saved);
             if (found) {
                 setSelectedId(saved);
+                // [쿠폰 할인 재활성화 시 이 주석 제거]: 저장된 선택을 실제 결제 할인에 반영하려면 아래 콜백을 그대로 사용하세요.
                 onSelectCoupon?.(found);
             } else {
                 // 저장된 id가 더 이상 유효하지 않으면 정리
@@ -79,6 +80,9 @@ export const CouponList: React.FC<Props> = ({
 
     // 첫 사용가능 쿠폰 자동 선택
     useEffect(() => {
+        // ✅ 할인 비활성화 상태에서는 자동 선택을 강제로 끕니다(프리뷰 혼동 방지)
+        if (!COUPON_DISCOUNT_ENABLED) return; // [쿠폰 할인 재활성화 시 이 라인 삭제]
+
         if (autoPickFirstUsable && usableCoupons.length > 0 && selectedId == null) {
             const first = usableCoupons[0];
             const id = String(first.id);
@@ -93,6 +97,13 @@ export const CouponList: React.FC<Props> = ({
     const handleApply = useCallback(
         (coupon: OwnedCoupon) => {
             const id = String(coupon.id);
+
+            // ✅ 할인 비활성화 상태: 선택/해제는 UI 프리뷰용으로만 동작합니다.
+            //    실제 결제 금액에는 영향을 주지 않습니다.
+            if (!COUPON_DISCOUNT_ENABLED) {
+                console.info("[coupon] 미적용(MVP): 쿠폰은 UI 프리뷰 전용입니다."); // [쿠폰 할인 재활성화 시 이 라인 삭제]
+            }
+
             if (selectedId === id) {
                 setSelectedId(null);
                 onSelectCoupon?.(null);
@@ -101,6 +112,7 @@ export const CouponList: React.FC<Props> = ({
                 } catch { }
             } else {
                 setSelectedId(id);
+                // [쿠폰 할인 재활성화 시 이 주석 제거]: 실제 할인 계산을 트리거하려면 이 콜백에서 서버 검증 → 결제금액 반영 로직을 연결하세요.
                 onSelectCoupon?.(coupon);
                 try {
                     localStorage.setItem(STORAGE_KEY, id);
@@ -137,47 +149,78 @@ export const CouponList: React.FC<Props> = ({
     }
 
     return (
-        <div className={styles.list} role="list">
-            {sortedCoupons.map((coupon) => {
-                const id = String(coupon.id);
-                const selected = selectedId === id;
-                const usable =
-                    coupon.status === "ACTIVE" && !isExpired(coupon.rule?.expiresAt) && coupon.balance > 0;
+        <>
+            {/* ✅ 할인 비활성화 안내 배너 */}
+            {!COUPON_DISCOUNT_ENABLED && (
+                <div
+                    className={styles.box}
+                    style={{
+                        marginBottom: 8,
+                        background: "#fff8e1",
+                        border: "1px solid #f0d58c",
+                        color: "#5f4b1a",
+                        fontSize: 13,
+                    }}
+                // [쿠폰 할인 재활성화 시 이 블록 통째로 제거]
+                >
+                    NFT 쿠폰은 <b>UI 프리뷰 전용</b>입니다. 이번 MVP에서는 <b>할인 금액이 결제에 반영되지 않아요.</b>
+                </div>
+            )}
 
-                return (
-                    <div
-                        key={id}
-                        role="listitem"
-                        className={`${styles.listItem} ${selected ? styles.listItemSelected : ""} ${!usable ? styles.listItemDisabled : ""
-                            }`}
-                    >
+            <div className={styles.list} role="list">
+                {sortedCoupons.map((coupon) => {
+                    const id = String(coupon.id);
+                    const selected = selectedId === id;
+                    const usable =
+                        coupon.status === "ACTIVE" && !isExpired(coupon.rule?.expiresAt) && coupon.balance > 0;
+
+                    // 비활성화 상태에서는 hover 시 툴팁으로도 안내
+                    const disabledTitle = !COUPON_DISCOUNT_ENABLED
+                        ? "MVP: 쿠폰 미적용 (프리뷰 전용)"
+                        : undefined;
+
+                    return (
                         <div
-                            role="button"
-                            tabIndex={0}
-                            aria-pressed={selected}
-                            aria-selected={selected}
-                            className={styles.clickable}
-                            onClick={(e) => {
-                                e.stopPropagation(); // 부모로 이벤트 전파 방지 
-                                handleApply(coupon);
-                            }}
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter" || e.key === " ") {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    handleApply(coupon);
-                                }
-                            }}
+                            key={id}
+                            role="listitem"
+                            className={`${styles.listItem} ${selected ? styles.listItemSelected : ""} ${!usable ? styles.listItemDisabled : ""}`}
+                            title={disabledTitle} // [쿠폰 할인 재활성화 시 이 속성 제거]
                         >
-                            <CouponCard
-                                coupon={coupon}
-                                // CouponCard 내부 버튼이 따로 있다면 이 콜백과 충돌되지 않도록 전달
-                                onApply={() => handleApply(coupon)}
-                            />
+                            <div
+                                role="button"
+                                tabIndex={0}
+                                aria-pressed={selected}
+                                aria-selected={selected}
+                                className={styles.clickable}
+                                onClick={(e) => {
+                                    e.stopPropagation(); // 부모로 이벤트 전파 방지 
+                                    handleApply(coupon);
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleApply(coupon);
+                                    }
+                                }}
+                            >
+                                <CouponCard
+                                    coupon={coupon}
+                                    // CouponCard 내부 버튼이 따로 있다면 이 콜백과 충돌되지 않도록 전달
+                                    onApply={() => handleApply(coupon)}
+                                />
+                                {/* ✅ 뱃지: 미적용 안내(간단 텍스트). 
+                                    보다 예쁜 배지는 CouponCard 컴포넌트에서 처리하는 것을 권장합니다. */}
+                                {!COUPON_DISCOUNT_ENABLED && (
+                                    <div style={{ marginTop: 6, fontSize: 12, opacity: 0.7 }}>
+                                        (MVP: 미적용)
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                );
-            })}
-        </div>
+                    );
+                })}
+            </div>
+        </>
     );
 };
