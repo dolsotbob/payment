@@ -17,54 +17,71 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* ⬅️ 제목과 ul 모두 가운데 정렬 */
     margin-bottom: 2rem;
 }
 
-
-/* 상품 목록 */
-.product-list ul {
-    list-style: none;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 1.5rem;
+.carousel-container {
+    overflow-x: hidden;
+    /* 스크롤 막기 */
     width: 100%;
-    max-width: 900px;
-    /* 카드 최대 너비 제한 */
+    position: relative;
 }
 
-/* 개별 상품 카드 */
-.product-item {
-    border: 1px solid #ddd;
-    border-radius: 12px;
+.carousel {
+    list-style: none;
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 12px;
+    padding: 0 8px;
+    scroll-snap-stop: always;
+}
+
+/* 상품 카드 (캐러셀 아이템) */
+.carousel-item {
+    flex: 0 0 auto;
+    width: 360px;
+    /* width: 180px; */
     padding: 1rem;
     background-color: #fff;
+    border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
-    transition: all 0.3s ease;
+    border: 1px solid #ddd;
     text-align: center;
+    transition: transform 0.3s ease;
+    scroll-snap-align: start;
 }
 
-.product-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+.carousel-item:hover {
+    transform: scale(1.05);
+}
+
+/* 상품 이미지 */
+.product-image {
+    width: 100%;
+    height: 360px;
+    /* height: 180px; */
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* 상품명 */
-.product-item h3 {
+.carousel-item h3 {
     font-size: 1.3rem;
     margin-bottom: 0.5rem;
 }
 
 /* 가격 */
-.product-item p {
+.carousel-item p {
     margin-bottom: 1rem;
     font-weight: bold;
     color: #222;
 }
 
 /* 결제 버튼 */
-.product-item button {
+.carousel-item button {
     padding: 0.6rem 1.2rem;
     background-color: #4a90e2;
     color: white;
@@ -75,26 +92,85 @@ body {
     transition: background-color 0.2s ease;
 }
 
-.product-item button:hover {
+.carousel-item button:hover {
     background-color: #357bd8;
 }
 
-.product-image {
-    width: 100%;
-    /* // 고정된 높이  */
-    height: 180px;
-    /* // 이미지를 잘라서 빈틈 없이 채움 */
-    object-fit: cover;
-    border-radius: 8px;
-    margin-bottom: 1rem;
+/* 상품 상세 정보 영역 */
+.product-detail {
+    margin-top: 2rem;
+    padding: 1rem;
+    border-top: 1px solid #ddd;
 }
 
+.carousel-item.selected {
+    border: 2px solid #4a90e2;
+    box-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
+}
+
+.carousel-item-name {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-top: 0.3rem;
+}
+
+.carousel-item-price {
+    font-size: 0.9rem;
+    color: #555;
+}
+
+/* 타이틀용 폰트 */
 @import url('https://fonts.googleapis.com/css2?family=Alumni+Sans+Pinstripe:ital@0;1&family=Single+Day&display=swap');
 
 h2.product-list-title {
     font-size: 1.8rem;
     font-weight: 600;
-    color: rgb(43, 107, 226);
+    color: #4a90e2;
     margin-bottom: 1rem;
-    font-family: 'Single Day', cursive;
+    font-family: 'Playwrite Magyarorszag', cursive;
+}
+
+
+/* 모달 오버레이 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+/* 모달 콘텐츠 */
+.modal-content {
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    width: 320px;
+    max-width: 90%;
+    text-align: center;
+    position: relative;
+}
+
+.modal-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.close-btn {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
 }

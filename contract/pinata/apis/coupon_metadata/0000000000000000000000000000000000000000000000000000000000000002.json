@@ -1,0 +1,39 @@
+{
+    "name": "Summer Barley",
+    "description": "10%-single-use discount coupon issued in Summer, from June to August",
+    "image": "https://gateway.pinata.cloud/ipfs/bafybeig4d2cbarj25wsdrcagz46twl5hnybncbcvbmglpu4ahuo3zytrhu",
+    "attributes": [
+        {
+            "trait_type": "ID",
+            "value": "2"
+        },
+        {
+            "trait_type": "Season",
+            "value": "Summer"
+        },
+        {
+            "trait_type": "Crop",
+            "value": "Barley"
+        },
+        {
+            "trait_type": "Discount Rate",
+            "value": "1000"
+        },
+        {
+            "trait_type": "Consumable",
+            "value": true
+        },
+        {
+            "trait_type": "Uses",
+            "value": 1
+        },
+        {
+            "trait_type": "ExpiresMode",
+            "value": "AFTER_PURCHASE_1Y"
+        },
+        {
+            "trait_type": "PriceCapTORI",
+            "value": 50
+        }
+    ]
+}

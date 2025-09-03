@@ -1,0 +1,79 @@
+/* src/components/css/HeroSection.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,400;1,100;1,400&display=swap');
+
+.hero-container {
+    position: relative;
+    width: 100%;
+    max-height: 600px;
+    overflow: hidden;
+}
+
+.hero-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    display: block;
+    filter: brightness(0.8);
+}
+
+.hero-text {
+    position: absolute;
+    top: 50%;
+    left: 70%;
+    transform: translate(-50%, -50%);
+    text-align: right;
+    line-height: 1.5;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* 모든 문구 공통 */
+.hero-text h1 {
+    position: absolute;
+    font-size: 6rem;
+    font-weight: 100;
+    color: rgb(221, 41, 221);
+    opacity: 0;
+    margin: 0;
+    white-space: nowrap;
+    animation: showOne 24s linear infinite;
+}
+
+/* 각 문구의 등장 시간 지정 */
+.hero-text h1:nth-child(1) {
+    animation-delay: 0s;
+    top: 0;
+}
+
+.hero-text h1:nth-child(2) {
+    animation-delay: 8s;
+    top: 4rem;
+}
+
+.hero-text h1:nth-child(3) {
+    animation-delay: 16s;
+    top: 8rem;
+}
+
+/* 키프레임: 해당 구간에만 보여짐 */
+@keyframes showOne {
+    0% {
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    30% {
+        opacity: 1;
+    }
+
+    40% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}

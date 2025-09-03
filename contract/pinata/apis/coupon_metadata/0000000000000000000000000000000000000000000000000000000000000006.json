@@ -1,0 +1,39 @@
+{
+    "name": "Rice",
+    "description": "5% discount coupon (permanent). No expiration.",
+    "image": "https://gateway.pinata.cloud/ipfs/bafybeidole6tczedsajqpmh2pk4ihxi3xus72w4de523ae2sqecgxka2o4",
+    "attributes": [
+        {
+            "trait_type": "ID",
+            "value": "6"
+        },
+        {
+            "trait_type": "Season",
+            "value": "Any"
+        },
+        {
+            "trait_type": "Crop",
+            "value": "Rice"
+        },
+        {
+            "trait_type": "Discount Rate",
+            "value": "500"
+        },
+        {
+            "trait_type": "Consumable",
+            "value": false
+        },
+        {
+            "trait_type": "Uses",
+            "value": "unlimited"
+        },
+        {
+            "trait_type": "ExpiresMode",
+            "value": "NONE"
+        },
+        {
+            "trait_type": "PriceCapTORI",
+            "value": 50
+        }
+    ]
+}

@@ -1,0 +1,39 @@
+{
+    "name": "Winter Rye",
+    "description": "20%-single-use discount coupon issued in Winter, from December to February",
+    "image": "https://gateway.pinata.cloud/ipfs/bafybeiayrv6o2leusmwph4wldpe2mnahp3gfut6rxxxgmped6jfvomcboy",
+    "attributes": [
+        {
+            "trait_type": "ID",
+            "value": "4"
+        },
+        {
+            "trait_type": "Season",
+            "value": "Winter"
+        },
+        {
+            "trait_type": "Crop",
+            "value": "Rye"
+        },
+        {
+            "trait_type": "Discount Rate",
+            "value": "2000"
+        },
+        {
+            "trait_type": "Consumable",
+            "value": true
+        },
+        {
+            "trait_type": "Uses",
+            "value": 1
+        },
+        {
+            "trait_type": "ExpiresMode",
+            "value": "AFTER_PURCHASE_1Y"
+        },
+        {
+            "trait_type": "PriceCapTORI",
+            "value": 50
+        }
+    ]
+}

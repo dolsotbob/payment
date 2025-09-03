@@ -1,0 +1,22 @@
+.logout-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-right: 1rem;
+    color: #4682B4;
+    /* 파란색 */
+    font-size: 30px;
+}
+
+.logout-button:hover {
+    color: #1E90FF;
+    /* hover 시 더 밝은 파란 계열 (dodgerblue) */
+}
+
+.logout-icon {
+    display: block;
+    width: 50px;
+    height: auto;
+    object-fit: contain;
+}

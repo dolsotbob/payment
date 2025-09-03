@@ -1,20 +1,76 @@
 {
   "abi": [
     {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
-          "name": "_token",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_vaultAddress",
+          "name": "target",
           "type": "address"
         }
       ],
-      "stateMutability": "nonpayable",
-      "type": "constructor"
+      "name": "AddressEmptyCode",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "CouponConsumed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "CouponDisabled",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "CouponExpired",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "CouponNoBalance",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "CouponNoop",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "implementation",
+          "type": "address"
+        }
+      ],
+      "name": "ERC1967InvalidImplementation",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ERC1967NonPayable",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "FailedCall",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidInitialization",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotInitializing",
+      "type": "error"
     },
     {
       "inputs": [
@@ -39,22 +95,66 @@
       "type": "error"
     },
     {
+      "inputs": [],
+      "name": "ReentrancyGuardReentrantCall",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "name": "SafeERC20FailedOperation",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "UUPSUnauthorizedCallContext",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "slot",
+          "type": "bytes32"
+        }
+      ],
+      "name": "UUPSUnsupportedProxiableUUID",
+      "type": "error"
+    },
+    {
       "anonymous": false,
       "inputs": [
         {
           "indexed": false,
-          "internalType": "uint256",
-          "name": "oldRate",
-          "type": "uint256"
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
         },
         {
           "indexed": false,
-          "internalType": "uint256",
-          "name": "newRate",
-          "type": "uint256"
+          "internalType": "address",
+          "name": "vault",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "cashbackBps",
+          "type": "uint16"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "maxDiscountBps",
+          "type": "uint16"
         }
       ],
-      "name": "CashbackRateUpdated",
+      "name": "ConfigUpdated",
       "type": "event"
     },
     {
@@ -67,31 +167,37 @@
           "type": "address"
         },
         {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "cashbackAmount",
-          "type": "uint256"
-        },
-        {
           "indexed": true,
           "internalType": "address",
-          "name": "vault",
+          "name": "nft",
           "type": "address"
         },
         {
-          "indexed": false,
+          "indexed": true,
           "internalType": "uint256",
-          "name": "cashbackRate",
+          "name": "id",
           "type": "uint256"
         },
         {
           "indexed": false,
+          "internalType": "uint16",
+          "name": "appliedBps",
+          "type": "uint16"
+        },
+        {
+          "indexed": false,
           "internalType": "uint256",
-          "name": "originalAmount",
+          "name": "discountAmount",
           "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "consumed",
+          "type": "bool"
         }
       ],
-      "name": "CashbackSent",
+      "name": "CouponApplied",
       "type": "event"
     },
     {
@@ -99,18 +205,86 @@
       "inputs": [
         {
           "indexed": true,
+          "internalType": "bytes32",
+          "name": "key",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
           "internalType": "address",
-          "name": "to",
+          "name": "nft",
           "type": "address"
         },
         {
-          "indexed": false,
+          "indexed": true,
           "internalType": "uint256",
-          "name": "amount",
+          "name": "id",
           "type": "uint256"
         }
       ],
-      "name": "CashbackWrapped",
+      "name": "CouponRuleDisabled",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "key",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "nft",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "discountBps",
+          "type": "uint16"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "expiresAt",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "enabled",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "consumable",
+          "type": "bool"
+        }
+      ],
+      "name": "CouponRuleSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "version",
+          "type": "uint64"
+        }
+      ],
+      "name": "Initialized",
       "type": "event"
     },
     {
@@ -142,12 +316,6 @@
           "type": "address"
         },
         {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        },
-        {
           "indexed": true,
           "internalType": "address",
           "name": "vault",
@@ -156,8 +324,32 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "cashbackRate",
+          "name": "priceBefore",
           "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "priceAfter",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "discountBps",
+          "type": "uint16"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "discountAmount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "cashbackBps",
+          "type": "uint16"
         },
         {
           "indexed": false,
@@ -173,29 +365,80 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
+          "indexed": true,
           "internalType": "address",
-          "name": "oldVault",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "newVault",
+          "name": "implementation",
           "type": "address"
         }
       ],
-      "name": "VaultAddressUpdated",
+      "name": "Upgraded",
       "type": "event"
     },
     {
       "inputs": [],
-      "name": "cashbackRate",
+      "name": "UPGRADE_INTERFACE_VERSION",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "price",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "buyer",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "nft",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        }
+      ],
+      "name": "_tryValidateAndQuote",
       "outputs": [
         {
           "internalType": "uint256",
           "name": "",
           "type": "uint256"
+        },
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        },
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "cashbackBps",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
         }
       ],
       "stateMutability": "view",
@@ -205,18 +448,74 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "to",
+          "name": "nft",
           "type": "address"
         },
         {
           "internalType": "uint256",
-          "name": "amount",
+          "name": "id",
           "type": "uint256"
         }
       ],
-      "name": "executeProvideCashback",
+      "name": "disableCouponRule",
       "outputs": [],
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "nft",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        }
+      ],
+      "name": "getCouponRule",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "nft",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint16",
+              "name": "discountBps",
+              "type": "uint16"
+            },
+            {
+              "internalType": "uint64",
+              "name": "expiresAt",
+              "type": "uint64"
+            },
+            {
+              "internalType": "bool",
+              "name": "enabled",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "consumable",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct Payment.CouponRule",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -240,6 +539,81 @@
           "internalType": "address",
           "name": "",
           "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_vaultAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "uint16",
+          "name": "_cashbackBps",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint16",
+          "name": "_maxDiscountBps",
+          "type": "uint16"
+        },
+        {
+          "internalType": "address",
+          "name": "_initialOwner",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "buyer",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "nft",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        }
+      ],
+      "name": "isCouponUsed",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "maxDiscountBps",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
         }
       ],
       "stateMutability": "view",
@@ -292,8 +666,23 @@
         },
         {
           "internalType": "uint256",
-          "name": "amount",
+          "name": "price",
           "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "couponNft",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "couponId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "useCoupon",
+          "type": "bool"
         }
       ],
       "name": "permitAndPayWithCashback",
@@ -302,21 +691,65 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "proxiableUUID",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
+          "internalType": "uint256",
+          "name": "price",
+          "type": "uint256"
+        },
+        {
           "internalType": "address",
-          "name": "to",
+          "name": "buyer",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "nft",
           "type": "address"
         },
         {
           "internalType": "uint256",
-          "name": "amount",
+          "name": "id",
           "type": "uint256"
         }
       ],
-      "name": "provideCashback",
-      "outputs": [],
-      "stateMutability": "nonpayable",
+      "name": "quoteDiscounted",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "discounted",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint16",
+          "name": "appliedBps",
+          "type": "uint16"
+        },
+        {
+          "internalType": "bool",
+          "name": "willConsume",
+          "type": "bool"
+        },
+        {
+          "internalType": "string",
+          "name": "reason",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -329,12 +762,27 @@
     {
       "inputs": [
         {
-          "internalType": "uint256",
-          "name": "_rate",
-          "type": "uint256"
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_vault",
+          "type": "address"
+        },
+        {
+          "internalType": "uint16",
+          "name": "_cashbackBps",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint16",
+          "name": "_maxDiscountBps",
+          "type": "uint16"
         }
       ],
-      "name": "setCashbackRate",
+      "name": "setConfig",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -342,12 +790,44 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "_vault",
-          "type": "address"
+          "components": [
+            {
+              "internalType": "address",
+              "name": "nft",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint16",
+              "name": "discountBps",
+              "type": "uint16"
+            },
+            {
+              "internalType": "uint64",
+              "name": "expiresAt",
+              "type": "uint64"
+            },
+            {
+              "internalType": "bool",
+              "name": "enabled",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "consumable",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct Payment.CouponRule",
+          "name": "rule",
+          "type": "tuple"
         }
       ],
-      "name": "setVaultAddress",
+      "name": "setCouponRule",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -379,6 +859,24 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newImplementation",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "upgradeToAndCall",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "vaultAddress",
       "outputs": [
@@ -392,5 +890,5 @@
       "type": "function"
     }
   ],
-  "address": "0x8F21aCfd94ca27F122BA5420D19AD8673d31ACD0"
+  "address": "0x5843Be89fa172313309D96132836E903Ff93d4D2"
 }

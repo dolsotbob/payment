@@ -1,0 +1,39 @@
+{
+    "name": "Spring Corn",
+    "description": "5%-single-use discount coupon issued in Spring, from March to May",
+    "image": "https://gateway.pinata.cloud/ipfs/bafybeiax2hk6c6t6nnpuaxezjklbr5fgpxa7steg62nvp5k6xd2obt7gve",
+    "attributes": [
+        {
+            "trait_type": "ID",
+            "value": "1"
+        },
+        {
+            "trait_type": "Season",
+            "value": "Spring"
+        },
+        {
+            "trait_type": "Crop",
+            "value": "Corn"
+        },
+        {
+            "trait_type": "Discount Rate",
+            "value": "500"
+        },
+        {
+            "trait_type": "Consumable",
+            "value": true
+        },
+        {
+            "trait_type": "Uses",
+            "value": 1
+        },
+        {
+            "trait_type": "ExpiresMode",
+            "value": "AFTER_PURCHASE_1Y"
+        },
+        {
+            "trait_type": "PriceCapUSD",
+            "value": "50"
+        }
+    ]
+}

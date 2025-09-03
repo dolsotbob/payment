@@ -1,0 +1,39 @@
+{
+    "name": "Bonus",
+    "description": "25%-single-use discount coupon. Valid for 1 year after purchase.",
+    "image": "https://gateway.pinata.cloud/ipfs/bafybeidz5wy6jka64ext4ui3j4u27zu4inhz342q2e23cnmfqsrsspo7hy",
+    "attributes": [
+        {
+            "trait_type": "ID",
+            "value": "7"
+        },
+        {
+            "trait_type": "Season",
+            "value": "Any"
+        },
+        {
+            "trait_type": "Crop",
+            "value": "Bonus"
+        },
+        {
+            "trait_type": "Discount Rate",
+            "value": "2500"
+        },
+        {
+            "trait_type": "Consumable",
+            "value": true
+        },
+        {
+            "trait_type": "Uses",
+            "value": 1
+        },
+        {
+            "trait_type": "ExpiresMode",
+            "value": "AFTER_PURCHASE_1Y"
+        },
+        {
+            "trait_type": "PriceCapTORI",
+            "value": 50
+        }
+    ]
+}

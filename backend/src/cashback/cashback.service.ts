@@ -154,9 +154,9 @@ export class CashbackService {
 
         // 2% 캐시백 적용
         const cashbackRate = 2n; // 비율: 2%
-        const cashbackAmount = (BigInt(payment.amount.toString()) * cashbackRate) / 100n;
+        const cashbackAmount = (BigInt(payment.discountedPrice.toString()) * cashbackRate) / 100n;
 
-        this.logger.log(`[캐시백 계산] 결제 금액: ${payment.amount}`);
+        this.logger.log(`[캐시백 계산] 결제 금액: ${payment.discountedPrice}`);
         this.logger.log(`[캐시백 계산] 캐시백 금액(2%): ${cashbackAmount.toString()}`);
 
         try {

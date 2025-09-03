@@ -1,5 +1,4 @@
-// UUPS 업그레이드 가능한 버전
-
+// UUPS + TimeLock 연동 가능한 구조
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
@@ -41,13 +40,11 @@ contract Vault is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     }
 
     // ========== Initializer ===========
-    // upgradeable로 전환하면서 constructor 지우고 아래 함수 추가
-    /// @notice 초기화 함수 (생성자 대체)
-    // 추후 버전 2를 도입하고 된다면, 버전 번호를 넣는 것이 유지 보수에 좋음
+    /// @custom:oz-upgrades-validate-as-initializer
     function initialize(
         address _token,
         address _treasury
-    ) public reinitializer(1) {
+    ) public virtual initializer {
         require(_token != address(0), "Invalid token");
         require(_treasury != address(0), "Invalid treasury");
 
@@ -118,7 +115,7 @@ contract Vault is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     }
 
     // 지정된 주소로 수동 인출
-    function withdraw(address to, uint256 amount) external onlyOwner {
+    function withdraw(address to, uint256 amount) external virtual onlyOwner {
         require(to != address(0), "Invalid recipient");
         require(
             token.balanceOf(address(this)) >= amount,
@@ -130,7 +127,7 @@ contract Vault is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     }
 
     // 전체 잔액을 treasury로 일괄 송금
-    function sweepToTreasury() external onlyOwner {
+    function sweepToTreasury() external virtual onlyOwner {
         uint256 balance = token.balanceOf(address(this));
         require(balance > 0, "No balance");
 
@@ -139,7 +136,7 @@ contract Vault is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     }
 
     // treasury 주소 변경
-    function setTreasury(address _treasury) external onlyOwner {
+    function setTreasury(address _treasury) external virtual onlyOwner {
         require(_treasury != address(0), "Invalid treasury");
         address oldTreasury = treasury;
         treasury = _treasury;

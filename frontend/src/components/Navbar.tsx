@@ -1,22 +1,40 @@
 // src/components/Navbar.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
+import storeImage from '../images/online-shop.png'
+import './css/Navbar.css'
+import LogoutButton from '../components/LogoutButton';
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+    account: string | null;
+    onLogout: () => void;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ account, onLogout }) => {
     return (
-        <nav style={{
-            backgroundColor: '#f5f5f5',
-            padding: '1rem',
-            display: 'flex',
-            justifyContent: 'space-between',
-            marginBottom: '2rem',
-        }}>
+        <nav className='nav'>
+
             <div>
-                <Link to="/" style={{ marginRight: '1rem' }}>🛒 쇼핑</Link>
-                <Link to="/payment-history">🧾 결제 내역</Link>
+                <Link to="/" className="store-link">
+                    <img src={storeImage} alt="Store Image" className='store-image'></img>
+                </Link>
             </div>
+
+            {/* {account && (
+                <p className="wallet-info">🦊 {account}</p>
+            )} */}
+
+            {account && (
+                <div className='nav-right'>
+                    <Link to="/payment-history">🧾</Link>
+                    <Link to="/mypage">👤</Link>
+                    <Link to="/coupons">🧧</Link>
+                    <LogoutButton onLogout={onLogout} />
+                </div>
+            )}
+
         </nav>
-    );
-};
+    )
+}
 
 export default Navbar;

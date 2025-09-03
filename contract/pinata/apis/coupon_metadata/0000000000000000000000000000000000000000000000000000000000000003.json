@@ -1,0 +1,39 @@
+{
+    "name": "Autumn Soybean",
+    "description": "5%-three-use discount coupon issued in Autumn, from September to November",
+    "image": "https://gateway.pinata.cloud/ipfs/bafybeicsufh26x77eytcmj77k2gjxov6pvinr5z4m5hnjwopg77q5udeuu",
+    "attributes": [
+        {
+            "trait_type": "ID",
+            "value": "3"
+        },
+        {
+            "trait_type": "Season",
+            "value": "Autumn"
+        },
+        {
+            "trait_type": "Crop",
+            "value": "Soybean"
+        },
+        {
+            "trait_type": "Discount Rate",
+            "value": "500"
+        },
+        {
+            "trait_type": "Consumable",
+            "value": true
+        },
+        {
+            "trait_type": "Uses",
+            "value": 3
+        },
+        {
+            "trait_type": "ExpiresMode",
+            "value": "AFTER_PURCHASE_1Y"
+        },
+        {
+            "trait_type": "PriceCapTORI",
+            "value": 50
+        }
+    ]
+}

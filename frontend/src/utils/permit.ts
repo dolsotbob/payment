@@ -6,31 +6,56 @@ export const buildPermitCallData = async (
     payment: ethers.Contract,
     signer: ethers.Signer,  // 사용자 지갑 객체 
     owner: string,      // 서명할 사용자 지갑 주소 
-    amount: string,     // 승인할 토큰 금액 
-    chainId: number
+    amountWei: string,     // 승인할 토큰 금액 
+    valueOverride?: string  // 선택: permit allowance 를 별도로 저장하고 싶을 때 
 ): Promise<{
     v: number;
     r: string;
     s: string;
     deadline: number;
 }> => {
-    const value = ethers.parseUnits(amount, 18);  // 허용할 토큰 금액 
-    const nonce = await token.nonces(owner);  // 중복 서명 방지를 위한 고유값 
+    // 1) 토큰 메타 (decimals, name)
+    const [decimals, tokenName, tokenAddress, paymentAddress] = await Promise.all([
+        token.decimals().catch(() => 18), // 없는 경우 18로 fallback
+        token.name().catch(() => "Token"),
+        token.getAddress?.() ?? token.target,
+        payment.getAddress?.() ?? payment.target,
+    ]);
 
-    const onChainNonce = await token.nonces(owner); // 서명에 쓰이는 값 
-    // onChainnonce는 트랜잭션 실행 직전에 다시 블록체인에서 조회한 현재 nonce 값 (실제 체인에 반영된 상태)
-    console.log("✅ nonce 비교", { expected: nonce, onChain: onChainNonce });
+    // 2) permit allowance (value) 계산
+    // V3: require(value >= afterPrice). 보통 price(=amount)로 충분.
+    const priceBN = ethers.toBigInt(amountWei);
+    const valueBN = valueOverride != null
+        ? ethers.toBigInt(valueOverride)
+        : priceBN;
 
+    // 3) nonce & deadline 
+    const nonceRaw = await token.nonces(owner); // 중복 서명 방지를 위한 고유값 
+    const nonce = BigInt(nonceRaw).toString(); // 문자열 정규화
     const deadline = Math.floor(Date.now() / 1000) + 300;  // 5분 후 만료 
 
-    // EIP-712 Domain 정의 
+    // 4) chainId 확보 (signer 기존 네트워크)
+    const { chainId } = await signer.provider!.getNetwork();
+
+    // 디버그 로그 
+    console.log("[permit-debug]", {
+        owner,
+        spender: await payment.getAddress(),
+        priceBN: priceBN.toString(),
+        valueBN: valueBN.toString(),        // value ≥ priceBN ?
+        nonce,
+        deadline,
+        chainId: chainId.toString(),
+        tokenAddr: tokenAddress,
+    });
+
+    // 5) EIP-712 Domain/Types/Message
     const domain = {
-        name: await token.name(),
+        name: tokenName,
         version: "1",
         chainId,
-        verifyingContract: await token.getAddress(),  // TestToken.sol의 주소 
+        verifyingContract: tokenAddress,  // TestToken.sol의 주소 
     };
-    console.log("✅ domain", domain);
 
     // EIP-712 Typed Data 구조 정의 
     // ERC20 Permit 표준 구조체 
@@ -46,13 +71,13 @@ export const buildPermitCallData = async (
 
     const message = {
         owner,
-        spender: payment.target,  // Payment 컨트랙트에게 권한을 줌 
-        value,
+        spender: paymentAddress,  // Payment 컨트랙트에게 권한을 줌 
+        value: valueBN,
         nonce,
         deadline,
     };
 
-    // 실제 서명 
+    // 5) 실제 서명 (ethers v6: signTypedData) 
     const signature = await (signer as any).signTypedData(domain, types, message);
     const { v, r, s } = ethers.Signature.from(signature); // 서명을 v, r, s 값으로 분해 
 
