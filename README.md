@@ -25,7 +25,7 @@ This project prototypes a decentralized online store where users can pay with ER
 
 ### 🧱 Tech Stack
 - **Smart Contracts**: Solidity (ERC-20 Permit, Vault, Payment, Timelock, Coupon1155)  
-- **Frontend**: React + TypeScript (Vite, TanStack Query, Axios)  
+- **Frontend**: React + TypeScript  
 - **Backend**: NestJS + TypeORM + PostgreSQL  
 - **Infra**: Hardhat, Ethers.js, GitHub, Vercel, Render, Pinata (IPFS)  
 
@@ -108,7 +108,7 @@ MIT © 2025 Jungah Yoon
 
 ### 🧱 기술 스택
 - 스마트 컨트랙트: Solidity (ERC-20 Permit, Vault, Payment, Timelock, Coupon1155)  
-- 프론트엔드: React + TypeScript (Vite, TanStack Query, Axios)  
+- 프론트엔드: React + TypeScript
 - 백엔드: NestJS + TypeORM + PostgreSQL  
 - 인프라: Hardhat, Ethers.js, GitHub, Vercel(프론트), Render(백엔드), Pinata(IPFS 쿠폰 메타데이터)  
 
