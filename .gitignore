@@ -46,3 +46,5 @@ ignition/deployments/chain-31337
 
 # React strict mode 성능 측정 로그
 web-vitals.json
+
+!.env.example
