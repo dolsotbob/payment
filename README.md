@@ -63,6 +63,7 @@ This project prototypes a decentralized online store where users can pay with ER
 
 ---
 
+### Timelock 설정 (Timelock Configuration)
 - For development and testing, `minDelay` was set to **60 seconds** for convenience.  
 - In a real production environment, it is recommended to set the delay to **at least 24 hours**.  
   - This prevents sensitive operations (upgrades, withdrawals, etc.) from being executed immediately.  
