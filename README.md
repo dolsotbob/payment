@@ -80,14 +80,19 @@ This project prototypes a decentralized online store where users can pay with ER
 
 ---
 
+## 📎 Links
+
+- **GitHub Repository**: [payment](https://github.com/dolsotbob/payment)
+- **Presentation Notes**: [Notion Link](https://www.notion.so/260a6b10af3a80bd85e9eb4e1fc92717?source=copy_link)
+- **Development Log**: [Daily Dev Log](https://www.notion.so/RB-2-1-224a6b10af3a80eface9c474d328c058?source=copy_link)
+- **LinkedIn**: [Jungah Hana Yoon](https://www.linkedin.com/in/jungah-hana-yoon)
+
+---
+
 ### 🙋‍♀️ About Me
 I’m Jungah Hana Yoon, a former educator turned blockchain engineer in training.  
 Previously worked at Gala Games & Entertainment in Customer Support, focusing on Web3 users and community engagement.  
 Now building full-stack DApps with focus on UX + trustless design.
-
-📫 Connect with me:  
-- GitHub: github.com/dolsotbob  
-- LinkedIn: linkedin.com/in/jungah-hana-yoon  
 
 ---
 
@@ -172,14 +177,19 @@ MIT © 2025 Jungah Yoon
 
 ---
 
+## 📎 Links (링크 모음) 
+
+- **GitHub Repository (프로젝트 저장소)**: [payment](https://github.com/dolsotbob/payment)
+- **Presentation Notes (발표 자료)**: [Notion Link](https://www.notion.so/260a6b10af3a80bd85e9eb4e1fc92717?source=copy_link)
+- **Development Log (개발 일지)**: [Daily Dev Log](https://www.notion.so/RB-2-1-224a6b10af3a80eface9c474d328c058?source=copy_link)
+- **LinkedIn (링크드인 프로필)**: [Jungah Hana Yoon](https://www.linkedin.com/in/jungah-hana-yoon)
+
+---
+
 ### 🙋‍♀️ 소개
 저는 윤정아입니다. 교육 업계에서 커리큘럼 개발/강의 경험이 있고,  
 Gala Games & Entertainment에서 고객 지원 업무를 담당했으며, Web3 유저 지원과 커뮤니티 소통에 집중했습니다.  
 현재는 블록체인 엔지니어로 전향하여 UX와 신뢰성 있는 설계를 중심으로 풀스택 DApp을 개발하고 있습니다.  
-
-📫 연락처:  
-- GitHub: github.com/dolsotbob
-- LinkedIn: linkedin.com/in/jungah-hana-yoon  
 
 ---
 
