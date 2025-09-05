@@ -63,6 +63,13 @@ This project prototypes a decentralized online store where users can pay with ER
 
 ---
 
+- For development and testing, `minDelay` was set to **60 seconds** for convenience.  
+- In a real production environment, it is recommended to set the delay to **at least 24 hours**.  
+  - This prevents sensitive operations (upgrades, withdrawals, etc.) from being executed immediately.  
+  - It also allows sufficient time for both users and operators to review and respond before execution.  
+
+---
+
 ### 🧭 Roadmap
 - Payment + Cashback MVP complete  
 - Vault secured with Timelock ownership  
@@ -143,6 +150,15 @@ MIT © 2025 Jungah Yoon
 2. `/backend`와 `/frontend`에서 의존성 설치하기  
 3. `.env.example` 파일을 복사해 `.env` 파일 만들기  
 4. 백엔드와 프론트엔드 실행하기  
+
+---
+
+### Timelock 설정 (Timelock Configuration)
+
+- 개발 단계에서는 테스트 편의성을 위해 `minDelay = 60 (1분)` 으로 설정했습니다.  
+- 실제 프로덕션 환경에서는 **하루(24시간) 이상의 지연 시간**을 두는 것이 바람직합니다.  
+  - 업그레이드/인출 등 민감한 작업을 즉시 실행하지 못하게 하고,  
+  - 사용자/운영자 모두에게 충분한 검토 시간을 제공합니다.  
 
 ---
 
