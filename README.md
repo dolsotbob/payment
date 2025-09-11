@@ -96,6 +96,13 @@ Now building full-stack DApps with focus on UX + trustless design.
 
 ---
 
+## 💡 Special Thanks
+This project was developed with the assistance of ChatGPT.  
+I planned and understood the overall flow while following the implementation process, running and validating AI-suggested code myself.  
+Although I do not yet fully understand every line of code, this project allowed me to gain hands-on experience with the structure and workflow of a Web3 payment system.  
+
+---
+
 ### 📄 License
 MIT © 2025 Jungah Yoon  
 
@@ -198,6 +205,14 @@ MIT © 2025 Jungah Yoon
 저는 윤정아입니다. 교육 업계에서 커리큘럼 개발/강의 경험이 있고,  
 Gala Games & Entertainment에서 고객 지원 업무를 담당했으며, Web3 유저 지원과 커뮤니티 소통에 집중했습니다.  
 현재는 블록체인 엔지니어로 전향하여 UX와 신뢰성 있는 설계를 중심으로 풀스택 DApp을 개발하고 있습니다.  
+
+---
+
+## 💡 Special Thanks
+
+이 프로젝트는 ChatGPT의 도움을 받아 진행되었습니다.  
+저는 전체 플로우를 기획하고 이해하며 구현 과정을 따라갔고, AI가 제안한 코드를 직접 실행·검증하면서 학습했습니다.  
+아직 세부 코드까지 완벽히 이해하지는 못했지만, 프로젝트를 통해 Web3 결제 시스템의 구조와 흐름을 직접 경험할 수 있었습니다.  
 
 ---
 
